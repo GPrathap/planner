@@ -364,10 +364,14 @@ bool PlanningFSM::planSearchOpt()
     }
     bspline_pub_.publish(bspline);
 
+
     /* visulization */
     vector<Eigen::Vector3d> kino_path = path_finder_->getKinoTraj(0.02);
+    vector<Eigen::Vector3d> rrt_path = path_finder_->getRRTTraj(0.02);
 
     visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
+
+    visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, 1,1, 1), 3);
 
     visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));

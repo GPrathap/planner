@@ -11,7 +11,11 @@
 // #include "grad_spline/sdf_map.h"
 #include "plan_env/edt_environment.h"
 #include <boost/functional/hash.hpp>
+#include "../../src/rrt_star/rrt_star_3d.h"
+#include "../../src/common/search_space.h"
+#include "../../src/utils/common_utils.h"
 #include <queue>
+
 namespace dyn_planner
 {
 // #define REACH_HORIZON 1
@@ -35,7 +39,7 @@ public:
   int time_idx;
   PathNode* parent;
   char node_state;
-
+  // kamaz::hagen::SearchSpace X;
   /* -------------------- */
   PathNode()
   {
@@ -110,6 +114,9 @@ private:
   NodeHashTable expanded_nodes_;
   std::priority_queue<PathNodePtr, std::vector<PathNodePtr>, NodeComparator> open_set_;
   std::vector<PathNodePtr> path_nodes_;
+  std::vector<Eigen::Vector3d> path_rrt_;
+  kamaz::hagen::RRTStar3D rrtstart3d;
+  kamaz::hagen::CommonUtils common_utils;
 
   /* ---------- record data ---------- */
   Eigen::Vector3d start_vel_, end_vel_, start_acc_;
@@ -175,6 +182,7 @@ public:
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
   std::vector<Eigen::Vector3d> getKinoTraj(double delta_t);
+  std::vector<Eigen::Vector3d> getRRTTraj(double delta_t);
   Eigen::MatrixXd getSamples(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
 

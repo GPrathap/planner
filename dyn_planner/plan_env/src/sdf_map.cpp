@@ -160,10 +160,8 @@ double SDFMap::getDistance(Eigen::Vector3d pos)
 {
   if (!isInMap(pos))
     return -1;
-
   Eigen::Vector3i id;
   posToIndex(pos, id);
-
   // (x, y, z) -> x*ny*nz + y*nz + z
   return distance_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
 }
