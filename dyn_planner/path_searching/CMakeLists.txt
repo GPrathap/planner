@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   plan_env
 )
 
-
 find_package(Boost COMPONENTS program_options log log_setup regex atomic date_time system chrono filesystem thread graph REQUIRED)
 set(Boost_USE_STATIC_LIBS OFF)
 include_directories(${BOOST_INCLUDE_DIRS})

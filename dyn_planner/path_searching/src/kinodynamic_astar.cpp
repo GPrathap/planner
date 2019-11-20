@@ -18,12 +18,12 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
                              Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
  
-  Eigen::VectorXf x_dimentions(6);
+  Eigen::VectorXd x_dimentions(6);
   x_dimentions << -10, 10, -10, 10, -10, 10;
   std::atomic_bool planner_status;
   planner_status = ATOMIC_VAR_INIT(true);
-  std::vector<Eigen::VectorXf> Q;
-  Eigen::VectorXf dim_in(2);
+  std::vector<Eigen::Vector2d> Q;
+  Eigen::Vector2d dim_in;
   dim_in << 8, 4;
   Q.push_back(dim_in);
 
@@ -40,39 +40,35 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrtstart3d.rrt_init(Q, max_samples, r, proc, rewrite_count);
   
   Eigen::Vector3d ccc = (end_pt - start_pt).head(3);
-  Eigen::Vector3f center;
-  center<< ccc[0] , ccc[1], ccc[2];
-  Eigen::MatrixXf covmat = Eigen::MatrixXf::Zero(3,3);
+  Eigen::MatrixXd covmat = Eigen::MatrixXd::Zero(3,3);
 
   covmat(0,0) = 3;
   covmat(1,1) = 3;
   covmat(2,2) = 3;
   
-  Eigen::Vector3d center_ = (end_pt + start_pt)/2;
-  center << center_[0], center_[1], center_[2];
-  Eigen::Vector3f a(1,0,0);
-  Eigen::Vector3f b = center;
+  Eigen::Vector3d center = (end_pt + start_pt)/2;
+  Eigen::Vector3d a(1,0,0);
+  Eigen::Vector3d b = ccc;
 
-  Eigen::Matrix3f rotation_matrix = Eigen::Matrix3f::Identity(3,3);
+  Eigen::Matrix3d rotation_matrix = Eigen::Matrix3d::Identity(3,3);
   int ndims = covmat.rows();       
   int save_data_index = 0;
   X.use_whole_search_sapce = true;
   X.generate_search_sapce(covmat, rotation_matrix, center, max_samples);
 
-  Eigen::VectorXf start_pt_(3);
-  start_pt_ << start_pt[0], start_pt[1], start_pt[2];
+  PathNode start_pt_;
+  start_pt_.state << start_pt[0], start_pt[1], start_pt[2], 0, 0 ,0;
 
-  Eigen::VectorXf end_pt_(3);
-  end_pt_ << end_pt[0], end_pt[1], end_pt[2];
+  PathNode end_pt_;
+  end_pt_.state << end_pt[0], end_pt[1], end_pt[2], 0, 0, 0;
 
   path_rrt_ = rrtstart3d.rrt_planner_and_save(X, start_pt_, end_pt_, start_pt_, 0.5, 0.5, common_utils, 
   std::ref(planner_status), save_data_index);
 
-
   start_vel_ = start_v;
   start_acc_ = start_a;
-  std::cout<< "=======>>>" << start_pt << std::endl;
-  std::cout<< "====>>>=====" << end_pt << std::endl;
+  std::cout<< "=======>>>" << start_pt.transpose() << std::endl;
+  std::cout<< "====>>>=====" << end_pt.transpose() << std::endl;
   /* ---------- initialize ---------- */
   PathNodePtr cur_node = path_node_pool_[0];
   cur_node->parent = NULL;
@@ -118,9 +114,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
     // cout << "pos: " << cur_node->state.head(3).transpose() << endl;
     // cout << "time: " << cur_node->time << endl;
     // cout << "dist: " << edt_env_->evaluateCoarseEDT(cur_node->state.head(3), cur_node->time) << endl;
-
     /* ---------- determine termination ---------- */
-
     bool near_end = abs(cur_node->index(0) - end_index(0)) <= tolerance &&
                     abs(cur_node->index(1) - end_index(1)) <= tolerance &&
                     abs(cur_node->index(2) - end_index(2)) <= tolerance;
@@ -132,15 +126,12 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       terminate_node = cur_node;
       retrievePath(terminate_node);
       has_path_ = true;
-
       if (near_end)
       {
         cout << "[Kino Astar]: near end." << endl;
-
         /* one shot trajectory */
         estimateHeuristic(cur_node->state, end_state, time_to_goal);
         computeShotTraj(cur_node->state, end_state, time_to_goal);
-
         if (terminate_node->parent == NULL && !is_shot_succ_)
           return NO_PATH;
         else
