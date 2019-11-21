@@ -3,39 +3,21 @@
 namespace kamaz {
 namespace hagen {
 
-    std::vector<PathNode> RRTStar3D::rrt_planner(SearchSpace search_space
-                , PathNode start_pose, PathNode goal_pose
-                , PathNode start_position, double obstacle_fail_safe_distance
-                , double min_angle_allows_obs, CommonUtils& common_utils
-                , std::atomic_bool &is_allowed_to_run){
+    std::vector<PathNode> RRTStar3D::rrt_planner(RRTPlannerOptions planner_options
+                ,CommonUtils& common_utils
+                ,std::atomic_bool &is_allowed_to_run){
         
-        rrt_planner_options.search_space = search_space;
-        rrt_planner_options.x_init = start_pose;
-        rrt_planner_options.x_goal = goal_pose;
-        rrt_planner_options.start_position = start_position;
-        rrt_planner_options.obstacle_fail_safe_distance = obstacle_fail_safe_distance;
-        rrt_planner_options.min_angle_allows_obs = min_angle_allows_obs;
-        auto rrtstar = RRTStar(rrt_planner_options, _rewrite_count
+        auto rrtstar = RRTStar(planner_options, _rewrite_count
                                             , common_utils, is_allowed_to_run);
         return rrtstar.rrt_star();
     }
     
 
-    std::vector<PathNode> RRTStar3D::rrt_planner_and_save(SearchSpace search_space
-                , PathNode start_pose, PathNode goal_pose
-                , PathNode start_position, double obstacle_fail_safe_distance
-                , double min_angle_allows_obs, CommonUtils& common_utils
+    std::vector<PathNode> RRTStar3D::rrt_planner_and_save(RRTPlannerOptions planner_options
+                , CommonUtils& common_utils
                 , std::atomic_bool &is_allowed_to_run, int index){
         
-        rrt_planner_options.search_space = search_space;
-        rrt_planner_options.x_init = start_pose;
-        rrt_planner_options.x_goal = goal_pose;
-        rrt_planner_options.start_position = start_position;
-        rrt_planner_options.min_angle_allows_obs = min_angle_allows_obs;
-        rrt_planner_options.obstacle_fail_safe_distance = obstacle_fail_safe_distance;
-
-        auto rrtstar =  RRTStar(rrt_planner_options, _rewrite_count, common_utils
-                        , is_allowed_to_run);
+        auto rrtstar =  RRTStar(planner_options, _rewrite_count, common_utils, is_allowed_to_run);
         std::ofstream outfile;
         // std::cout<< " ========================4444444" << std::endl;
         // outfile.open("/dataset/rrt_old/time_stamps.txt", std::ios_base::app);
@@ -50,8 +32,8 @@ namespace hagen {
         // std::cout<< " ========================4444444" << std::endl;
         stotage_location = "/dataset/rrt_old/"+ std::to_string(index) + "_";
         save_edges(rrtstar.trees, stotage_location + "edges.npy");
-        save_obstacle(search_space.random_objects, stotage_location + "obstacles.npy");
-        save_poses(start_pose, goal_pose, stotage_location + "start_and_end_pose.npy");
+        save_obstacle(planner_options.search_space.random_objects, stotage_location + "obstacles.npy");
+        save_poses(planner_options.x_init, planner_options.x_goal, stotage_location + "start_and_end_pose.npy");
         if(path.size()>0){
             save_path(path, stotage_location + "rrt_star_path.npy");
         }
@@ -85,12 +67,7 @@ namespace hagen {
        cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
-    void RRTStar3D::rrt_init(std::vector<Eigen::Vector2d> _lengths_of_edges
-            , int max_samples, int _resolution, double _pro, int rewrite_count){
-        rrt_planner_options.lengths_of_edges = _lengths_of_edges;
-        rrt_planner_options.max_samples = max_samples;
-        rrt_planner_options.resolution = _resolution; 
-        rrt_planner_options.pro = _pro;
+    void RRTStar3D::rrt_init(int rewrite_count){
         _rewrite_count = rewrite_count;
     }
 

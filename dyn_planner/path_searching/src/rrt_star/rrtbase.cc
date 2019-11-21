@@ -5,7 +5,6 @@ namespace hagen {
 
     RRTBase::RRTBase(RRTPlannerOptions options, CommonUtils& common_util
     , std::atomic_bool &is_allowed_to_run): till_auto_mode(is_allowed_to_run){
-            
             X = options.search_space;
             Q = options.lengths_of_edges;
             sample_taken = 0;
@@ -19,6 +18,10 @@ namespace hagen {
             add_tree();
             _obstacle_fail_safe_distance = options.obstacle_fail_safe_distance;
             common_utils = common_util;
+            dynamic = options.dynamic;
+            search_init = options.init_search;
+            opt = options;
+            phi_ = Eigen::MatrixXd::Identity(6, 6);
     }
 
     void RRTBase::add_tree(){
@@ -99,12 +102,12 @@ namespace hagen {
         return new_and_near_vec;
     }
 
-   PathNode RRTBase::steer(PathNode start, PathNode goal, double distance){
-        Eigen::Vector3d ab = goal.state.head(3) - start.state.head(3);
+   PathNode RRTBase::steer(PathNode cur_node, PathNode goal, double distance){
+        Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);
         double ba_length = ab.norm();
         Eigen::Vector3d unit_vector = ab/ba_length;
         Eigen::Vector3d scaled_vector = unit_vector*distance;
-        Eigen::Vector3d steered_point = start.state.head(3) + scaled_vector.head(3);
+        Eigen::Vector3d steered_point = cur_node.state.head(3) + scaled_vector.head(3);
         int j = 0;
         for(int i=0; i<6; i+=2){
             if(steered_point[j] < X.dim_lengths[i]){
@@ -117,7 +120,121 @@ namespace hagen {
         }
         PathNode steer_point;
         steer_point.state<< steered_point[0], steered_point[1], steered_point[2], 0, 0, 0;
+        // return steer_point;
+
+        Eigen::Matrix<double, 6, 1> cur_state = cur_node.state;
+        // =============================================================================
+        Eigen::Matrix<double, 6, 1> pro_state;
+        Eigen::Vector3d um;
+        double pro_t;
+        std::vector<Eigen::Vector3d> inputs;
+        std::vector<double> durations;
+        auto ops = opt.kino_options;
+        if (search_init)
+        {
+            inputs.push_back(ops.start_acc_);
+            for (double tau = time_res_init * ops.init_max_tau;
+                     tau <=ops.init_max_tau; tau += time_res_init * ops.init_max_tau)
+                durations.push_back(tau);
+            }
+        else
+        {
+            for (double ax = -ops.max_acc; ax <= ops.max_acc + 1e-3; ax += ops.max_acc * res)
+                for (double ay = -ops.max_acc; ay <= ops.max_acc + 1e-3; ay += ops.max_acc * res)
+                    for (double az = -ops.max_acc; az <= ops.max_acc + 1e-3; az += ops.max_acc * res)
+                    {
+                        um << ax, ay, 0.5 * az;
+                        inputs.push_back(um);
+                    }
+            for (double tau = time_res * ops.max_tau; tau <= ops.max_tau; tau += time_res * ops.max_tau)
+                durations.push_back(tau);
+        }
+
+        for (int i = 0; i < inputs.size(); ++i){
+            for (int j = 0; j < durations.size(); ++j)
+            {
+                search_init = false;
+                um = inputs[i];
+                double tau = durations[j];
+                stateTransit(cur_state, pro_state, um, tau);
+                pro_t = cur_node.time + tau;
+
+                /* ---------- check if in free space ---------- */
+                /* inside map range */
+                if (pro_state(0) <= opt.origin_(0) || pro_state(0) >= opt.map_size_3d_(0) || pro_state(1) <= opt.origin_(1) ||
+                    pro_state(1) >= opt.map_size_3d_(1) || pro_state(2) <= opt.origin_(2) || pro_state(2) >= opt.map_size_3d_(2))
+                {
+                    // cout << "outside map" << endl;
+                    continue;
+                }
+
+                /* vel feasibe */
+                Eigen::Vector3d pro_v = pro_state.tail(3);
+                if (fabs(pro_v(0)) > ops.max_vel || fabs(pro_v(1)) > ops.max_vel || fabs(pro_v(2)) > ops.max_vel)
+                {
+                // cout << "vel infeasible" << endl;
+                    continue;
+                }
+
+                /* not in the same voxel */
+                double diff = (pro_state.head(3) - cur_node.state.head(3)).norm();
+                // int diff_time = pro_t_id - cur_node->time_idx;
+                if (diff <= 0.25)
+                {
+                    continue;
+                }
+
+                /* collision free */
+                Eigen::Vector3d pos;
+                Eigen::Matrix<double, 6, 1> xt;
+                bool is_occ = false;
+
+                for (int k = 1; k <= ops.check_num; ++k)
+                {
+                    double dt = tau * double(k) / double(ops.check_num);
+                    stateTransit(cur_state, xt, um, dt);
+                    pos = xt.head(3);
+                    if(!X.obstacle_free(pos, cur_node.time + dt)){
+                        is_occ = true;
+                        break;
+                    }
+                }
+
+                if (is_occ)
+                {
+                    // cout << "collision" << endl;
+                    continue;
+                }
+                
+                PathNode pro_node;
+                pro_node.state = pro_state;
+                pro_node.input = um;
+                pro_node.duration = tau;
+                pro_node.time = cur_node.time + tau;
+                // pro_node->index = pro_id;
+                // pro_node->f_score = tmp_f_score;
+                // pro_node->g_score = tmp_g_score;
+                // pro_node->parent = cur_node;
+                // pro_node->node_state = IN_OPEN_SET;
+                // if (dynamic)
+                // {
+                    // pro_node->time_idx = timeToIndex(pro_node->time);
+                // }
+            }
+        }
         return steer_point;
+    }
+
+    void RRTBase::stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
+                                    Eigen::Vector3d um, double tau)
+    {
+        for (int i = 0; i < 3; ++i)
+            phi_(i, i + 3) = tau;
+
+        Eigen::Matrix<double, 6, 1> integral;
+        integral.head(3) = 0.5 * pow(tau, 2) * um;
+        integral.tail(3) = tau * um;
+        state1 = phi_ * state0 + integral;
     }
 
     bool RRTBase::connect_to_point(int tree, PathNode x_a, PathNode x_b){

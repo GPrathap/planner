@@ -31,21 +31,15 @@ namespace hagen {
                RRTStar3D() = default;
                ~RRTStar3D() = default;
 
-               std::vector<PathNode> rrt_planner(SearchSpace search_space
-                , PathNode start_pose, PathNode goal_pose
-                , PathNode start_position, double obstacle_fail_safe_distance, double min_angle
+               std::vector<PathNode> rrt_planner(RRTPlannerOptions planner_options
                 , CommonUtils& common_utils
                 , std::atomic_bool &is_allowed_to_run);
                
-               std::vector<PathNode> rrt_planner_and_save(SearchSpace search_space
-                , PathNode start_pose, PathNode goal_pose
-                , PathNode start_position, double obstacle_fail_safe_distance, double min_angle
-                , CommonUtils& common_utils
+               std::vector<PathNode> rrt_planner_and_save(RRTPlannerOptions planner_options
+                ,CommonUtils& common_utils
                 , std::atomic_bool &is_allowed_to_run, int index);
 
-               void rrt_init(std::vector<Eigen::Vector2d> _lengths_of_edges
-                    , int max_samples, int _resolution, double _pro
-                    , int rewrite_count);
+               void rrt_init(int rewrite_count);
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);
                std::vector<SearchSpace::Rect> get_obstacles();
@@ -65,7 +59,6 @@ namespace hagen {
                int resolution; 
                double pro;
                int _rewrite_count;
-               RRTPlannerOptions rrt_planner_options;
                std::string stotage_location;
         };
     }

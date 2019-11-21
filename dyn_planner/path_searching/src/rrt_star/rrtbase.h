@@ -22,6 +22,23 @@
 
 namespace kamaz {
 namespace hagen {
+
+        struct RRTKinoDynamicsOptions{
+            double max_tau;
+            double init_max_tau;
+            double max_vel;
+            double max_acc;
+            double w_time;
+            double horizon;
+            double lambda_heu;
+            double time_resolution;
+            double margin;
+            int allocate_num;
+            int check_num;
+            Eigen::Vector3d start_vel_;
+            Eigen::Vector3d start_acc_;
+        };
+
         struct RRTPlannerOptions {
             SearchSpace search_space;
             int sample_taken;
@@ -37,6 +54,11 @@ namespace hagen {
             double obstacle_fail_safe_distance;
             double min_acceptable;
             double min_angle_allows_obs;
+            bool init_search;
+            bool dynamic;
+            Eigen::Vector3d origin_;
+            Eigen::Vector3d map_size_3d_;
+            RRTKinoDynamicsOptions kino_options;
         };
 
         template <typename C> struct Hasher{
@@ -81,11 +103,18 @@ namespace hagen {
                 double _obstacle_fail_safe_distance = 0.5f;
                 double min_acceptable = 0.01;
                 double min_angle_allows_obs = 5.0f;
+                bool dynamic = false;
+                bool search_init = false;
+                RRTPlannerOptions opt;
+                Eigen::Matrix<double, 6, 6> phi_; 
+                double res = 1 / 2.0, time_res = 1 / 1.0, time_res_init = 1 / 8.0;
                 std::unordered_map<std::array<double, 3>
                                     , PathNode, Hasher<std::array<double, 3>>> V_indices;
 
                 void add_tree();
                 void add_vertex(int tree, PathNode v);
+                void stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
+                                    Eigen::Vector3d um, double tau);
                 void add_edge(int tree, PathNode child, PathNode parent);
                 std::vector<Eigen::Vector3d> nearby_vertices(int tree, PathNode x
                                 , int max_neighbors);

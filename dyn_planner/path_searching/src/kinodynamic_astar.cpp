@@ -17,27 +17,17 @@ KinodynamicAstar::~KinodynamicAstar()
 int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
                              Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
- 
+  
   Eigen::VectorXd x_dimentions(6);
   x_dimentions << -10, 10, -10, 10, -10, 10;
-  std::atomic_bool planner_status;
-  planner_status = ATOMIC_VAR_INIT(true);
-  std::vector<Eigen::Vector2d> Q;
-  Eigen::Vector2d dim_in;
-  dim_in << 8, 4;
-  Q.push_back(dim_in);
-
-  int r = 1;
   int max_samples = 1000;
-  int rewrite_count = 32;
-  float proc = 0.1;
   float obstacle_width = 0.5;
   kamaz::hagen::SearchSpace X;
+  int rewrite_count = 32;
   X.init_search_space(x_dimentions, max_samples, obstacle_width, 0.0, 200, 0.2);
   X.setEnvironment(this->edt_env_);
   // X.update_obstacles_map(obstacles);
-  
-  rrtstart3d.rrt_init(Q, max_samples, r, proc, rewrite_count);
+  rrtstart3d.rrt_init(rewrite_count);
   
   Eigen::Vector3d ccc = (end_pt - start_pt).head(3);
   Eigen::MatrixXd covmat = Eigen::MatrixXd::Zero(3,3);
@@ -62,9 +52,54 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   kamaz::hagen::PathNode end_pt_;
   end_pt_.state << end_pt[0], end_pt[1], end_pt[2], 0, 0, 0;
 
-  path_rrt_ = rrtstart3d.rrt_planner_and_save(X, start_pt_, end_pt_, start_pt_, 0.5, 0.5
-  , common_utils, std::ref(planner_status), save_data_index);
+  kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
+  kamaz::hagen::RRTPlannerOptions rrt_planner_options;
 
+  kino_ops.init_max_tau = init_max_tau_;
+  kino_ops.max_vel = max_vel_;
+  kino_ops.max_acc = max_acc_;
+  kino_ops.w_time = w_time_;
+  kino_ops.horizon = horizon_;
+  kino_ops.lambda_heu = lambda_heu_;
+  kino_ops.time_resolution = time_resolution_;
+  kino_ops.margin = margin_;
+  kino_ops.allocate_num = allocate_num_;
+  kino_ops.check_num = check_num_;
+  kino_ops.start_vel_ = start_v;
+  kino_ops.start_acc_ = start_a;
+  kino_ops.max_tau = max_tau_;
+  
+  std::atomic_bool planner_status;
+  planner_status = ATOMIC_VAR_INIT(true);
+  std::vector<Eigen::Vector2d> Q;
+  Eigen::Vector2d dim_in;
+  dim_in << 8, 4;
+  Q.push_back(dim_in);
+  int r = 1;
+  float proc = 0.1;
+
+  start_vel_ = start_v;
+  start_acc_ = start_a;
+  
+  rrt_planner_options.search_space = X;
+  rrt_planner_options.x_init = start_pt_;
+  rrt_planner_options.x_goal = end_pt_;
+  rrt_planner_options.start_position = start_pt_;
+  rrt_planner_options.obstacle_fail_safe_distance = 0.5;
+  rrt_planner_options.min_angle_allows_obs = 0.5;
+  rrt_planner_options.init_search = true;
+  rrt_planner_options.dynamic = true;
+  rrt_planner_options.dynamic = true;
+  rrt_planner_options.kino_options = kino_ops;
+  rrt_planner_options.lengths_of_edges = Q;
+  rrt_planner_options.max_samples = max_samples;
+  rrt_planner_options.resolution = r; 
+  rrt_planner_options.pro = proc;
+  rrt_planner_options.origin_ = origin_;
+  rrt_planner_options.map_size_3d_ = map_size_3d_;
+
+  path_rrt_ = rrtstart3d.rrt_planner_and_save(rrt_planner_options, common_utils
+  , std::ref(planner_status), save_data_index);
 
   start_vel_ = start_v;
   start_acc_ = start_a;
