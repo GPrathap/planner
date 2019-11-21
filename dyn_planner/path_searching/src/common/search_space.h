@@ -26,6 +26,7 @@
 #include <boost/timer.hpp>
 #include <boost/foreach.hpp>
 #include "../utils/common_utils.h"
+#include "plan_env/edt_environment.h"
 #include <random>
 
 namespace kamaz {
@@ -84,11 +85,14 @@ namespace hagen {
                 void insert_trajectory(std::vector<Rect> trajectory);
                 void search_all_obstacles();
                 bool obstacle_free(Rect search_rect);
+                void setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env);
                 bool obstacle_free(Eigen::Vector3d search_rect);
+                bool obstacle_free(Eigen::Vector3d search_rect, double optimal_time);
                 Eigen::Vector3d sample_free();
                 Eigen::Vector3d sample();
                 std::vector<double> linspace(double start_in, double end_in, double step_size);
                 bool collision_free(Eigen::Vector3d start, Eigen::Vector3d end, int r);
+                bool collision_free(Eigen::Vector3d start, Eigen::Vector3d end, int r, double optimal_time);
                 void insert_obstacle(Eigen::Vector3d index);
                 std::vector<Eigen::Vector3d> nearest_obstacles(Eigen::Vector3d x
                                     , int max_neighbours);
@@ -124,7 +128,7 @@ namespace hagen {
                 Random_call* random_call;
                 bool use_whole_search_sapce = false;
                 double voxel_side_length = 0.1f;
-
+                dyn_planner::EDTEnvironment::Ptr edt_env_;
                 struct GeometryRTreeSearchCallback
                 {
                     GeometryRTreeSearchCallback(SearchSpace* search_space): parent(search_space){
@@ -149,6 +153,7 @@ namespace hagen {
                 int number_of_points_in_random_tank;
                 bool is_random_tank_is_ready = false;
                 int obstacle_counter = 0;
+                double min_distane = 0.5;
         };
     }
 }

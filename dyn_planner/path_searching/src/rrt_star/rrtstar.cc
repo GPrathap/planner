@@ -44,7 +44,7 @@ namespace hagen {
             auto x_near = std::get<1>(l_near);
             auto curr_cost = path_cost(x_init, x_near, tree);
             auto tent_cost = path_cost(x_init, x_new, tree) + segment_cost(x_new, x_near);
-            if((tent_cost < curr_cost) && (X.collision_free(x_near.state.head(3), x_new.state.head(3), r))){
+            if((tent_cost < curr_cost) && (X.collision_free(x_near.state.head(3), x_new.state.head(3), r, -1.0))){
                 // std::cout<< "========RRTStar::rewrite======"<< std::endl;
                 // std::cout<< x_near << std::endl;
                 // std::cout<< x_new << std::endl;

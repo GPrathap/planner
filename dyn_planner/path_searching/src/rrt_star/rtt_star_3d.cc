@@ -19,6 +19,7 @@ namespace hagen {
                                             , common_utils, is_allowed_to_run);
         return rrtstar.rrt_star();
     }
+    
 
     std::vector<PathNode> RRTStar3D::rrt_planner_and_save(SearchSpace search_space
                 , PathNode start_pose, PathNode goal_pose

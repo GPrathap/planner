@@ -4,12 +4,11 @@ namespace kamaz {
 namespace hagen {
     SearchSpace::SearchSpace(): geometry_rtree_callback(this) {
          random_points_tank = std::make_shared<Eigen::MatrixXd>();
-        
     }
 
     void SearchSpace::init_search_space(Eigen::VectorXd dimension_lengths
                 , int num_of_rand_points, double cube_size, double _avoidance_width
-                , int number_of_tries_at_time, double _voxel_side_length){
+                , int number_of_tries_at_time, double range){
         dim_lengths = dimension_lengths;
         cube_length = cube_size;
         std::uniform_real_distribution<> distribution_x(dimension_lengths[0], dimension_lengths[1]);
@@ -23,6 +22,11 @@ namespace hagen {
         random_call = new Random_call(std::chrono::system_clock::now().time_since_epoch().count(), num_of_rand_points);
         obstacle_counter = 0;
         avoidance_width = _avoidance_width;
+        min_distane = range;
+    }
+
+    void SearchSpace::setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env){
+        edt_env_ = env;
     }
 
     void SearchSpace::generate_random_objects(int num_of_objects){
@@ -329,6 +333,14 @@ namespace hagen {
         return sum > 0 ? false : true;
     }
 
+    bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
+       double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time); 
+       if(min_distane < dis){
+           return true;
+       }
+       return false;
+    }
+
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
         if(use_whole_search_sapce){
@@ -372,7 +384,7 @@ namespace hagen {
             }
             auto x = sample();
             // std::cout<< "sample--->" << x <<std::endl;
-            if(obstacle_free(x)){
+            if(obstacle_free(x, -1.0)){
                 std::cout<< "free sample--->" << x.transpose() <<std::endl;
                 number_of_attempts = 0;
                 return x;
@@ -397,12 +409,38 @@ namespace hagen {
             Eigen::Vector3d search_rect(3);
             search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
             // std::cout<<" collision_free  " << search_rect.transpose() << std::endl;
-            if(!obstacle_free(search_rect)){
+            if(!obstacle_free(search_rect, -1.0)){
                 return false;
             }
         }
         return true;
     }
+
+
+    bool SearchSpace::collision_free(Eigen::Vector3d start, Eigen::Vector3d end, int r, double optimal_time){
+        auto dist = (start - end).norm();
+        double resolution = std::ceil(dist/r);
+        std::vector<double> res_on_x = linspace(start[0], end[0], resolution);
+        std::vector<double> res_on_y = linspace(start[1], end[1], resolution);
+        std::vector<double> res_on_z = linspace(start[2], end[2], resolution);
+        // std::cout<< "===================:collision_free" << std::endl;
+        // std::cout<<  res_on_x.size() << " " << res_on_y.size() <<" "<< res_on_z.size() << std::endl;
+        int len = std::min({res_on_x.size(), res_on_y.size(), res_on_z.size()}
+        , [](const int s1, const int s2) -> bool{
+                return s1 < s2;
+        });
+        std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
+        for(int i=0; i<len; i++){
+            Eigen::Vector3d search_rect(3);
+            search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
+            // std::cout<<" collision_free  " << search_rect.transpose() << std::endl;
+            if(!obstacle_free(search_rect, optimal_time)){
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     std::vector<double> SearchSpace::linspace(double start_in, double end_in, double step_size)
     {

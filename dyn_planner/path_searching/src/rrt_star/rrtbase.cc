@@ -86,8 +86,8 @@ namespace hagen {
         // std::cout<<"RRTBase::new_and_near: x_nearest: " << x_nearest.transpose() << std::endl;
         // std::cout<<"RRTBase::new_and_near: x_new " << x_new.transpose() << std::endl;
         // printEdge(0);
-        auto g1 = trees[0].V.obstacle_free(x_new.state.head(3));
-        auto g2 = X.obstacle_free(x_new.state.head(3));
+        auto g1 = trees[0].V.obstacle_free(x_new.state.head(3), -1.0);
+        auto g2 = X.obstacle_free(x_new.state.head(3), -1.0);
         // std::cout<<"RRTBase::new_and_near: x_new g1 g2 " << g1 << "  "<< g2 << std::endl;
         if((!g1) && (!g2)){
             return new_and_near_vec;
@@ -123,8 +123,8 @@ namespace hagen {
     bool RRTBase::connect_to_point(int tree, PathNode x_a, PathNode x_b){
         // std::cout<< "RRTBase::connect_to_point: "<< x_b.transpose() << std::endl;
         // std::cout<< "RRTBase::connect_to_point: "<< x_a.transpose() << std::endl;
-        auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3));
-        auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r);
+        auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3), -1.0);
+        auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r, -1.0);
         // std::cout<< "RRTBase::connect_to_point: "<< g1 << " " << g2 << std::endl;
         if(( g1 == 1) && ( g2 == 1)){
             add_vertex(tree, x_b);
@@ -148,7 +148,7 @@ namespace hagen {
         if( f1 && f2){
             return true;
         }
-        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r)){
+        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, -1.0)){
             //  std::cout<< "RRTBase::can_connect_to_goal: collision_free true"<< std::endl;
             return true;
         }

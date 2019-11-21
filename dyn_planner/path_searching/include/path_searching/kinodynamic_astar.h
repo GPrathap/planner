@@ -114,7 +114,7 @@ private:
   NodeHashTable expanded_nodes_;
   std::priority_queue<PathNodePtr, std::vector<PathNodePtr>, NodeComparator> open_set_;
   std::vector<PathNodePtr> path_nodes_;
-  std::vector<Eigen::Vector3d> path_rrt_;
+  std::vector<kamaz::hagen::PathNode> path_rrt_;
   kamaz::hagen::RRTStar3D rrtstart3d;
   kamaz::hagen::CommonUtils common_utils;
 
@@ -122,7 +122,7 @@ private:
   Eigen::Vector3d start_vel_, end_vel_, start_acc_;
   Eigen::Matrix<double, 6, 6> phi_;  // state transit matrix
   // shared_ptr<SDFMap> sdf_map;
-  EDTEnvironment::Ptr edt_env_;
+  dyn_planner::EDTEnvironment::Ptr edt_env_;
   bool is_shot_succ_ = false;
   Eigen::MatrixXd coef_shot_;
   double t_shot_;

@@ -56,14 +56,15 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   X.use_whole_search_sapce = true;
   X.generate_search_sapce(covmat, rotation_matrix, center, max_samples);
 
-  PathNode start_pt_;
+  kamaz::hagen::PathNode start_pt_;
   start_pt_.state << start_pt[0], start_pt[1], start_pt[2], 0, 0 ,0;
 
-  PathNode end_pt_;
+  kamaz::hagen::PathNode end_pt_;
   end_pt_.state << end_pt[0], end_pt[1], end_pt[2], 0, 0, 0;
 
-  path_rrt_ = rrtstart3d.rrt_planner_and_save(X, start_pt_, end_pt_, start_pt_, 0.5, 0.5, common_utils, 
-  std::ref(planner_status), save_data_index);
+  path_rrt_ = rrtstart3d.rrt_planner_and_save(X, start_pt_, end_pt_, start_pt_, 0.5, 0.5
+  , common_utils, std::ref(planner_status), save_data_index);
+
 
   start_vel_ = start_v;
   start_acc_ = start_a;
@@ -192,7 +193,6 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
         pro_t = cur_node->time + tau;
 
         /* ---------- check if in free space ---------- */
-
         /* inside map range */
         if (pro_state(0) <= origin_(0) || pro_state(0) >= map_size_3d_(0) || pro_state(1) <= origin_(1) ||
             pro_state(1) >= map_size_3d_(1) || pro_state(2) <= origin_(2) || pro_state(2) >= map_size_3d_(2))
@@ -610,7 +610,11 @@ void KinodynamicAstar::reset()
 }
 
 std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t){
-  return path_rrt_;
+  std::vector<Eigen::Vector3d> state_list;
+  for(auto pose : path_rrt_){
+     state_list.push_back(pose.state.head(3));
+  }
+  return state_list;
 }
 
 std::vector<Eigen::Vector3d> KinodynamicAstar::getKinoTraj(double delta_t)
