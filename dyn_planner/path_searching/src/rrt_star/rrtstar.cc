@@ -13,15 +13,16 @@ namespace hagen {
     std::vector<std::tuple<double, PathNode>> RRTStar::get_nearby_vertices(int tree, PathNode x_init
                                             , PathNode x_new){
         auto X_near = nearby_vertices(tree, x_new, current_rewrite_count(tree));
-        std::cout<< "RRTStar::get_nearby_vertices" << X_near.size() << std::endl;
+        // std::cout<< "RRTStar::get_nearby_vertices" << X_near.size() << std::endl;
         std::vector<std::tuple<double, PathNode>> L_near;
         for(auto const x_near : X_near){
-            PathNode x_near_node;
-            x_near_node.state<< x_near[0], x_near[1], x_near[2], 0, 0, 0;
-            auto new_s = segment_cost(x_near_node, x_new);
-            auto cost = path_cost(x_init, x_near_node, tree) + new_s;
-            auto pose = x_near_node;
-            std::tuple<double, PathNode> a(cost, pose);
+            // PathNode x_near_node;
+            // //TODO add all info
+            // x_near_node.state.head(3)<< x_near[0], x_near[1], x_near[2];
+            auto new_s = segment_cost(x_near, x_new);
+            auto cost = path_cost(x_init, x_near, tree) + new_s;
+            // auto pose = x_near_node;
+            std::tuple<double, PathNode> a(cost, x_near);
             L_near.push_back(a);
         }
         std::sort(L_near.begin(), L_near.end(),
@@ -53,7 +54,8 @@ namespace hagen {
         }
     }
 
-    void RRTStar::connect_shortest_valid(int tree, PathNode x_new, std::vector<std::tuple<double, PathNode>> L_near){
+    void RRTStar::connect_shortest_valid(int tree, PathNode x_new, std::vector<std::tuple<double
+            , PathNode>> L_near){
         // std::cout<< "RRTStar::connect_shortest_valid : L_near size: "<< L_near.size() << std::endl;
         for (auto const l_near : L_near){
             auto c_near = std::get<0>(l_near);
@@ -69,30 +71,43 @@ namespace hagen {
     }
 
     std::vector<PathNode> RRTStar::rrt_star(){
+
+        // drone_dynamics.init(opt.kino_options.max_itter, opt.kino_options.dt);
+        // std::cout<< "-----211" << std::endl;
+        // x_init.control_input = drone_dynamics.uNominal;
+        // x_goal.control_input = Eigen::MatrixXd::Zero(4,1);
+
         add_vertex(0, x_init);
+        // std::cout<< "-----212" << std::endl;
         PathNode none_pose;
-        none_pose.state << -1, -1, -1, 0, 0, 0;
+        none_pose.state.head(3) << -1, -1, -1;
         add_edge(0, x_init, none_pose);
+        // std::cout<< "-----21" << std::endl;
         std::vector<PathNode> path;
         while(true){
             for(auto const q : Q){
                 for(int i=0; i<q[1]; i++){
+                //    std::cout<< "---------------------------1" << std::endl;
                    if(!till_auto_mode){
                         BOOST_LOG_TRIVIAL(warning) << FYEL("Since drone is moved into manuval mode, stop finding trajectory");
                         return path;   
                    }
+                //    std::cout<< "---------------------------2" << std::endl;
                    auto new_and_next = new_and_near(0, q);
-                //    std::cout<< "rstar loop...." << new_and_next.size() << std::endl;
+                   // std::cout<< "rstar loop...." << new_and_next.size() << std::endl;
                    if(new_and_next.size()==0){
                        continue;
                    }
+                //    std::cout<< "---------------------------3" << std::endl;
                    auto x_new = new_and_next[0];
                 //    std::cout<< "rstar loop.... x_new" << x_new.transpose() << std::endl;
                 //    if(check_none_vector(x_new)){
                 //        continue;
                 //    }
                 //    std::cout<< "rstar loop...." << std::endl;
+                // std::cout<< "---------------------------4" << std::endl;
                    auto l_near = get_nearby_vertices(0, x_init, x_new);
+                //    std::cout<< "---------------------------5" << std::endl;
                    connect_shortest_valid(0, x_new, l_near);
                    if (isEdge(x_new, 0)){
                        rewrite(0, x_new, l_near);

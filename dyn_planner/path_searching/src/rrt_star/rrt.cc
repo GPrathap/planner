@@ -10,7 +10,7 @@ namespace hagen {
     std::vector<PathNode> RRT::rrt_search(){
         add_vertex(0, x_init);
         PathNode none_pose;
-        none_pose.state << -1, -1, -1, 0, 0 , 0;
+        none_pose.state.head(3) << -1, -1, -1;
         add_edge(0, x_init, none_pose); //TODO need to handle this proper way setting null pointer
         std::vector<PathNode> path;
         while(true){

@@ -20,7 +20,13 @@ namespace hagen{
         }
   }
 
-  void CommonUtils::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat, 
+  Eigen::Matrix3d CommonUtils::skewSymmetric(Eigen::Vector3d vector){
+    Eigen::Matrix3d skew_mat = Eigen::Matrix3d::Zero();
+    skew_mat << 0, -vector[2], vector[1], vector[2], 0, -vector[0], -vector[1], vector[0], 0;
+    return skew_mat;
+  }
+
+  void CommonUtils::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat,
             Eigen::Vector3d cent, Eigen::MatrixXd& container){
 
         int ndims = container.cols();

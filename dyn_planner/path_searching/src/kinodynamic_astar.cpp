@@ -19,12 +19,13 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
 {
   
   Eigen::VectorXd x_dimentions(6);
-  x_dimentions << -10, 10, -10, 10, -10, 10;
+  x_dimentions << origin_[0], map_size_3d_[0], origin_[1], map_size_3d_[1], origin_[2], map_size_3d_[2];
+  std::cout<< "Map dimention " << x_dimentions << std::endl;
   int max_samples = 1000;
-  float obstacle_width = 0.5;
+  float avoidance_width = 0.5;
   kamaz::hagen::SearchSpace X;
   int rewrite_count = 32;
-  X.init_search_space(x_dimentions, max_samples, obstacle_width, 0.0, 200, 0.2);
+  X.init_search_space(x_dimentions, max_samples, avoidance_width, 200);
   X.setEnvironment(this->edt_env_);
   // X.update_obstacles_map(obstacles);
   rrtstart3d.rrt_init(rewrite_count);
@@ -43,20 +44,29 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   Eigen::Matrix3d rotation_matrix = Eigen::Matrix3d::Identity(3,3);
   int ndims = covmat.rows();       
   int save_data_index = 0;
-  X.use_whole_search_sapce = true;
+  X.use_whole_search_sapce = false;
   X.generate_search_sapce(covmat, rotation_matrix, center, max_samples);
 
   kamaz::hagen::PathNode start_pt_;
-  start_pt_.state << start_pt[0], start_pt[1], start_pt[2], 0, 0 ,0;
+  start_pt_.state.head(3) = start_pt;
+  start_pt_.state.tail(3) = start_v;
+  
+  if (dynamic)
+  {
+    start_pt_.time = time_start;
+    start_pt_.time_idx = timeToIndex(time_start);
+  }
 
   kamaz::hagen::PathNode end_pt_;
-  end_pt_.state << end_pt[0], end_pt[1], end_pt[2], 0, 0, 0;
+  end_pt_.state.head(3) = end_pt;
+  end_pt_.state.tail(3) = end_v;
 
   kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
   kamaz::hagen::RRTPlannerOptions rrt_planner_options;
 
   kino_ops.init_max_tau = init_max_tau_;
-  kino_ops.max_vel = max_vel_;
+  kino_ops.max_vel = 0.25;
+  kino_ops.max_fes_vel = 0.25;
   kino_ops.max_acc = max_acc_;
   kino_ops.w_time = w_time_;
   kino_ops.horizon = horizon_;
@@ -68,12 +78,17 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   kino_ops.start_vel_ = start_v;
   kino_ops.start_acc_ = start_a;
   kino_ops.max_tau = max_tau_;
+  kino_ops.dt = 0.05;
+  kino_ops.max_itter = 30;
+  kino_ops.ell = 20;
+  kino_ops.initdt = 0.05;
+  kino_ops.min_dis = 1.0;
   
   std::atomic_bool planner_status;
   planner_status = ATOMIC_VAR_INIT(true);
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
-  dim_in << 8, 4;
+  dim_in << 4, 8;
   Q.push_back(dim_in);
   int r = 1;
   float proc = 0.1;
@@ -88,7 +103,6 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.obstacle_fail_safe_distance = 0.5;
   rrt_planner_options.min_angle_allows_obs = 0.5;
   rrt_planner_options.init_search = true;
-  rrt_planner_options.dynamic = true;
   rrt_planner_options.dynamic = true;
   rrt_planner_options.kino_options = kino_ops;
   rrt_planner_options.lengths_of_edges = Q;
@@ -646,8 +660,29 @@ void KinodynamicAstar::reset()
 
 std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t){
   std::vector<Eigen::Vector3d> state_list;
-  for(auto pose : path_rrt_){
-     state_list.push_back(pose.state.head(3));
+  // for(auto pose : rrtstart3d.smoothed_path){
+  //    state_list.push_back(pose.state.head(3));
+  // }
+  if(rrtstart3d.smoothed_path.size()<2){
+    for(auto pose : rrtstart3d.smoothed_path){
+      state_list.push_back(pose.state.head(3));
+    }
+  }else{
+      Eigen::MatrixXd points(3, rrtstart3d.smoothed_path.size());
+      int row_index = 0;
+      for(auto const way_point : rrtstart3d.smoothed_path){
+          points.col(row_index) << way_point.state[0], way_point.state[1], way_point.state[2];
+          row_index++;
+      }
+      Spline3d spline = Eigen::SplineFitting<Spline3d>::Interpolate(points, 2);
+      float time_ = 0;
+      int _number_of_steps = rrtstart3d.smoothed_path.size() + 100;
+      for(int i=0; i<_number_of_steps; i++){
+          time_ += 1.0/(_number_of_steps*1.0);
+          Eigen::VectorXd values = spline(time_);
+          // std::cout<< values << std::endl;
+          state_list.push_back(values);
+      }
   }
   return state_list;
 }
@@ -696,6 +731,30 @@ std::vector<Eigen::Vector3d> KinodynamicAstar::getKinoTraj(double delta_t)
   }
 
   return state_list;
+}
+
+
+Eigen::MatrixXd KinodynamicAstar::getSamplesRRT(double& ts, int& K)
+{
+  /* ---------- final trajectory time ---------- */
+  int ki = rrtstart3d.smoothed_path.size();
+  Eigen::MatrixXd samples(3, ki+3);
+  Eigen::VectorXd sx(ki), sy(ki), sz(ki);
+  int sample_num = 0;
+  for(auto knok : rrtstart3d.smoothed_path){
+    sx(sample_num) = knok.state[0], sy(sample_num) = knok.state[1], sz(sample_num) = knok.state[2];
+    sample_num++;
+  }
+  K = ki;
+  ts = 0.25;
+  samples.block(0, 0, 1, ki) = sx.transpose();
+  samples.block(1, 0, 1, ki) = sy.transpose();
+  samples.block(2, 0, 1, ki) = sz.transpose();
+  samples.col(ki) = start_vel_;
+  samples.col(ki+1) = end_vel_;
+  //TODO try to fix this
+  samples.col(ki+2) << 0.02 , 0.02 , 0.03;
+  return samples;
 }
 
 Eigen::MatrixXd KinodynamicAstar::getSamples(double& ts, int& K)

@@ -37,7 +37,7 @@ class CommonUtils {
   void generate_samples_from_ellipsoid(Eigen::MatrixXd covmat
             , Eigen::Matrix3d rotation_mat, Eigen::Vector3d cent
             , Eigen::MatrixXd& container);
-  
+  Eigen::Matrix3d skewSymmetric(Eigen::Vector3d vector);
   void get_roration_matrix(Eigen::Vector3d a, Eigen::Vector3d b, Eigen::Matrix3d& r);
   
 };

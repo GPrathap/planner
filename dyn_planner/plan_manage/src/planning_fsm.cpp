@@ -366,10 +366,10 @@ bool PlanningFSM::planSearchOpt()
 
 
     /* visulization */
-    vector<Eigen::Vector3d> kino_path = path_finder_->getKinoTraj(0.02);
+    // vector<Eigen::Vector3d> kino_path = path_finder_->getKinoTraj(0.02);
     vector<Eigen::Vector3d> rrt_path = path_finder_->getRRTTraj(0.02);
 
-    visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
+    // visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
 
     visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, 1,1, 1), 3);
 

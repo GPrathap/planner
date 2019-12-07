@@ -23,6 +23,7 @@
 #include "../utils/common_utils.h"
 #include "rrtstar.h"
 #include "rrtbase.h"
+#include "../common/ExtendedLQR.h"
 
 namespace kamaz {
 namespace hagen {
@@ -40,6 +41,7 @@ namespace hagen {
                 , std::atomic_bool &is_allowed_to_run, int index);
 
                void rrt_init(int rewrite_count);
+               std::vector<PathNode> smoothed_path;
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);
                std::vector<SearchSpace::Rect> get_obstacles();
@@ -49,8 +51,22 @@ namespace hagen {
                void save_obstacle(std::vector<SearchSpace::Rect> obstacles, std::string file_name);
                void save_poses(PathNode start, PathNode end, std::string file_name);
                void save_path(std::vector<PathNode> path, std::string file_name);
+               void save_long_path(std::vector<PathNode> path, std::string file_name);
                void save_trajectory(std::vector<PathNode> trajectory_of_drone);
                double get_distance(std::vector<PathNode> trajectory_);
+               Eigen::VectorXd proceding_position(Eigen::VectorXd start_position, Eigen::VectorXd end_position
+                , double distance);
+               Eigen::VectorXd next_position(Eigen::VectorXd start_position, Eigen::VectorXd end_position
+                , double distance);
+               void apply_dynamics_smoothing(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
+                                                            , std::vector<PathNode>& smoothed_path);
+               void get_smoothed_waypoints(std::vector<PathNode> path
+                                                    , std::vector<PathNode>& smoothed_path);
+               std::vector<Eigen::Vector3d> next_poses(Eigen::VectorXd start_position, Eigen::VectorXd end_position
+                        , double distance);
+
+               void add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
+                                                            , std::vector<PathNode>& smoothed_path);
 
 
             private:
@@ -60,6 +76,8 @@ namespace hagen {
                double pro;
                int _rewrite_count;
                std::string stotage_location;
+               RRTPlannerOptions planner_opts;
+              
         };
     }
 }

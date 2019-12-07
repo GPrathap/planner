@@ -21,20 +21,24 @@ namespace hagen {
         struct PathNode
         {
             public:
-            /* -------------------- */
-            Eigen::Vector3d index;
-            Eigen::Matrix<double, 6, 1> state;
-            double g_score, f_score;
-            Eigen::Vector3d input;
-            double duration;
-            double time;  
-            int time_idx;
-            char node_state;
-            PathNode()
-            {
-                node_state = 0;
-            }
-            ~PathNode(){};
+                Eigen::Vector3d index;
+                Eigen::Matrix<double, 13, 1> state;
+                // Eigen::Matrix<double, 13, 1> state;
+                Eigen::VectorXd control_input;
+                std::vector<Eigen::MatrixXd> state_seq;
+                std::vector<Eigen::Matrix<double, 4, 1>> input_seq;
+                double duration;
+                double time;
+                int time_idx;
+                char node_state;
+                bool is_valid = true;
+                PathNode()
+                {
+                    node_state = 0;
+                    control_input = Eigen::MatrixXd::Zero(4, 1);
+                    // state = Eigen::MatrixXd::Zero(13, 1);
+                }
+                ~PathNode(){};
         };
         typedef PathNode* PathNodePtr;
         class Tree {

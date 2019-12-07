@@ -15,6 +15,8 @@
 #include "../../src/common/search_space.h"
 #include "../../src/utils/common_utils.h"
 #include <queue>
+#include <Eigen/Core>
+#include <unsupported/Eigen/Splines>
 
 namespace dyn_planner
 {
@@ -105,6 +107,7 @@ public:
   }
 };
 
+typedef Eigen::Spline<double, 3> Spline3d;
 class KinodynamicAstar
 {
 private:
@@ -184,6 +187,7 @@ public:
   std::vector<Eigen::Vector3d> getKinoTraj(double delta_t);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t);
   Eigen::MatrixXd getSamples(double& ts, int& K);
+  Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
 
   typedef shared_ptr<KinodynamicAstar> Ptr;

@@ -78,8 +78,8 @@ namespace hagen {
                 };
 
                 void init_search_space(Eigen::VectorXd dimension_lengths
-                        , int number_of_rand_points, double cube_size, double avoidance_width
-                        , int number_of_tries_at_time, double voxel_side_length);
+                        , int number_of_rand_points, double avoidance_width
+                        , int number_of_tries_at_time);
                 void generate_random_objects(int num_of_objects);
                 void insert_obstacles(std::vector<Rect> obstacles);
                 void insert_trajectory(std::vector<Rect> trajectory);
@@ -99,11 +99,8 @@ namespace hagen {
                 std::vector<Eigen::Vector3d> 
                         nearest_point_on_trajectory(Eigen::Vector3d x
                         , int max_neighbours);
-                
                 void generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat
                 , Eigen::Vector3d cent);
-
-
                 void generate_search_sapce(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat
                         , Eigen::Vector3d cent, int npts);
                 std::vector<double> arange(double start, double stop, double step);
@@ -122,8 +119,6 @@ namespace hagen {
                 Eigen::VectorXd dim_lengths;
                 std::vector<uint64_t> res;
                 std::shared_ptr<Eigen::MatrixXd> random_points_tank;
-                double cube_length = 2;
-                double avoidance_width = 1.5;
                 int number_of_rand_points;
                 Random_call* random_call;
                 bool use_whole_search_sapce = false;
@@ -153,7 +148,7 @@ namespace hagen {
                 int number_of_points_in_random_tank;
                 bool is_random_tank_is_ready = false;
                 int obstacle_counter = 0;
-                double min_distane = 0.5;
+                double avoidance_width = 0.5;
         };
     }
 }

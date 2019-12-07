@@ -17,6 +17,7 @@
 #include "../common/search_space.h"
 #include "../utils/common_utils.h"
 #include "tree.h"
+#include "../common/dynamics.h"
 #include <unordered_map>
 #include <stddef.h>
 
@@ -27,8 +28,11 @@ namespace hagen {
             double max_tau;
             double init_max_tau;
             double max_vel;
+            double max_fes_vel;
             double max_acc;
             double w_time;
+            double dt;
+            size_t max_itter;
             double horizon;
             double lambda_heu;
             double time_resolution;
@@ -37,6 +41,9 @@ namespace hagen {
             int check_num;
             Eigen::Vector3d start_vel_;
             Eigen::Vector3d start_acc_;
+            int ell;
+            double initdt;
+            double min_dis;
         };
 
         struct RRTPlannerOptions {
@@ -86,6 +93,7 @@ namespace hagen {
 
                 SearchSpace X;
                 CommonUtils common_utils;
+                Dynamics drone_dynamics;
                 int sample_taken;
                 int max_samples;
                 std::vector<Eigen::Vector2d> Q;
@@ -106,17 +114,20 @@ namespace hagen {
                 bool dynamic = false;
                 bool search_init = false;
                 RRTPlannerOptions opt;
-                Eigen::Matrix<double, 6, 6> phi_; 
+                Eigen::Matrix<double, 6, 6> phi_;
                 double res = 1 / 2.0, time_res = 1 / 1.0, time_res_init = 1 / 8.0;
                 std::unordered_map<std::array<double, 3>
                                     , PathNode, Hasher<std::array<double, 3>>> V_indices;
 
                 void add_tree();
                 void add_vertex(int tree, PathNode v);
+                bool set_seq(PathNode parent, std::vector<Eigen::MatrixXd> state_sveq);
+                std::vector<Eigen::MatrixXd> get_seq(PathNode parent);
+                PathNode get_vertex(Eigen::Vector3d v);
                 void stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
                                     Eigen::Vector3d um, double tau);
                 void add_edge(int tree, PathNode child, PathNode parent);
-                std::vector<Eigen::Vector3d> nearby_vertices(int tree, PathNode x
+                std::vector<PathNode> nearby_vertices(int tree, PathNode x
                                 , int max_neighbors);
                 std::vector<Eigen::Vector3d> nearby_waypoints(int tree, PathNode x
                                 , int max_neighbors);
@@ -140,6 +151,9 @@ namespace hagen {
                 double cost_to_go(PathNode a, PathNode b);
                 double path_cost(PathNode a, PathNode b, int tree);
                 double segment_cost(PathNode a, PathNode b);
+                double get_cost_of_path(std::vector<PathNode> path1);
+                void apply_dynamics(PathNode cur_node, PathNode goal, double distance
+                                                                                , std::vector<Eigen::MatrixXd>& xHit);
         };
     }
 }

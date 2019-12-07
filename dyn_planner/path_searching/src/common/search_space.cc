@@ -7,10 +7,9 @@ namespace hagen {
     }
 
     void SearchSpace::init_search_space(Eigen::VectorXd dimension_lengths
-                , int num_of_rand_points, double cube_size, double _avoidance_width
-                , int number_of_tries_at_time, double range){
+                , int num_of_rand_points, double _avoidance_width
+                , int number_of_tries_at_time){
         dim_lengths = dimension_lengths;
-        cube_length = cube_size;
         std::uniform_real_distribution<> distribution_x(dimension_lengths[0], dimension_lengths[1]);
         std::uniform_real_distribution<> distribution_y(dimension_lengths[2], dimension_lengths[3]);
         std::uniform_real_distribution<> distribution_z(dimension_lengths[4], dimension_lengths[5]);
@@ -22,7 +21,6 @@ namespace hagen {
         random_call = new Random_call(std::chrono::system_clock::now().time_since_epoch().count(), num_of_rand_points);
         obstacle_counter = 0;
         avoidance_width = _avoidance_width;
-        min_distane = range;
     }
 
     void SearchSpace::setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env){
@@ -317,7 +315,7 @@ namespace hagen {
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect){
         box_t search_box(
         point_t(search_rect[0], search_rect[1], search_rect[2]),
-        point_t(search_rect[0]+cube_length, search_rect[1]+cube_length, search_rect[2]+cube_length));
+        point_t(search_rect[0]+avoidance_width, search_rect[1]+avoidance_width, search_rect[2]+avoidance_width));
         size_t sum = 0;
         // boost::timer t;
         res.clear();
@@ -335,7 +333,7 @@ namespace hagen {
 
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
        double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time); 
-       if(min_distane < dis){
+       if(avoidance_width < dis){
            return true;
        }
        return false;
@@ -385,7 +383,7 @@ namespace hagen {
             auto x = sample();
             // std::cout<< "sample--->" << x <<std::endl;
             if(obstacle_free(x, -1.0)){
-                std::cout<< "free sample--->" << x.transpose() <<std::endl;
+                // std::cout<< "free sample--->" << x.transpose() <<std::endl;
                 number_of_attempts = 0;
                 return x;
             }
@@ -404,7 +402,7 @@ namespace hagen {
         , [](const int s1, const int s2) -> bool{
                 return s1 < s2;
         });
-        std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
+        // std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
         for(int i=0; i<len; i++){
             Eigen::Vector3d search_rect(3);
             search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
@@ -429,7 +427,7 @@ namespace hagen {
         , [](const int s1, const int s2) -> bool{
                 return s1 < s2;
         });
-        std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
+        // std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
         for(int i=0; i<len; i++){
             Eigen::Vector3d search_rect(3);
             search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
