@@ -339,6 +339,11 @@ namespace hagen {
        return false;
     }
 
+    double SearchSpace::get_free_space(Eigen::Vector3d search_rect, double optimal_time){
+       double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time); 
+       return dis;
+    }
+
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
         if(use_whole_search_sapce){

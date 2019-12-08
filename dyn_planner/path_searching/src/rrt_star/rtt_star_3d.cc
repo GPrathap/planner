@@ -11,6 +11,18 @@ namespace hagen {
                                             , common_utils, is_allowed_to_run);
         return rrtstar.rrt_star();
     }
+    
+    void RRTStar3D::rrt_generate_paths(RRTPlannerOptions planner_options, CommonUtils& common_utils
+                            , std::atomic_bool &is_allowed_to_run, int index, int number_of_tries){
+        smoothed_paths.clear();
+        for(int i=0; i< number_of_tries; i++){
+            rrt_planner_and_save(planner_options, common_utils, is_allowed_to_run, index);
+            if(smoothed_path.size()>1){
+                smoothed_paths.push_back(smoothed_path);
+            }   
+        }
+    }
+        
 
     std::vector<PathNode> RRTStar3D::rrt_planner_and_save(RRTPlannerOptions planner_options
                 , CommonUtils& common_utils
@@ -25,6 +37,10 @@ namespace hagen {
         // const clock_t begin_time = clock();
         // std::cout<< "========================" << std::endl;
         auto path = rrtstar.rrt_star();
+        if(path.size()<2){
+            std::cout<< "Path can not be found" << std::endl;
+            return path;
+        }
         smoothed_path.clear();
         get_smoothed_waypoints(path, smoothed_path);
         // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
@@ -33,16 +49,16 @@ namespace hagen {
         // }
         std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
         stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
-        save_edges(rrtstar.trees, stotage_location + "edges.npy");
-        save_obstacle(planner_options.search_space.random_objects, stotage_location + "obstacles.npy");
-        save_poses(planner_options.x_init, planner_options.x_goal, stotage_location + "start_and_end_pose.npy");
-        if(path.size()>0){
-
-            std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-            save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-            save_path(path, stotage_location + "rrt_star_path.npy");
-            // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        }
+        // save_edges(rrtstar.trees, stotage_location + "edges.npy");
+        // save_obstacle(planner_options.search_space.random_objects, stotage_location + "obstacles.npy");
+        // save_poses(planner_options.x_init, planner_options.x_goal, stotage_location + "start_and_end_pose.npy");
+        // if(path.size()>0){
+        //     std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
+        //     save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        //     save_path(path, stotage_location + "rrt_star_path.npy");
+        //     // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        // }
+        // smoothed_path = path;
         return path;
     }
 
@@ -126,11 +142,11 @@ namespace hagen {
                                                             , std::vector<PathNode>& smoothed_path){
         auto opts = planner_opts.kino_options;
         auto search_space = planner_opts.search_space;
-        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, 0.5);
+        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, 0.2);
         loto::hagen::ExtendedLQR extendedLQR;
         for(auto pose : poses){
             std::vector<Eigen::Vector3d> obs_poses;
-            search_space.get_free_space(pose, obs_poses, 10);
+            search_space.get_free_space(pose, 10);
             for(auto obs : obs_poses){
                 loto::hagen::Obstacle obs_pose;
                 obs_pose.pos[0] = obs[0];

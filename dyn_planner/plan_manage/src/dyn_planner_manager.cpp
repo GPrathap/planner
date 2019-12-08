@@ -134,23 +134,23 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   Eigen::MatrixXd vel_acc;
 
   Eigen::MatrixXd samples = path_finder_->getSamples(ts, K);
-  Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
+  // Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
   cout << "ts: " << ts << endl;
   cout << "sample:\n" << samples.transpose() << endl;
-  cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
+  // cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
 
   t2 = ros::Time::now();
   t_sample = (t2 - t1).toSec();
 
   t1 = ros::Time::now();
 
-  // Eigen::MatrixXd control_pts;
-  // NonUniformBspline::getControlPointEqu3(samples, ts, control_pts);
-  // NonUniformBspline init = NonUniformBspline(control_pts, 3, ts);
+  Eigen::MatrixXd control_pts;
+  NonUniformBspline::getControlPointEqu3(samples, ts, control_pts);
+  NonUniformBspline init = NonUniformBspline(control_pts, 3, ts);
 
-  Eigen::MatrixXd control_pts_rrt;
-  NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
-  NonUniformBspline init_rrt = NonUniformBspline(control_pts_rrt, 3, ts);
+  // Eigen::MatrixXd control_pts_rrt;
+  // NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
+  // NonUniformBspline init_rrt = NonUniformBspline(control_pts_rrt, 3, ts);
 
   t2 = ros::Time::now();
   t_axb = (t2 - t1).toSec();
@@ -160,19 +160,22 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- optimize trajectory ---------- */
   t1 = ros::Time::now();
 
-  // cout << "ctrl pts:" << control_pts << endl;
-  cout << "ctrl pts rrt:" << control_pts_rrt << endl;
+  cout << "ctrl pts:" << control_pts << endl;
+  // cout << "ctrl pts rrt:" << control_pts_rrt << endl;
 
-  bspline_optimizer_->setControlPoints(control_pts_rrt);
-  bspline_optimizer_->setBSplineInterval(ts_rrt);
+  // bspline_optimizer_->setControlPoints(control_pts_rrt);
+  // bspline_optimizer_->setBSplineInterval(ts_rrt);
+
+  bspline_optimizer_->setControlPoints(control_pts);
+  bspline_optimizer_->setBSplineInterval(ts);
 
   if (status != KinodynamicAstar::REACH_END)
     bspline_optimizer_->optimize(BsplineOptimizer::SOFT_CONSTRAINT, dynamic_, time_start_);
   else
     bspline_optimizer_->optimize(BsplineOptimizer::HARD_CONSTRAINT, dynamic_, time_start_);
 
-  // control_pts = bspline_optimizer_->getControlPoints();
-  control_pts_rrt = bspline_optimizer_->getControlPoints();
+  control_pts = bspline_optimizer_->getControlPoints();
+  // control_pts_rrt = bspline_optimizer_->getControlPoints();
 
   t2 = ros::Time::now();
   t_opt = (t2 - t1).toSec();
@@ -180,8 +183,8 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- time adjustment ---------- */
 
   t1 = ros::Time::now();
-  // NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
-  NonUniformBspline pos = NonUniformBspline(control_pts_rrt, 3, ts);
+  NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
+  // NonUniformBspline pos = NonUniformBspline(control_pts_rrt, 3, ts);
 
   double tm, tmp, to, tn;
   pos.getTimeSpan(tm, tmp);

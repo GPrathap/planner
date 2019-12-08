@@ -186,6 +186,7 @@ public:
   void setEnvironment(const EDTEnvironment::Ptr& env);
   std::vector<Eigen::Vector3d> getKinoTraj(double delta_t);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t);
+  std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);
   Eigen::MatrixXd getSamples(double& ts, int& K);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();

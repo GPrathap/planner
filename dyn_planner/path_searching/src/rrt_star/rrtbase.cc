@@ -230,8 +230,8 @@ namespace hagen {
         // steer_point.input_seq = xHit;
         // bool is_set = set_seq(cur_node, xHit);
         // std::cout<< "state sequence is set for " << cur_node.state.head(3).transpose() << " " << cur_node.state_seq.size() << std::endl;
-        auto g1 = trees[0].V.obstacle_free(steer_point.state.head(3));
-        auto g2 = X.obstacle_free(steer_point.state.head(3));
+        auto g1 = trees[0].V.obstacle_free(steer_point.state.head(3), -1);
+        auto g2 = X.obstacle_free(steer_point.state.head(3), -1);
         // std::cout<<"RRTBase::steer: current " <<  cur_node.state.transpose() << std::endl;
         // std::cout<<"RRTBase::steer: xHit " <<  xHit.size() << std::endl;
         // std::cout<<"RRTBase::steer: steered " <<  steered_point.transpose() << std::endl;
@@ -256,8 +256,8 @@ namespace hagen {
     bool RRTBase::connect_to_point(int tree, PathNode x_a, PathNode x_b){
         // std::cout<< "RRTBase::connect_to_point: "<< x_b.transpose() << std::endl;
         // std::cout<< "RRTBase::connect_to_point: "<< x_a.transpose() << std::endl;
-        auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3));
-        auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r);
+        auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3), -1);
+        auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r, -1);
         // std::cout<< "RRTBase::connect_to_point: "<< g1 << " " << g2 << std::endl;
         if(( g1 == 1) && ( g2 == 1)){
             add_vertex(tree, x_b);

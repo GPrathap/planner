@@ -44,7 +44,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   Eigen::Matrix3d rotation_matrix = Eigen::Matrix3d::Identity(3,3);
   int ndims = covmat.rows();       
   int save_data_index = 0;
-  X.use_whole_search_sapce = false;
+  X.use_whole_search_sapce = true;
   X.generate_search_sapce(covmat, rotation_matrix, center, max_samples);
 
   kamaz::hagen::PathNode start_pt_;
@@ -112,8 +112,8 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.origin_ = origin_;
   rrt_planner_options.map_size_3d_ = map_size_3d_;
 
-  path_rrt_ = rrtstart3d.rrt_planner_and_save(rrt_planner_options, common_utils
-  , std::ref(planner_status), save_data_index);
+  rrtstart3d.rrt_generate_paths(rrt_planner_options, common_utils
+  , std::ref(planner_status), save_data_index, 3);
 
   start_vel_ = start_v;
   start_acc_ = start_a;
@@ -658,12 +658,21 @@ void KinodynamicAstar::reset()
   is_shot_succ_ = false;
 }
 
+std::vector<std::vector<Eigen::Vector3d>> KinodynamicAstar::getRRTTrajS(double delta_t){
+  std::vector<std::vector<Eigen::Vector3d>> path_list;
+  for(auto path_i : rrtstart3d.smoothed_paths){
+    rrtstart3d.smoothed_path = path_i;
+    path_list.push_back(getRRTTraj(0));
+  }
+  return path_list;
+}
+
 std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t){
   std::vector<Eigen::Vector3d> state_list;
   // for(auto pose : rrtstart3d.smoothed_path){
   //    state_list.push_back(pose.state.head(3));
   // }
-  if(rrtstart3d.smoothed_path.size()<2){
+  if(rrtstart3d.smoothed_path.size()<3){
     for(auto pose : rrtstart3d.smoothed_path){
       state_list.push_back(pose.state.head(3));
     }
@@ -739,6 +748,9 @@ Eigen::MatrixXd KinodynamicAstar::getSamplesRRT(double& ts, int& K)
   /* ---------- final trajectory time ---------- */
   int ki = rrtstart3d.smoothed_path.size();
   Eigen::MatrixXd samples(3, ki+3);
+  if(ki<2){
+    return samples;
+  }
   Eigen::VectorXd sx(ki), sy(ki), sz(ki);
   int sample_num = 0;
   for(auto knok : rrtstart3d.smoothed_path){

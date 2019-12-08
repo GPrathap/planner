@@ -42,6 +42,7 @@ namespace hagen {
 
                void rrt_init(int rewrite_count);
                std::vector<PathNode> smoothed_path;
+               std::vector<std::vector<PathNode>> smoothed_paths;
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);
                std::vector<SearchSpace::Rect> get_obstacles();
@@ -68,6 +69,8 @@ namespace hagen {
                void add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
                                                             , std::vector<PathNode>& smoothed_path);
 
+               void rrt_generate_paths(RRTPlannerOptions planner_options, CommonUtils& common_utils
+                            , std::atomic_bool &is_allowed_to_run, int index, int number_of_tries);
 
             private:
                std::vector<Eigen::Vector2d> lengths_of_edges;

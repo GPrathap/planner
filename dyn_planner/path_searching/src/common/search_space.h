@@ -111,6 +111,7 @@ namespace hagen {
                                 , int max_neighbours);
                 double get_free_space(Eigen::Vector3d pose, std::vector<Eigen::Vector3d>& obs_poses
                                                     , int num_of_obs);
+                double get_free_space(Eigen::Vector3d search_rect, double optimal_time);
                 double get_free_space(Eigen::Vector3d pose);
                 void insert_vertex(Eigen::Vector3d index);
                 std::vector<Eigen::Vector3d> nearest_veties(Eigen::Vector3d x, int max_neighbours);
