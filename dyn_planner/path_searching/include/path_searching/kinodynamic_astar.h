@@ -13,6 +13,7 @@
 #include <boost/functional/hash.hpp>
 #include "../../src/rrt_star/rrt_star_3d.h"
 #include "../../src/common/search_space.h"
+// #include "../../src/common/trajectory_planning.h"
 #include "../../src/utils/common_utils.h"
 #include <queue>
 #include <Eigen/Core>
@@ -191,6 +192,7 @@ public:
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
   kamaz::hagen::RRTStar3D rrtstart3d;
+ 
   typedef shared_ptr<KinodynamicAstar> Ptr;
 };
 

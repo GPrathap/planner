@@ -365,8 +365,8 @@ bool PlanningFSM::planSearchOpt()
     bspline_pub_.publish(bspline);
 
     /* visulization */
-    vector<Eigen::Vector3d> kino_path = path_finder_->getKinoTraj(0.02);
-    visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
+    // vector<Eigen::Vector3d> kino_path = path_finder_->getKinoTraj(0.02);
+    // visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
     
     vector<vector<Eigen::Vector3d>> rrt_paths = path_finder_->getRRTTrajS(0.02);
     int ids = 2;
