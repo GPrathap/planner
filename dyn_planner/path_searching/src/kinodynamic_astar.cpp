@@ -899,7 +899,6 @@ void KinodynamicAstar::stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::
   Eigen::Matrix<double, 6, 1> integral;
   integral.head(3) = 0.5 * pow(tau, 2) * um;
   integral.tail(3) = tau * um;
-
   state1 = phi_ * state0 + integral;
 }
 

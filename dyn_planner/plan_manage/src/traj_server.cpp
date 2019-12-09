@@ -194,6 +194,10 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.acceleration.y = acc(1);
   cmd.acceleration.z = acc(2);
 
+  cmd.acceleration.x = 0;
+  cmd.acceleration.y = 0;
+  cmd.acceleration.z = 0;
+
   pos_cmd_pub.publish(cmd);
 
   drawState(pos, vel, 0, Eigen::Vector4d(0, 1, 0, 1));
