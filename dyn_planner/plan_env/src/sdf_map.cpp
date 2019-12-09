@@ -114,6 +114,13 @@ int SDFMap::getOccupancy(Eigen::Vector3d pos)
   return occupancy_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
 }
 
+std::vector<Eigen::Vector3d> SDFMap::getMapCurrentRange(){
+  std::vector<Eigen::Vector3d> current_ranges;
+  current_ranges.push_back(min_range_);
+  current_ranges.push_back(max_range_);
+  return current_ranges;
+}
+
 int SDFMap::getOccupancy(Eigen::Vector3i id)
 {
   if (id(0) < 0 || id(0) >= grid_size_(0) || id(1) < 0 || id(1) >= grid_size_(1) || id(2) < 0 || id(2) >= grid_size_(2))

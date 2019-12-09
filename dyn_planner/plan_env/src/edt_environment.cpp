@@ -13,6 +13,10 @@ void EDTEnvironment::setMap(shared_ptr<SDFMap> map)
   resolution_inv_ = 1 / sdf_map_->getResolution();
 }
 
+std::vector<Eigen::Vector3d> EDTEnvironment::getMapCurrentRange(){
+    return this->sdf_map_->getMapCurrentRange(); 
+}
+
 void EDTEnvironment::evaluateEDTWithGrad(const Eigen::Vector3d& pos, const double& time, double& dist,
                                          Eigen::Vector3d& grad)
 {

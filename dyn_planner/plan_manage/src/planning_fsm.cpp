@@ -370,15 +370,14 @@ bool PlanningFSM::planSearchOpt()
     
     vector<vector<Eigen::Vector3d>> rrt_paths = path_finder_->getRRTTrajS(0.02);
     int ids = 2;
-    srand(time(NULL));
-    for(auto rrt_path : rrt_paths){
-      double r1 = ((double) rand() / (RAND_MAX));
-      double r2 = ((double) rand() / (RAND_MAX));
-      visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, r1 ,r2, 1), ids);
-      ids++;
-    }
-    
-
+    // srand(time(NULL));
+    // for(auto rrt_path : rrt_paths){
+    //   double r1 = ((double) rand() / (RAND_MAX));
+    //   double r2 = ((double) rand() / (RAND_MAX));
+    //   visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, r1 ,r2, 1), ids);
+    //   ids++;
+    // }
+    visualization_->drawPath(rrt_paths[path_finder_->rrtstart3d.index_of_loweres_cost], 0.1, Eigen::Vector4d(0, 0.5 ,0.5, 1), ids);
     visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));
     return true;

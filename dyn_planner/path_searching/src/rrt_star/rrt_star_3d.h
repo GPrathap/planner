@@ -43,6 +43,10 @@ namespace hagen {
                void rrt_init(int rewrite_count);
                std::vector<PathNode> smoothed_path;
                std::vector<std::vector<PathNode>> smoothed_paths;
+               std::vector<double> path_costs;
+               double lowerst_cost = 1000000;
+               int index_of_loweres_cost = 0;
+
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);
                std::vector<SearchSpace::Rect> get_obstacles();

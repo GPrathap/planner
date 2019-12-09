@@ -15,10 +15,19 @@ namespace hagen {
     void RRTStar3D::rrt_generate_paths(RRTPlannerOptions planner_options, CommonUtils& common_utils
                             , std::atomic_bool &is_allowed_to_run, int index, int number_of_tries){
         smoothed_paths.clear();
+        int counter=0;
         for(int i=0; i< number_of_tries; i++){
+            // planner_options.max_samples
             rrt_planner_and_save(planner_options, common_utils, is_allowed_to_run, index);
             if(smoothed_path.size()>1){
                 smoothed_paths.push_back(smoothed_path);
+                auto cost = get_distance(smoothed_path);
+                path_costs.push_back(cost);
+                if(lowerst_cost> cost){
+                    lowerst_cost = cost;
+                    index_of_loweres_cost = counter;
+                }
+                counter++;
             }   
         }
     }

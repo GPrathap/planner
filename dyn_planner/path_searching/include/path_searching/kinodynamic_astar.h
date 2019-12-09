@@ -118,7 +118,7 @@ private:
   std::priority_queue<PathNodePtr, std::vector<PathNodePtr>, NodeComparator> open_set_;
   std::vector<PathNodePtr> path_nodes_;
   std::vector<kamaz::hagen::PathNode> path_rrt_;
-  kamaz::hagen::RRTStar3D rrtstart3d;
+  
   kamaz::hagen::CommonUtils common_utils;
 
   /* ---------- record data ---------- */
@@ -190,7 +190,7 @@ public:
   Eigen::MatrixXd getSamples(double& ts, int& K);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
-
+  kamaz::hagen::RRTStar3D rrtstart3d;
   typedef shared_ptr<KinodynamicAstar> Ptr;
 };
 

@@ -30,7 +30,7 @@ private:
   Eigen::Vector3i grid_size_;              // map range in index
   Eigen::Vector3i min_vec_, max_vec_;      // the min and max updated range, unit is 1
 
-  bool isInMap(Eigen::Vector3d pos);
+  
   void posToIndex(Eigen::Vector3d pos, Eigen::Vector3i& id);
   void indexToPos(Eigen::Vector3i id, Eigen::Vector3d& pos);
 
@@ -68,6 +68,8 @@ public:
   ~SDFMap() {}
   void init(ros::NodeHandle& nh);
 
+  std::vector<Eigen::Vector3d> getMapCurrentRange();
+  bool isInMap(Eigen::Vector3d pos);
   /* get state */
   bool odomValid() { return have_odom_; }
   bool mapValid() { return map_valid_; }

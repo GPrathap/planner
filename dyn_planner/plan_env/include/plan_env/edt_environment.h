@@ -40,7 +40,7 @@ public:
   bool mapValid() { return sdf_map_->mapValid(); }
   nav_msgs::Odometry getOdom() { return sdf_map_->getOdom(); }
   void getMapRegion(Eigen::Vector3d& ori, Eigen::Vector3d& size) { sdf_map_->getRegion(ori, size); }
-
+  std::vector<Eigen::Vector3d> getMapCurrentRange();
   typedef shared_ptr<EDTEnvironment> Ptr;
 };
 

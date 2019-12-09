@@ -19,8 +19,12 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
 {
   
   Eigen::VectorXd x_dimentions(6);
-  x_dimentions << origin_[0], map_size_3d_[0], origin_[1], map_size_3d_[1], origin_[2], map_size_3d_[2];
+  std::vector<Eigen::Vector3d> curr_range = this->edt_env_->getMapCurrentRange();
+  std::cout<< "x_dimentions:size " << curr_range.size() << std::endl;
+  // x_dimentions << origin_[0], map_size_3d_[0], origin_[1], map_size_3d_[1], origin_[2], map_size_3d_[2];
+  x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
   std::cout<< "Map dimention " << x_dimentions << std::endl;
+  
   int max_samples = 1000;
   float avoidance_width = 0.5;
   kamaz::hagen::SearchSpace X;
