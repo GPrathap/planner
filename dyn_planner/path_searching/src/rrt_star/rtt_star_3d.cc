@@ -19,17 +19,19 @@ namespace hagen {
         for(int i=0; i< number_of_tries; i++){
             // planner_options.max_samples
             rrt_planner_and_save(planner_options, common_utils, is_allowed_to_run, index);
-            if(smoothed_path.size()>1){
+            if(smoothed_path.size()>3){
                 smoothed_paths.push_back(smoothed_path);
                 auto cost = get_distance(smoothed_path);
                 path_costs.push_back(cost);
-                if(lowerst_cost> cost){
+                std::cout<< "cost: " << cost << " lowerest cost: " << lowerst_cost << std::endl;
+                if(lowerst_cost > cost){
                     lowerst_cost = cost;
                     index_of_loweres_cost = counter;
                 }
                 counter++;
             }   
         }
+        std::cout<< "Selected path: "<< index_of_loweres_cost << std::endl;
     }
         
 
@@ -45,12 +47,14 @@ namespace hagen {
         // std::cout<< "========================" << std::endl;
         // const clock_t begin_time = clock();
         // std::cout<< "========================" << std::endl;
+        BOOST_LOG_TRIVIAL(info) << FCYN("Start finding a path...");
         auto path = rrtstar.rrt_star();
+        smoothed_path.clear();
         if(path.size()<2){
             std::cout<< "Path can not be found" << std::endl;
             return path;
         }
-        smoothed_path.clear();
+        
         get_smoothed_waypoints(path, smoothed_path);
         // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
         // if(path.size()>1){

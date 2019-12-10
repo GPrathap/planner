@@ -37,7 +37,7 @@ namespace hagen {
                 TrajectoryPlanning(double speed = 2);
                 ~TrajectoryPlanning() = default;
 
-                bool generate_ts(std::vector<Eigen::VectorXd> path);
+                bool generate_ts(Eigen::MatrixXd path);
                 void traj_opt7();
                 void save_status(std::vector<std::vector<Eigen::VectorXd>>
                         , std::string file_name);

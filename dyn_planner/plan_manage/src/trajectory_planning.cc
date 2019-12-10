@@ -1,4 +1,4 @@
-#include "trajectory_planning.h"
+#include <plan_manage/trajectory_planning.h>
 
 namespace kamaz {
 namespace hagen {
@@ -8,18 +8,23 @@ namespace hagen {
         is_set = false;
     }
 
-    bool TrajectoryPlanning::generate_ts(std::vector<Eigen::VectorXd> path){
-        int size_of_the_path = path.size();
-        if(path.size()<1){
+    bool TrajectoryPlanning::generate_ts(Eigen::MatrixXd path){
+        int size_of_the_path = path.cols()-3;
+
+        if(size_of_the_path < 1){
             return false;
         } 
-        int vector_dim = path[0].size();
-        way_points = Eigen::MatrixXd::Zero(size_of_the_path, vector_dim); 
-        int row_index = 0;
-        for(auto way_point : path){
-            way_points.row(row_index) = way_point;
-            row_index++;
-        }
+        int vector_dim = path.rows();
+        // way_points = Eigen::MatrixXd::Zero(size_of_the_path, vector_dim); 
+        // way_points = path.transpose().block(1, 0, size_of_the_path-1, vector_dim)
+        std::cout<< "-======2 " << std::endl;
+        way_points = path.block(0, 0, vector_dim, size_of_the_path).transpose();
+        std::cout<< "-======3 " << std::endl;
+        // int row_index = 0;
+        // for(auto way_point : path){
+        //     way_points.row(row_index) = way_point;
+        //     row_index++;
+        // }
         Eigen::MatrixXd dis = (way_points.block(1, 0, size_of_the_path-1, vector_dim).array() 
                 - way_points.block(0, 0, size_of_the_path-1, vector_dim).array()).pow(2).rowwise().sum().sqrt();
         double path_len = dis.sum();
@@ -68,6 +73,7 @@ namespace hagen {
     void TrajectoryPlanning::get_desired_state(double time, std::vector<Eigen::VectorXd>& states){
         
         if(time >= total_time){
+            std::cout<< "Out of total count..." << total_time << std::endl;
             Eigen::MatrixXd point  = way_points.block(way_points.rows()-1, 0, 1, 3);
             Eigen::VectorXd pos = Eigen::Map<Eigen::RowVectorXd>(point.data(), 3);
             states.push_back(pos);
@@ -457,7 +463,34 @@ namespace hagen {
     }
 
     
+//   TrajectoryPlanning trajectory_planning;
 
+// //   trajectory_planning.generate_target_trajectory(path, "/dataset/result/9/path1.csv");
+//   int size_of_the_path = path.size();
+//   trajectory_planning.generate_ts(path);
+
+//   for (auto time_stamp : trajectory_planning.time_segs){
+//     std::cout<< "---" << time_stamp << std::endl;
+//   }
+
+//   std::cout<< "Total time: " << trajectory_planning.total_time << std::endl;
+//   trajectory_planning.traj_opt7();
+
+//   double cstep = 0.05;
+//   double time = 0.0;
+//   double tstep = 0.01;
+
+//   int max_iter = (int) (trajectory_planning.total_time / cstep); 
+//   std::cout<< "===============max_iter============"<< max_iter << std::endl;
+  
+//   std::vector<std::vector<Eigen::VectorXd>> paths_points;
+//   for (int iter =1; iter < max_iter; iter++){
+//     std::vector<Eigen::VectorXd> desired_state;
+//     trajectory_planning.get_desired_state(time+cstep, desired_state);
+//     paths_points.push_back(desired_state);
+//     std::cout<< "==>: "<<  desired_state[0] << std::endl;
+//     time = time + cstep;
+//   }
 
 
 }

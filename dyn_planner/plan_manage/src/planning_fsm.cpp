@@ -53,7 +53,7 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   planner_manager_->setParam(nh);
   planner_manager_->setPathFinder0(path_finder0_);
   planner_manager_->setPathFinder(path_finder_);
-  planner_manager_->setOptimizer(bspline_optimizer_);
+  // planner_manager_->setOptimizer(bspline_optimizer_);
   planner_manager_->setEnvironment(edt_env_);
 
   visualization_.reset(new PlanningVisualization(nh));
@@ -180,6 +180,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       }
       else
       {
+        //TODO fix this place
         // have_goal_ = false;
         // changeExecState(WAIT_GOAL, "FSM");
         changeExecState(GEN_NEW_TRAJ, "FSM");
@@ -198,6 +199,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       /* && (end_pt_ - pos).norm() < 0.5 */
       if (t_cur > planner_manager_->traj_duration_ - 1e-2)
       {
+        cout << "-------- planner_manager_->traj_duration_ "<< planner_manager_->traj_duration_ << endl;
         have_goal_ = false;
         changeExecState(WAIT_GOAL, "FSM");
         return;
@@ -225,9 +227,9 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       double t_cur = (time_now - planner_manager_->time_traj_start_).toSec();
       start_pt_ = planner_manager_->traj_pos_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
       start_vel_ = planner_manager_->traj_vel_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
-      start_acc_ = planner_manager_->traj_acc_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
-      // cout << "t_cur: " << t_cur << endl;
-      // cout << "start pt: " << start_pt_.transpose() << endl;
+      start_acc_.setZero();
+      cout << "t_cur: " << t_cur << endl;
+      cout << "start pt: " << start_pt_.transpose() << endl;
 
       /* inform server */
       std_msgs::Empty replan_msg;
@@ -298,12 +300,10 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
         end_pt_ = goal;
         have_goal_ = true;
         end_vel_.setZero();
-
         if (exec_state_ == EXEC_TRAJ)
         {
           changeExecState(REPLAN_TRAJ, "SAFETY");
         }
-
         visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
       }
       else
@@ -324,7 +324,6 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
   if (exec_state_ == EXEC_STATE::EXEC_TRAJ)
   {
     bool safe = planner_manager_->checkTrajCollision();
-
     if (!safe)
     {
       // cout << "current traj in collision." << endl;
@@ -369,17 +368,22 @@ bool PlanningFSM::planSearchOpt()
     // visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
     
     vector<vector<Eigen::Vector3d>> rrt_paths = path_finder_->getRRTTrajS(0.02);
-    int ids = 2;
-    // srand(time(NULL));
-    // for(auto rrt_path : rrt_paths){
-    //   double r1 = ((double) rand() / (RAND_MAX));
-    //   double r2 = ((double) rand() / (RAND_MAX));
-    //   visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, r1 ,r2, 1), ids);
-    //   ids++;
-    // }
-    visualization_->drawPath(rrt_paths[path_finder_->rrtstart3d.index_of_loweres_cost], 0.1, Eigen::Vector4d(0, 0.5 ,0.5, 1), ids);
-    visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
+    int ids = 8;
+    srand(time(NULL));
+    for(auto rrt_path : rrt_paths){
+      double r1 = ((double) rand() / (RAND_MAX));
+      double r2 = ((double) rand() / (RAND_MAX));
+      visualization_->drawPath(rrt_path, 0.1, Eigen::Vector4d(0, r1 ,r2, 1), ids);
+      ids++;
+    }
+    if(rrt_paths.size()>0){
+        // visualization_->drawPath(rrt_paths[path_finder_->rrtstart3d.index_of_loweres_cost], 0.1, Eigen::Vector4d(0.2, 1 ,0.5, 1), ids);
+        std::cout << "size of desired path...:"<< planner_manager_->desired_poses.size() << std::endl;
+        visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
+        visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));
+    }
+    
     return true;
   }
   else

@@ -4,9 +4,10 @@
 #include <ros/ros.h>
 #include <path_searching/astar.h>
 #include <path_searching/kinodynamic_astar.h>
-#include <bspline_opt/bspline_optimizer.h>
+// #include <bspline_opt/bspline_optimizer.h>
 #include <bspline_opt/non_uniform_bspline.h>
 #include <plan_env/edt_environment.h>
+#include "trajectory_planning.h"
 
 
 namespace dyn_planner
@@ -23,7 +24,7 @@ private:
 
   KinodynamicAstar::Ptr path_finder_;
 
-  BsplineOptimizer::Ptr bspline_optimizer_;
+  // BsplineOptimizer::Ptr bspline_optimizer_;
 
   double time_sample_;
   double max_vel_;
@@ -49,7 +50,9 @@ public:
   ros::Time time_traj_start_;
   Eigen::Vector3d pos_traj_start_;
   NonUniformBspline traj_pos_, traj_vel_, traj_acc_;
-
+  // kamaz::hagen::TrajectoryPlanning trajectory_planner;
+  std::vector<Eigen::Vector3d> desired_poses;
+  std::vector<Eigen::Vector3d> desired_velocities;
   /* guided optimization */
   NonUniformBspline traj_init_;
   vector<vector<Eigen::Vector3d>> guide_paths_;
@@ -69,7 +72,7 @@ public:
   void setParam(ros::NodeHandle& nh);
   void setPathFinder0(const Astar::Ptr& finder);
   void setPathFinder(const KinodynamicAstar::Ptr& finder);
-  void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
+  // void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
   void setEnvironment(const EDTEnvironment::Ptr& env);
 
   bool checkTrajCollision();
@@ -78,7 +81,7 @@ public:
   void getSolvingTime(double& ts, double& to, double& ta);
   void getCostCurve(vector<double>& cost, vector<double>& time)
   {
-    bspline_optimizer_->getCostCurve(cost, time);
+    // bspline_optimizer_->getCostCurve(cost, time);
   }
 
   typedef shared_ptr<DynPlannerManager> Ptr;

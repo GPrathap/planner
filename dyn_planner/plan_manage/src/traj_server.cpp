@@ -190,9 +190,9 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.velocity.y = vel(1);
   cmd.velocity.z = vel(2);
 
-  cmd.acceleration.x = acc(0);
-  cmd.acceleration.y = acc(1);
-  cmd.acceleration.z = acc(2);
+  // cmd.acceleration.x = acc(0);
+  // cmd.acceleration.y = acc(1);
+  // cmd.acceleration.z = acc(2);
 
   cmd.acceleration.x = 0;
   cmd.acceleration.y = 0;

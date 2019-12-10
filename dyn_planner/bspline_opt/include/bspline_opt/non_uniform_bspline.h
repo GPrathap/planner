@@ -46,15 +46,15 @@ public:
 
   static void getControlPointEqu3(Eigen::MatrixXd samples, double ts, Eigen::MatrixXd& control_pts);
   static void BsplineParameterize(const double& ts, const vector<Eigen::Vector3d>& point_set,
-                                  const vector<Eigen::Vector3d>& start_end_derivative, Eigen::MatrixXd& ctrl_pts);
-
-  /* check feasibility, reallocate time and recompute first 3 ctrl pts */
+                  const vector<Eigen::Vector3d>& start_end_derivative, Eigen::MatrixXd& ctrl_pts);
+  
+  /*check feasibility, reallocate time and recompute first 3 ctrl pts*/
   bool checkFeasibility(bool show = false);
   bool reallocateTime(bool show = false);
   bool adjustTime(bool show = false);
   void recomputeInit();
 
-  /* for evaluation */
+  /*for evaluation*/
   double getTimeSum();
   double getLength();
   double getJerk();

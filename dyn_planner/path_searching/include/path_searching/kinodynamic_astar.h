@@ -153,17 +153,6 @@ private:
   /* helper */
   Eigen::Vector3i posToIndex(Eigen::Vector3d pt);
   int timeToIndex(double time);
-  void retrievePath(PathNodePtr end_node);
-
-  /* shot trajectory */
-  vector<double> cubic(double a, double b, double c, double d);
-  vector<double> quartic(double a, double b, double c, double d, double e);
-  bool computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2, double time_to_goal);
-  double estimateHeuristic(Eigen::VectorXd x1, Eigen::VectorXd x2, double& optimal_time);
-
-  /* state propagation */
-  void stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
-                    Eigen::Vector3d um, double tau);
 
 public:
   KinodynamicAstar(){};
@@ -185,10 +174,8 @@ public:
              double time_start = -1.0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
-  std::vector<Eigen::Vector3d> getKinoTraj(double delta_t);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t);
   std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);
-  Eigen::MatrixXd getSamples(double& ts, int& K);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
   kamaz::hagen::RRTStar3D rrtstart3d;

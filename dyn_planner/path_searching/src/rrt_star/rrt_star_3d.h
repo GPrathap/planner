@@ -45,7 +45,7 @@ namespace hagen {
                std::vector<std::vector<PathNode>> smoothed_paths;
                std::vector<double> path_costs;
                double lowerst_cost = 1000000;
-               int index_of_loweres_cost = 0;
+               int index_of_loweres_cost = -1;
 
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);

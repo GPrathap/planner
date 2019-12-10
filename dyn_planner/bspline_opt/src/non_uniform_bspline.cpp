@@ -36,9 +36,10 @@ NonUniformBspline::NonUniformBspline(Eigen::MatrixXd points, int order, double i
   }
 
   // show the result
-  // cout << "p_: " << p_ << "  n: " << n << "  m: " << m << endl;
+  // cout << "p_: " << p_ << endl;
   // cout << "control pts:\n" << control_points_ << "\nknots:\n" <<
-  // this->u_.transpose() << endl; cout << "M3:\n" << M[0] << "\nM4:\n" << M[1]
+  // this->u_.transpose() << endl; 
+  // cout << "M3:\n" << M[0] << "\nM4:\n" << M[1]
   // << "\nM5:\n" << M[2] << endl;
 
   if (zero)
@@ -534,7 +535,7 @@ void NonUniformBspline::getControlPointEqu3(Eigen::MatrixXd samples, double ts, 
     bz(i) = samples(2, i);
   }
 
-  // solve Ax = b
+  // // solve Ax = b
   Eigen::VectorXd px = A.colPivHouseholderQr().solve(bx);
   Eigen::VectorXd py = A.colPivHouseholderQr().solve(by);
   Eigen::VectorXd pz = A.colPivHouseholderQr().solve(bz);

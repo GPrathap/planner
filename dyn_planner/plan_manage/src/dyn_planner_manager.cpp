@@ -27,10 +27,10 @@ void DynPlannerManager::setPathFinder(const KinodynamicAstar::Ptr& finder)
   path_finder_ = finder;
 }
 
-void DynPlannerManager::setOptimizer(const BsplineOptimizer::Ptr& optimizer)
-{
-  bspline_optimizer_ = optimizer;
-}
+// void DynPlannerManager::setOptimizer(const BsplineOptimizer::Ptr& optimizer)
+// {
+//   bspline_optimizer_ = optimizer;
+// }
 
 void DynPlannerManager::setEnvironment(const EDTEnvironment::Ptr& env)
 {
@@ -63,7 +63,6 @@ void DynPlannerManager::retrieveTrajectory()
   traj_pos_.getTimeSpan(t_start_, t_end_);
   pos_traj_start_ = traj_pos_.evaluateDeBoor(t_start_);
   traj_duration_ = t_end_ - t_start_;
-
   traj_id_ += 1;
 }
 
@@ -131,7 +130,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   int K;
   double ts = time_sample_ / max_vel_;
   int K_rrt;
-  double ts_rrt = 0.25;
+  double ts_rrt = 0.1;
   Eigen::MatrixXd vel_acc;
 
   // Eigen::MatrixXd samples = path_finder_->getSamples(ts, K);
@@ -139,6 +138,29 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   cout << "ts: " << ts << endl;
   // cout << "sample:\n" << samples.transpose() << endl;
   cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
+  
+  kamaz::hagen::TrajectoryPlanning trajectory_planner1;
+  trajectory_planner1.generate_ts(samples_rrt);
+  std::cout<< "Total time: " << trajectory_planner1.total_time << std::endl;
+  trajectory_planner1.traj_opt7();
+
+  double cstep = 0.05;
+  double time_ = 0.0;
+  double tstep = 0.01;
+
+  int max_iter = (int) (trajectory_planner1.total_time / cstep); 
+  std::cout<< "===============max_iter============"<< max_iter << std::endl;
+  desired_poses.clear();
+  desired_velocities.clear();
+  for (int iter =1; iter < max_iter; iter++){
+    std::vector<Eigen::VectorXd> desired_state;
+    // std::cout<< "=======2" << std::endl;
+    trajectory_planner1.get_desired_state(time_+cstep, desired_state);
+    // desired_states.push_back(desired_state);
+    desired_poses.push_back(desired_state[0]);
+    desired_velocities.push_back(desired_state[1]);
+    time_ = time_ + cstep;
+  }
 
   t2 = ros::Time::now();
   t_sample = (t2 - t1).toSec();
@@ -162,7 +184,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   t1 = ros::Time::now();
 
   // cout << "ctrl pts:" << control_pts << endl;
-  cout << "ctrl pts rrt:" << control_pts_rrt << endl;
+  // cout << "ctrl pts rrt:" << control_pts_rrt << endl;
 
   // bspline_optimizer_->setControlPoints(control_pts_rrt);
   // bspline_optimizer_->setBSplineInterval(ts_rrt);

@@ -53,6 +53,7 @@ add_executable(dyn_planner_node
   src/dyn_planner_node.cpp 
   src/planning_fsm.cpp
   src/dyn_planner_manager.cpp
+  src/trajectory_planning.cc
   )
 target_link_libraries(dyn_planner_node 
   ${catkin_LIBRARIES}
