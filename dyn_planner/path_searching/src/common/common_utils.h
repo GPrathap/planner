@@ -31,7 +31,7 @@ namespace kamaz {
   namespace hagen{
 class CommonUtils {
  public:
-  
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CommonUtils() = default;
   ~CommonUtils() = default;
   void generate_samples_from_ellipsoid(Eigen::MatrixXd covmat

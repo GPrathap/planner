@@ -29,24 +29,15 @@ namespace kamaz {
 namespace hagen {
         class RRTStar3D {
             public:
+               EIGEN_MAKE_ALIGNED_OPERATOR_NEW
                RRTStar3D() = default;
                ~RRTStar3D() = default;
 
-               std::vector<PathNode> rrt_planner(RRTPlannerOptions planner_options
-                , CommonUtils& common_utils
-                , std::atomic_bool &is_allowed_to_run);
-               
-               std::vector<PathNode> rrt_planner_and_save(RRTPlannerOptions planner_options
-                ,CommonUtils& common_utils
-                , std::atomic_bool &is_allowed_to_run, int index);
+               std::vector<PathNode> rrt_planner(std::atomic_bool &is_allowed_to_run);
+               std::vector<PathNode> rrt_planner_and_save();
 
-               void rrt_init(int rewrite_count);
-               std::vector<PathNode> smoothed_path;
-               std::vector<std::vector<PathNode>> smoothed_paths;
-               std::vector<double> path_costs;
-               double lowerst_cost = 1000000;
-               int index_of_loweres_cost = -1;
-
+               void rrt_init(int rewrite_count, RRTPlannerOptions planner_options
+                ,CommonUtils& common_utils, int index);
                     
                Eigen::Vector3d get_search_space_dim(Eigen::Vector3d dim);
                std::vector<SearchSpace::Rect> get_obstacles();
@@ -73,9 +64,6 @@ namespace hagen {
                void add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
                                                             , std::vector<PathNode>& smoothed_path);
 
-               void rrt_generate_paths(RRTPlannerOptions planner_options, CommonUtils& common_utils
-                            , std::atomic_bool &is_allowed_to_run, int index, int number_of_tries);
-
             private:
                std::vector<Eigen::Vector2d> lengths_of_edges;
                int _max_samples;
@@ -84,7 +72,8 @@ namespace hagen {
                int _rewrite_count;
                std::string stotage_location;
                RRTPlannerOptions planner_opts;
-              
+               CommonUtils common_utils;
+               int index;
         };
     }
 }

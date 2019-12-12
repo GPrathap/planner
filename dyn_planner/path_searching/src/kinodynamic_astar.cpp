@@ -14,99 +14,71 @@ KinodynamicAstar::~KinodynamicAstar()
   }
 }
 
+void KinodynamicAstar::push_job(kamaz::hagen::RRTStar3D* worker) {
+        ptask_t task = boost::make_shared<task_t>(boost::bind(&kamaz::hagen::RRTStar3D::rrt_planner_and_save
+                    , worker));
+        boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
+        pending_data.push_back(fut);
+        // std::cout<< "Thread has been sumitted..." << std::endl;
+        io_service.post(boost::bind(&task_t::operator(), task));
+}
+
 int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
                              Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
   
-  Eigen::VectorXd x_dimentions(6);
   std::vector<Eigen::Vector3d> curr_range = this->edt_env_->getMapCurrentRange();
   std::cout<< "x_dimentions:size " << curr_range.size() << std::endl;
-  // x_dimentions << origin_[0], map_size_3d_[0], origin_[1], map_size_3d_[1], origin_[2], map_size_3d_[2];
-  x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
-  std::cout<< "Map dimention " << x_dimentions << std::endl;
-  
-  int max_samples = 1000;
-  float avoidance_width = 0.6;
-  kamaz::hagen::SearchSpace X;
-  int rewrite_count = 32;
-  X.init_search_space(x_dimentions, max_samples, avoidance_width, 200);
-  X.setEnvironment(this->edt_env_);
-  // X.update_obstacles_map(obstacles);
-  rrtstart3d.rrt_init(rewrite_count);
-  
-  Eigen::Vector3d ccc = (end_pt - start_pt).head(3);
-  Eigen::MatrixXd covmat = Eigen::MatrixXd::Zero(3,3);
-
-  covmat(0,0) = 3;
-  covmat(1,1) = 3;
-  covmat(2,2) = 3;
-  
-  Eigen::Vector3d center = (end_pt + start_pt)/2;
-  Eigen::Vector3d a(1,0,0);
-  Eigen::Vector3d b = ccc;
-
-  Eigen::Matrix3d rotation_matrix = Eigen::Matrix3d::Identity(3,3);
-  int ndims = covmat.rows();       
-  int save_data_index = 0;
-  X.use_whole_search_sapce = true;
-  X.generate_search_sapce(covmat, rotation_matrix, center, max_samples);
 
   kamaz::hagen::PathNode start_pt_;
   start_pt_.state.head(3) = start_pt;
   start_pt_.state.tail(3) = start_v;
   
-  if (dynamic)
-  {
-    start_pt_.time = time_start;
-    start_pt_.time_idx = timeToIndex(time_start);
-  }
-
   kamaz::hagen::PathNode end_pt_;
   end_pt_.state.head(3) = end_pt;
   end_pt_.state.tail(3) = end_v;
 
-  kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
-  kamaz::hagen::RRTPlannerOptions rrt_planner_options;
+  kamaz::hagen::CommonUtils common_utils;
 
-  kino_ops.init_max_tau = init_max_tau_;
+  kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
+  kino_ops.init_max_tau = 0.5;
+  kino_ops.w_time = 0.5;
+  kino_ops.horizon = 1;
+  kino_ops.lambda_heu = 1;
+  kino_ops.time_resolution = 1;
+  kino_ops.margin = 1;
+  kino_ops.allocate_num = 1;
+  kino_ops.check_num = 1;
   kino_ops.max_vel = 0.25;
   kino_ops.max_fes_vel = 0.25;
-  kino_ops.max_acc = max_acc_;
-  kino_ops.w_time = w_time_;
-  kino_ops.horizon = horizon_;
-  kino_ops.lambda_heu = lambda_heu_;
-  kino_ops.time_resolution = time_resolution_;
-  kino_ops.margin = margin_;
-  kino_ops.allocate_num = allocate_num_;
-  kino_ops.check_num = check_num_;
-  kino_ops.start_vel_ = start_v;
-  kino_ops.start_acc_ = start_a;
-  kino_ops.max_tau = max_tau_;
   kino_ops.dt = 0.5;
   kino_ops.max_itter = 30;
   kino_ops.ell = 20;
   kino_ops.initdt = 0.05;
   kino_ops.min_dis = 1.0;
-  
-  std::atomic_bool planner_status;
-  planner_status = ATOMIC_VAR_INIT(true);
+
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
   dim_in << 4, 8;
   Q.push_back(dim_in);
   int r = 1;
-  float proc = 0.1;
+  int max_samples = 1000;
+  int rewrite_count = 32;
+  double proc = 0.1;
+  double obstacle_width = 0.6;
+  int save_data_index = 0;
 
   start_vel_ = start_v;
   start_acc_ = start_a;
-  
-  rrt_planner_options.search_space = X;
+
+  kamaz::hagen::RRTPlannerOptions rrt_planner_options;
   rrt_planner_options.x_init = start_pt_;
   rrt_planner_options.x_goal = end_pt_;
   rrt_planner_options.start_position = start_pt_;
   rrt_planner_options.obstacle_fail_safe_distance = 0.5;
   rrt_planner_options.min_angle_allows_obs = 0.5;
   rrt_planner_options.init_search = true;
+  rrt_planner_options.dynamic = true;
   rrt_planner_options.dynamic = true;
   rrt_planner_options.kino_options = kino_ops;
   rrt_planner_options.lengths_of_edges = Q;
@@ -116,20 +88,63 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.origin_ = origin_;
   rrt_planner_options.map_size_3d_ = map_size_3d_;
 
-  rrtstart3d.rrt_generate_paths(rrt_planner_options, common_utils
-  , std::ref(planner_status), save_data_index, 6);
+  for (int i = 0; i < 4; i++) {
+      Eigen::VectorXd x_dimentions(6);
+      x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
+      kamaz::hagen::SearchSpace X;
+      X.init_search_space(x_dimentions, max_samples, obstacle_width, 200);
+      X.use_whole_search_sapce = true;
+      X.setEnvironment(this->edt_env_);
+      kamaz::hagen::RRTStar3D* rrtstart3d;
+      rrt_planner_options.search_space = X;
+      rrtstart3d = new kamaz::hagen::RRTStar3D();
+      rrtstart3d->rrt_init(rewrite_count, rrt_planner_options, common_utils, save_data_index);
+      push_job(rrtstart3d);
+  }
 
-  start_vel_ = start_v;
-  start_acc_ = start_a;
-  std::cout<< "rrtstart3d.smoothed_paths size " << rrtstart3d.smoothed_paths.size() << std::endl;
-  std::cout<< "rrtstart3d.index_of_loweres_cost " << rrtstart3d.index_of_loweres_cost << std::endl;
-
-  if(rrtstart3d.smoothed_paths.size() >= 3 && rrtstart3d.smoothed_paths[rrtstart3d.index_of_loweres_cost].size()>0){
+  boost::wait_for_all((pending_data).begin(), (pending_data).end());
+  bool is_path_found = false;
+  smoothed_paths.clear();
+  path_costs.clear();
+  double lowerst_cost = 1000000;
+  index_of_loweres_cost = -1;
+  for(auto result : pending_data){
+    std::vector<kamaz::hagen::PathNode> smoothed_path = result.get();
+    int counter=0;
+    if(smoothed_path.size()>2){
+          smoothed_paths.push_back(smoothed_path);
+          auto cost = get_distance(smoothed_path);
+          path_costs.push_back(cost);
+          if(lowerst_cost > cost){
+              lowerst_cost = cost;
+              index_of_loweres_cost = counter;
+          }
+          counter++;
+      }   
+  }
+  std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
+  std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
+  pending_data.clear();
+  if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
     return REACH_HORIZON;
   }else{
     std::cout<< "No path found..." << std::endl;
     return NO_PATH;
   }
+}
+
+ double  KinodynamicAstar::get_distance(std::vector<kamaz::hagen::PathNode> trajectory_){
+			double distance = 0.0f;
+        if(trajectory_.size() < 1){
+            return distance;
+        }
+        Eigen::Vector3d previous = trajectory_[0].state.head(3);
+        for (int i = 1; (unsigned)i < trajectory_.size(); i++){
+            double dis = std::abs((previous.head(3) - trajectory_[i].state.head(3)).norm());
+            previous = trajectory_[i].state.head(3);
+            distance += dis;
+        }
+        return distance;
 }
 
 void KinodynamicAstar::setParam(ros::NodeHandle& nh)
@@ -170,6 +185,24 @@ void KinodynamicAstar::init()
   phi_ = Eigen::MatrixXd::Identity(6, 6);
   use_node_num_ = 0;
   iter_num_ = 0;
+  
+  service_work = boost::make_unique<boost::asio::io_service::work>(io_service);
+  std::cout<< "Number of threads that can support this system: " << boost::thread::hardware_concurrency() << std::endl;
+  for (int i = 0; i < boost::thread::hardware_concurrency(); ++i)
+  {
+    threads.create_thread(boost::bind(&boost::asio::io_service::run,
+      &io_service));
+  }
+  std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
+
+  
+  // std::cout<< "Number of threads that can support this system: " << boost::thread::hardware_concurrency() << std::endl;
+  // for (int i = 0; i < boost::thread::hardware_concurrency(); ++i)
+  // {
+  //   threads.create_thread(boost::bind(&boost::asio::io_service::run,
+  //     &io_service));
+  // }
+  // std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
 }
 
 void KinodynamicAstar::setEnvironment(const EDTEnvironment::Ptr& env)
@@ -199,51 +232,50 @@ void KinodynamicAstar::reset()
 
 std::vector<std::vector<Eigen::Vector3d>> KinodynamicAstar::getRRTTrajS(double delta_t){
   std::vector<std::vector<Eigen::Vector3d>> path_list;
-  for(auto path_i : rrtstart3d.smoothed_paths){
-    rrtstart3d.smoothed_path = path_i;
-    path_list.push_back(getRRTTraj(0));
+  for(auto path_i : smoothed_paths){
+    path_list.push_back(getRRTTraj(0, path_i));
   }
   return path_list;
 }
 
-std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t){
-  std::vector<Eigen::Vector3d> state_list;
-  // for(auto pose : rrtstart3d.smoothed_path){
-  //    state_list.push_back(pose.state.head(3));
-  // }
-  if(rrtstart3d.smoothed_path.size()<3){
-    for(auto pose : rrtstart3d.smoothed_path){
+std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path){
+    std::vector<Eigen::Vector3d> state_list;
+    for(auto pose : smoothed_path){
       state_list.push_back(pose.state.head(3));
     }
-  }else{
-      Eigen::MatrixXd points(3, rrtstart3d.smoothed_path.size());
-      int row_index = 0;
-      for(auto const way_point : rrtstart3d.smoothed_path){
-          points.col(row_index) << way_point.state[0], way_point.state[1], way_point.state[2];
-          row_index++;
+    if(smoothed_path.size()<3){
+      for(auto pose : smoothed_path){
+        state_list.push_back(pose.state.head(3));
       }
-      Spline3d spline = Eigen::SplineFitting<Spline3d>::Interpolate(points, 2);
-      float time_ = 0;
-      int _number_of_steps = rrtstart3d.smoothed_path.size() + 100;
-      for(int i=0; i<_number_of_steps; i++){
-          time_ += 1.0/(_number_of_steps*1.0);
-          Eigen::VectorXd values = spline(time_);
-          // std::cout<< values << std::endl;
-          state_list.push_back(values);
-      }
-  }
-  return state_list;
+    }else{
+        Eigen::MatrixXd points(3, smoothed_path.size());
+        int row_index = 0;
+        for(auto const way_point : smoothed_path){
+            points.col(row_index) << way_point.state[0], way_point.state[1], way_point.state[2];
+            row_index++;
+        }
+        Spline3d spline = Eigen::SplineFitting<Spline3d>::Interpolate(points, 2);
+        float time_ = 0;
+        int _number_of_steps = smoothed_path.size() + 100;
+        for(int i=0; i<_number_of_steps; i++){
+            time_ += 1.0/(_number_of_steps*1.0);
+            Eigen::VectorXd values = spline(time_);
+            // std::cout<< values << std::endl;
+            state_list.push_back(values);
+        }
+    }
+    return state_list;
 }
 
 Eigen::MatrixXd KinodynamicAstar::getSamplesRRT(double& ts, int& K)
 {
   //  kamaz::hagen::TrajectoryPlanning trajectory_planner(2);
   /* ---------- final trajectory time ---------- */
-  if(rrtstart3d.smoothed_paths.size() == 0 || rrtstart3d.index_of_loweres_cost < 0){
+  if(smoothed_paths.size() == 0 || index_of_loweres_cost < 0){
     Eigen::MatrixXd samples(3, 1);
     return samples;
   }
-  auto selected_path = rrtstart3d.smoothed_paths[rrtstart3d.index_of_loweres_cost];
+  auto selected_path = smoothed_paths[index_of_loweres_cost];
   int ki = selected_path.size();
   Eigen::MatrixXd samples(3, ki+3);
   if(ki<2){

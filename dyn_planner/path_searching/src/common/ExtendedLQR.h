@@ -59,7 +59,7 @@
 #include "matrix.h"
 #include <cnpy.h>
 #include <stdio.h> 
-
+#include <Eigen/Dense>
 namespace loto {
 namespace hagen{
 // Set dimensions
@@ -68,6 +68,7 @@ namespace hagen{
 #define DIM 3
 
 	struct Obstacle {
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		Matrix<DIM> pos;
 		double radius;
 		size_t dim;
@@ -75,6 +76,7 @@ namespace hagen{
 
 	class ExtendedLQR {
       public:
+	  	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         ExtendedLQR();
         // Dynamics() = default;
         ~ExtendedLQR() = default;
@@ -402,7 +404,6 @@ namespace hagen{
 		inline Matrix<X_DIM> g(const Matrix<X_DIM>& x, const Matrix<U_DIM>& u) {
 			double dt = std::exp(x[X_DIM-1]);
 			// TODO try to find why dt goes higher than 1.0
-			// std::cout<< "=======12======="<< dt << std::endl;
 			Matrix<X_DIM> k1 = f(x, u);
 			Matrix<X_DIM> k2 = f(x + 0.5*dt*k1, u);
 			Matrix<X_DIM> k3 = f(x + 0.5*dt*k2, u);
@@ -413,7 +414,6 @@ namespace hagen{
 		// Discrete-time inverse dynamics x_t = \bar{g}(x_{t+1}, u_t)
 		inline Matrix<X_DIM> gBar(const Matrix<X_DIM>& x, const Matrix<U_DIM>& u) {
 			double dt = std::exp(x[X_DIM-1]);
-
 			Matrix<X_DIM> k1 = f(x, u);
 			Matrix<X_DIM> k2 = f(x - 0.5*dt*k1, u);
 			Matrix<X_DIM> k3 = f(x - 0.5*dt*k2, u);

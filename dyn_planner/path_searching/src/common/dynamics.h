@@ -32,6 +32,7 @@ namespace kamaz {
   namespace hagen{
     class Dynamics {
       public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Dynamics();
         // Dynamics() = default;
         ~Dynamics() = default;

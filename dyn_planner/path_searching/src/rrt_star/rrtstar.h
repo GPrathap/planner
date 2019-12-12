@@ -23,6 +23,7 @@ namespace kamaz {
 namespace hagen {
         class RRTStar: public RRT{
             public:
+                EIGEN_MAKE_ALIGNED_OPERATOR_NEW
                 RRTStar(RRTPlannerOptions options,  int rewrite_count, CommonUtils& common_utils, std::atomic_bool &is_allowed_to_run);
                 ~RRTStar() = default;
 

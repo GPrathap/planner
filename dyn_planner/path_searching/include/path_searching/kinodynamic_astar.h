@@ -19,6 +19,18 @@
 #include <Eigen/Core>
 #include <unsupported/Eigen/Splines>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/move/move.hpp>
+#include <iostream>
+#include <unistd.h>
+
+namespace asio = boost::asio; 
+
 namespace dyn_planner
 {
 // #define REACH_HORIZON 1
@@ -112,6 +124,8 @@ typedef Eigen::Spline<double, 3> Spline3d;
 class KinodynamicAstar
 {
 private:
+
+  
   /* ---------- main data structure ---------- */
   vector<PathNodePtr> path_node_pool_;
   int use_node_num_, iter_num_;
@@ -154,6 +168,15 @@ private:
   Eigen::Vector3i posToIndex(Eigen::Vector3d pt);
   int timeToIndex(double time);
 
+  void push_job(kamaz::hagen::RRTStar3D* worker);
+
+  typedef boost::packaged_task<std::vector<kamaz::hagen::PathNode>> task_t;
+  typedef boost::shared_ptr<task_t> ptask_t;
+  std::vector<boost::shared_future<std::vector<kamaz::hagen::PathNode>>> pending_data;
+  boost::asio::io_service io_service;
+  boost::thread_group threads;
+  std::unique_ptr<boost::asio::io_service::work> service_work;
+
 public:
   KinodynamicAstar(){};
   ~KinodynamicAstar();
@@ -174,12 +197,14 @@ public:
              double time_start = -1.0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
-  std::vector<Eigen::Vector3d> getRRTTraj(double delta_t);
+  std::vector<Eigen::Vector3d> getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path);
+  double get_distance(std::vector<kamaz::hagen::PathNode> trajectory_);
   std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
-  kamaz::hagen::RRTStar3D rrtstart3d;
- 
+  std::vector<std::vector<kamaz::hagen::PathNode>> smoothed_paths;
+  std::vector<double> path_costs;
+  int index_of_loweres_cost = -1;
   typedef shared_ptr<KinodynamicAstar> Ptr;
 };
 

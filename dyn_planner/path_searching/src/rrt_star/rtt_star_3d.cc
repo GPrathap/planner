@@ -3,77 +3,45 @@
 namespace kamaz {
 namespace hagen {
 
-    std::vector<PathNode> RRTStar3D::rrt_planner(RRTPlannerOptions planner_options
-                ,CommonUtils& common_utils
-                ,std::atomic_bool &is_allowed_to_run){
+    std::vector<PathNode> RRTStar3D::rrt_planner(std::atomic_bool &is_allowed_to_run){
         
-        auto rrtstar = RRTStar(planner_options, _rewrite_count
+        auto rrtstar = RRTStar(planner_opts, _rewrite_count
                                             , common_utils, is_allowed_to_run);
         return rrtstar.rrt_star();
     }
-    
-    void RRTStar3D::rrt_generate_paths(RRTPlannerOptions planner_options, CommonUtils& common_utils
-                            , std::atomic_bool &is_allowed_to_run, int index, int number_of_tries){
-        smoothed_paths.clear();
-        int counter=0;
-        for(int i=0; i< number_of_tries; i++){
-            // planner_options.max_samples
-            rrt_planner_and_save(planner_options, common_utils, is_allowed_to_run, index);
-            if(smoothed_path.size()>3){
-                smoothed_paths.push_back(smoothed_path);
-                auto cost = get_distance(smoothed_path);
-                path_costs.push_back(cost);
-                std::cout<< "cost: " << cost << " lowerest cost: " << lowerst_cost << std::endl;
-                if(lowerst_cost > cost){
-                    lowerst_cost = cost;
-                    index_of_loweres_cost = counter;
-                }
-                counter++;
-            }   
-        }
-        std::cout<< "Selected path: "<< index_of_loweres_cost << std::endl;
-    }
-        
 
-    std::vector<PathNode> RRTStar3D::rrt_planner_and_save(RRTPlannerOptions planner_options
-                , CommonUtils& common_utils
-                , std::atomic_bool &is_allowed_to_run, int index){
-        
-        auto rrtstar =  RRTStar(planner_options, _rewrite_count, common_utils, is_allowed_to_run);
-        std::ofstream outfile;
-        planner_opts = planner_options;
+   std::vector<PathNode> RRTStar3D::rrt_planner_and_save(){
+        std::atomic_bool planner_status;
+        planner_status = ATOMIC_VAR_INIT(true);
+        RRTStar rrtstar(planner_opts, _rewrite_count, common_utils, planner_status);
+        // std::ofstream outfile;
+        // std::vector<PathNode> path;
         // std::cout<< "========================" << std::endl;
         // outfile.open("/dataset/rrt_old/time_stamps.txt", std::ios_base::app);
         // std::cout<< "========================" << std::endl;
         // const clock_t begin_time = clock();
-        // std::cout<< "========================" << std::endl;
-        BOOST_LOG_TRIVIAL(info) << FCYN("Start finding a path...");
-        auto path = rrtstar.rrt_star();
-        smoothed_path.clear();
+        std::vector<PathNode> path = rrtstar.rrt_star();
         if(path.size()<2){
             std::cout<< "Path can not be found" << std::endl;
             return path;
         }
-        
+        std::vector<PathNode> smoothed_path;
         get_smoothed_waypoints(path, smoothed_path);
         // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
-        // if(path.size()>1){
-            //  outfile << "rrt,"<<  time_diff <<","<< path.size() << "," << get_distance(path) << "," <<  common_utils.get_cost_of_path(path) << "\n";
-        // }
-        std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-        stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
+
+        // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
+        // stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
         // save_edges(rrtstar.trees, stotage_location + "edges.npy");
-        // save_obstacle(planner_options.search_space.random_objects, stotage_location + "obstacles.npy");
-        // save_poses(planner_options.x_init, planner_options.x_goal, stotage_location + "start_and_end_pose.npy");
-        // if(path.size()>0){
-        //     std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-        //     save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        //     save_path(path, stotage_location + "rrt_star_path.npy");
-        //     // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        // }
-        // smoothed_path = path;
-        return path;
+        // save_obstacle(planner_opts.search_space.random_objects, stotage_location + "obstacles.npy");
+        // save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
+        // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
+        // save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        // save_path(path, stotage_location + "rrt_star_path.npy");
+            // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
+        return smoothed_path;
     }
+
 
     double  RRTStar3D::get_distance(std::vector<PathNode> trajectory_){
 			double distance = 0.0f;
@@ -236,8 +204,13 @@ namespace hagen {
        cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
-    void RRTStar3D::rrt_init(int rewrite_count){
+    void RRTStar3D::rrt_init(int rewrite_count, RRTPlannerOptions planner_options
+                ,CommonUtils& _common_utils, int _index){
         _rewrite_count = rewrite_count;
+        planner_opts = planner_options;
+        common_utils = _common_utils;
+        index = _index;
+
     }
 
     Eigen::Vector3d RRTStar3D::get_search_space_dim(Eigen::Vector3d dimensions){
@@ -255,40 +228,6 @@ namespace hagen {
         _objects.push_back(SearchSpace::Rect(60, 20, 60, 80, 40, 80));
         _objects.push_back(SearchSpace::Rect(20, 60, 60, 40, 80, 80));
         _objects.push_back(SearchSpace::Rect(60, 60, 60, 80, 80, 80));
-        return _objects;
-    }
-
-    std::vector<SearchSpace::Rect> RRTStar3D::get_random_obstacles(int number_of_obstacles
-    , Eigen::VectorXd x_dimentions, PathNode x_init, PathNode x_goal){
-        std::vector<SearchSpace::Rect> _objects;
-        srand(time(NULL));
-        for(int i=0; i< number_of_obstacles; i++){
-            
-            double x_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[1];
-            double y_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[3];
-            double z_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[5];
-
-            double x_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[0];
-            double y_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[2];
-            double z_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[4];
-
-            double x = x_plus + x_minus;
-            double y = y_plus + y_minus;
-            double z = z_plus + z_minus;
-            double width_x = x + rand()%5;
-            double width_y = y + rand()%5;
-            double width_z = z + rand()%5;
-            // std::cout<< x << " " <<  y << " "<< z << " " << width_x << " " << width_y << " " << width_z << std::endl;
-            if(width_x >= x_dimentions[1] || width_y >= x_dimentions[3] || width_z >= x_dimentions[5]){
-                continue;
-            }
-            if(x <= x_dimentions[0]  || y <= x_dimentions[2]  || z <= x_dimentions[4] ){
-                continue;
-            }
-            
-            _objects.push_back(SearchSpace::Rect(x, y, z, width_x, width_y, width_z));
-        }
-        std::cout<< "RRTStar3D::get_random_obstacles: Size of the objects "<< _objects.size() << std::endl;
         return _objects;
     }
 

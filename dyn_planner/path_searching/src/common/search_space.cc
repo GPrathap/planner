@@ -2,8 +2,9 @@
 
 namespace kamaz {
 namespace hagen {
-    SearchSpace::SearchSpace(): geometry_rtree_callback(this) {
-         random_points_tank = std::make_shared<Eigen::MatrixXd>();
+    SearchSpace::SearchSpace() {
+        //  random_points_tank = std::make_shared<Eigen::MatrixXd>();
+
     }
 
     void SearchSpace::init_search_space(Eigen::VectorXd dimension_lengths
@@ -79,7 +80,7 @@ namespace hagen {
 
     std::vector<Eigen::Vector3d> SearchSpace::nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours){
-        std::vector<value_t> returned_values;
+        // std::vector<value_t> returned_values;
         std::vector<Eigen::Vector3d> neighbour_points;
         for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
                 it != obs_tree.qend() ; ++it )
@@ -129,7 +130,7 @@ namespace hagen {
     }
     
      std::vector<Eigen::Vector3d> SearchSpace::nearest_obstacles(Eigen::Vector3d x, int max_neighbours){
-        std::vector<value_t> returned_values;
+        // std::vector<value_t> returned_values;
         
         std::vector<Eigen::Vector3d> neighbour_points;
         for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
@@ -158,7 +159,7 @@ namespace hagen {
         return neighbour_points;        
      }
     std::vector<Eigen::Vector3d> SearchSpace::nearest_veties(Eigen::Vector3d x, int max_neighbours){
-        std::vector<value_t> returned_values;
+        // std::vector<value_t> returned_values;
         
         std::vector<Eigen::Vector3d> neighbour_points;
         for ( RTree::const_query_iterator it = bg_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
@@ -166,13 +167,10 @@ namespace hagen {
         {
             Eigen::Vector3d pose(3);
             auto cube = (*it).first;
-
             // std::cout<< "SearchSpace::nearest_obstacles:  distance: " << bg::distance(cube, point_t(x[0], x[1], x[2])) << std::endl;
-
             double min_x = bg::get<bg::min_corner, 0>(cube);
             double min_y = bg::get<bg::min_corner, 1>(cube);
             double min_z = bg::get<bg::min_corner, 2>(cube);
-
             // double max_x = bg::get<bg::max_corner, 0>(cube);
             // double max_y = bg::get<bg::max_corner, 1>(cube);
             // double max_z = bg::get<bg::max_corner, 2>(cube);
@@ -182,13 +180,12 @@ namespace hagen {
             // pose << (min_x+max_x)/2, (min_y+max_y)/2, (min_z+max_z)/2;
             pose << min_x, min_y, min_z;
             neighbour_points.push_back(pose);
-        
         }
         return neighbour_points;        
     }
 
     std::vector<Eigen::Vector3d> SearchSpace::nearest_point_on_trajectory(Eigen::Vector3d x, int max_neighbours){
-        std::vector<value_t> returned_values;
+        // std::vector<value_t> returned_values;
         std::vector<Eigen::Vector3d> neighbour_points;
         for ( RTree::const_query_iterator it = current_trajectory.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
                 it != current_trajectory.qend() ; ++it )
@@ -215,10 +212,44 @@ namespace hagen {
             Eigen::Vector3d cent, int npts){
         int ndims = covmat.rows();
         number_of_points_in_random_tank = npts;
-        *random_points_tank = Eigen::MatrixXd::Zero(npts, ndims);
+        // *random_points_tank = Eigen::MatrixXd::Zero(npts, ndims);
         generate_samples_from_ellipsoid(covmat, rotation_mat, cent);
         is_random_tank_is_ready = true;
         return;
+    }
+
+    std::vector<SearchSpace::Rect> SearchSpace::get_random_obstacles(int number_of_obstacles
+            , Eigen::VectorXd x_dimentions){
+        std::vector<SearchSpace::Rect> _objects;
+        srand(time(NULL));
+        for(int i=0; i< number_of_obstacles; i++){
+
+            double x_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[1];
+            double y_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[3];
+            double z_plus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[5];
+
+            double x_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[0];
+            double y_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[2];
+            double z_minus = static_cast <double> (rand()) / static_cast <double> (RAND_MAX) *x_dimentions[4];
+
+            double x = x_plus + x_minus;
+            double y = y_plus + y_minus;
+            double z = z_plus + z_minus;
+            double width_x = x + rand()%5;
+            double width_y = y + rand()%5;
+            double width_z = z + rand()%5;
+            // std::cout<< x << " " <<  y << " "<< z << " " << width_x << " " << width_y << " " << width_z << std::endl;
+            if(width_x >= x_dimentions[1] || width_y >= x_dimentions[3] || width_z >= x_dimentions[5]){
+                continue;
+            }
+            if(x <= x_dimentions[0]  || y <= x_dimentions[2]  || z <= x_dimentions[4] ){
+                continue;
+            }
+
+            _objects.push_back(SearchSpace::Rect(x, y, z, width_x, width_y, width_z));
+        }
+        std::cout<< "RRTStar3D::get_random_obstacles: Size of the objects "<< _objects.size() << std::endl;
+        return _objects;
     }
 
     void SearchSpace::save_search_space(int index){
@@ -236,14 +267,14 @@ namespace hagen {
     }
 
     void SearchSpace::save_samples(int index){
-        std::vector<double> sample_pose;
-        for(int i=0; i< (*random_points_tank).rows(); i++){
-            for(int j=0; j< (*random_points_tank).cols(); j++){
-                sample_pose.push_back((*random_points_tank)(i,j));
-            }
-        }
-        std::string file_name = "/dataset/" + std::to_string(index)+ "_random_samples.npy";
-        cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)(*random_points_tank).rows(), (unsigned int)(*random_points_tank).cols()},"w");
+        // std::vector<double> sample_pose;
+        // for(int i=0; i< (*random_points_tank).rows(); i++){
+        //     for(int j=0; j< (*random_points_tank).cols(); j++){
+        //         sample_pose.push_back((*random_points_tank)(i,j));
+        //     }
+        // }
+        // std::string file_name = "/dataset/" + std::to_string(index)+ "_random_samples.npy";
+        // cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)(*random_points_tank).rows(), (unsigned int)(*random_points_tank).cols()},"w");
     }
 
     bool SearchSpace::obstacle_free(Rect search_rect){
@@ -252,7 +283,7 @@ namespace hagen {
         point_t(search_rect.max[0], search_rect.max[1], search_rect.max[2]));
         size_t sum = 0;
         // boost::timer t;
-        res.clear();
+        // res.clear();
         sum += obs_tree.query(bgi::intersects(search_box)
         , boost::make_function_output_iterator(geometry_rtree_callback));
         // double s = t.elapsed();
@@ -264,50 +295,50 @@ namespace hagen {
     }
 
     void SearchSpace::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat, Eigen::Vector3d cent){
-        int ndims = (*random_points_tank).cols();
-        int npts = (*random_points_tank).rows();
-        Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
-        eigensolver.compute(covmat);
-        Eigen::Vector3d eigen_values = eigensolver.eigenvalues().real();
-        Eigen::MatrixXd eigen_vectors = eigensolver.eigenvectors().real();
-        std::vector<std::tuple<double, Eigen::Vector3d>> eigen_vectors_and_values; 
+        // int ndims = (*random_points_tank).cols();
+        // int npts = (*random_points_tank).rows();
+        // Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
+        // eigensolver.compute(covmat);
+        // Eigen::Vector3d eigen_values = eigensolver.eigenvalues().real();
+        // Eigen::MatrixXd eigen_vectors = eigensolver.eigenvectors().real();
+        // std::vector<std::tuple<double, Eigen::Vector3d>> eigen_vectors_and_values;
 
-        for(int i=0; i<eigen_values.size(); i++){
-            std::tuple<double, Eigen::Vector3d> vec_and_val(eigen_values[i], eigen_vectors.row(i));
-            eigen_vectors_and_values.push_back(vec_and_val);
-        }
-        std::sort(eigen_vectors_and_values.begin(), eigen_vectors_and_values.end(), 
-            [&](const std::tuple<double, Eigen::Vector3d>& a, const std::tuple<double, Eigen::Vector3d>& b) -> bool{ 
-                return std::get<0>(a) <= std::get<0>(b); 
-        });
-        int index = 0;
-        for(auto const vect : eigen_vectors_and_values){
-            eigen_values(index) = std::get<0>(vect);
-            eigen_vectors.row(index) = std::get<1>(vect);
-            index++;
-        }
+        // for(int i=0; i<eigen_values.size(); i++){
+        //     std::tuple<double, Eigen::Vector3d> vec_and_val(eigen_values[i], eigen_vectors.row(i));
+        //     eigen_vectors_and_values.push_back(vec_and_val);
+        // }
+        // std::sort(eigen_vectors_and_values.begin(), eigen_vectors_and_values.end(),
+        //     [&](const std::tuple<double, Eigen::Vector3d>& a, const std::tuple<double, Eigen::Vector3d>& b) -> bool{
+        //         return std::get<0>(a) <= std::get<0>(b);
+        // });
+        // int index = 0;
+        // for(auto const vect : eigen_vectors_and_values){
+        //     eigen_values(index) = std::get<0>(vect);
+        //     eigen_vectors.row(index) = std::get<1>(vect);
+        //     index++;
+        // }
 
-        Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
+        // Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
 
-        std::random_device rd{};
-        std::mt19937 gen{rd()};  
-        std::uniform_real_distribution<double> dis(0, 1);
-        std::normal_distribution<double> normal_dis{0.0f, 1.0f};
+        // std::random_device rd{};
+        // std::mt19937 gen{rd()};
+        // std::uniform_real_distribution<double> dis(0, 1);
+        // std::normal_distribution<double> normal_dis{0.0f, 1.0f};
  
-        Eigen::MatrixXd pt = Eigen::MatrixXd::Zero(npts, ndims).unaryExpr([&](double dummy){return (double)normal_dis(gen);});
-        Eigen::VectorXd rs = Eigen::VectorXd::Zero(npts).unaryExpr([&](double dummy){return dis(gen);});
-        Eigen::VectorXd fac = pt.array().pow(2).rowwise().sum();
-        Eigen::VectorXd fac_sqrt = fac.array().sqrt();
-        Eigen::VectorXd rs_pow = rs.array().pow(1.0/ndims);
-        fac = rs_pow.array()/fac_sqrt.array();
-        Eigen::VectorXd d = eigen_values_as_matrix.diagonal().array().sqrt();
-        // std::cout << "============================================>>>>>>" << npts << std::endl;
-        for(auto i(0); i<npts; i++){
-            (*random_points_tank).row(i) = fac(i)*pt.row(i).array();
-            Eigen::MatrixXd  fff = ((*random_points_tank).row(i).array()*d.transpose().array());
-            Eigen::VectorXd bn = rotation_mat*fff.transpose();
-            (*random_points_tank).row(i) = bn.array() + cent.head(3).array();
-        }
+        // Eigen::MatrixXd pt = Eigen::MatrixXd::Zero(npts, ndims).unaryExpr([&](double dummy){return (double)normal_dis(gen);});
+        // Eigen::VectorXd rs = Eigen::VectorXd::Zero(npts).unaryExpr([&](double dummy){return dis(gen);});
+        // Eigen::VectorXd fac = pt.array().pow(2).rowwise().sum();
+        // Eigen::VectorXd fac_sqrt = fac.array().sqrt();
+        // Eigen::VectorXd rs_pow = rs.array().pow(1.0/ndims);
+        // fac = rs_pow.array()/fac_sqrt.array();
+        // Eigen::VectorXd d = eigen_values_as_matrix.diagonal().array().sqrt();
+        // // std::cout << "============================================>>>>>>" << npts << std::endl;
+        // for(auto i(0); i<npts; i++){
+        //     (*random_points_tank).row(i) = fac(i)*pt.row(i).array();
+        //     Eigen::MatrixXd  fff = ((*random_points_tank).row(i).array()*d.transpose().array());
+        //     Eigen::VectorXd bn = rotation_mat*fff.transpose();
+        //     (*random_points_tank).row(i) = bn.array() + cent.head(3).array();
+        // }
         // std::cout << "points: " << (*random_points_tank) << std::endl;
     }
 
@@ -318,7 +349,7 @@ namespace hagen {
         point_t(search_rect[0]+avoidance_width, search_rect[1]+avoidance_width, search_rect[2]+avoidance_width));
         size_t sum = 0;
         // boost::timer t;
-        res.clear();
+        // res.clear();
         sum += obs_tree.query(bgi::intersects(search_box)
         , boost::make_function_output_iterator(geometry_rtree_callback));
         // double s = t.elapsed();
@@ -346,7 +377,7 @@ namespace hagen {
 
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
-        if(use_whole_search_sapce){
+        // if(use_whole_search_sapce){
             std::default_random_engine generator_on_x;
             generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
             auto x_on = uni_dis_vector[0](generator_on_x);
@@ -356,23 +387,23 @@ namespace hagen {
             auto z_on = uni_dis_vector[2](generator_on_x);
             random_pose << x_on, y_on, z_on ;
             // std::cout<< "========================" << random_pose << std::endl;
-        }
-        else{
-            auto index = *(random_call);
-            // std::cout<< "========================1113" << std::endl;
-            while(true){
-                // std::cout<< "===="<< index << "   " << (*random_points_tank).rows() << std::endl;
-                if((index < (*random_points_tank).rows()) && (index>0)){
-                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
-                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
-                    // if(is_random_tank_is_ready){
-                        random_pose = (*random_points_tank).row(index);
-                        // std::cout<< "========================1115" << std::endl;
-                    // }
-                    break;
-                }
-            }   
-        }
+        // }
+        // else{
+        //     auto index = *(random_call);
+        //     // std::cout<< "========================1113" << std::endl;
+        //     while(true){
+        //         // std::cout<< "===="<< index << "   " << (*random_points_tank).rows() << std::endl;
+        //         if((index < (*random_points_tank).rows()) && (index>0)){
+        //             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
+        //             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
+        //             // if(is_random_tank_is_ready){
+        //                 random_pose = (*random_points_tank).row(index);
+        //                 // std::cout<< "========================1115" << std::endl;
+        //             // }
+        //             break;
+        //         }
+        //     }
+        // }
         // std::cout<< "==========||||||||>>>" << random_pose << std::endl;
         return random_pose;
     }
@@ -444,13 +475,12 @@ namespace hagen {
         return true;
     }
 
-
     std::vector<double> SearchSpace::linspace(double start_in, double end_in, double step_size)
     {
         std::vector<double> linspaced;
-        double start = static_cast<double>(start_in);
-        double end = static_cast<double>(end_in);
-        double num = static_cast<double>(step_size);
+        double start = start_in;
+        double end = end_in;
+        double num = step_size;
         if (num == 0) { return linspaced; }
         if (num == 1)
         {

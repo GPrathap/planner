@@ -41,6 +41,7 @@ namespace hagen {
             typedef bgi::rtree<value_t, bgi::quadratic<8, 4>> RTree;
 
             public:
+                EIGEN_MAKE_ALIGNED_OPERATOR_NEW
                 SearchSpace();
                 ~SearchSpace() = default;
 
@@ -103,6 +104,8 @@ namespace hagen {
                 , Eigen::Vector3d cent);
                 void generate_search_sapce(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat
                         , Eigen::Vector3d cent, int npts);
+                std::vector<SearchSpace::Rect> get_random_obstacles(int number_of_obstacles
+                     , Eigen::VectorXd x_dimentions);
                 std::vector<double> arange(double start, double stop, double step);
                 void save_samples(int index);
                 void save_search_space(int index);
@@ -118,8 +121,8 @@ namespace hagen {
                 
                 int dementions = 3;
                 Eigen::VectorXd dim_lengths;
-                std::vector<uint64_t> res;
-                std::shared_ptr<Eigen::MatrixXd> random_points_tank;
+                // std::vector<uint64_t> res;
+                // std::shared_ptr<Eigen::MatrixXd> random_points_tank;
                 int number_of_rand_points;
                 Random_call* random_call;
                 bool use_whole_search_sapce = false;
@@ -127,16 +130,12 @@ namespace hagen {
                 dyn_planner::EDTEnvironment::Ptr edt_env_;
                 struct GeometryRTreeSearchCallback
                 {
-                    GeometryRTreeSearchCallback(SearchSpace* search_space): parent(search_space){
-
-                    }
-                    template <typename Value> void operator()(Value const& v)
+                    template <typename Value>
+                    void operator()(Value const& v)
                     {
-                        // std::cout<< v.frist << std::endl;
+                        // return v.is_red();
                         // std::cout<< v.second << std::endl;
-                        parent->res.push_back(v.second);
                     }
-                    SearchSpace* parent;
                 };
 
                 GeometryRTreeSearchCallback geometry_rtree_callback;

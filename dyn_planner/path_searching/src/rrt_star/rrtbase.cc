@@ -50,21 +50,21 @@ namespace hagen {
 
     bool RRTBase::set_seq(PathNode parent, std::vector<Eigen::MatrixXd> state_seq){
         std::array<double, 3> vertex_ = {parent.state[0], parent.state[1], parent.state[2]};
-        if(V_indices.count(vertex_) > 0){
-            V_indices[vertex_].state_seq = state_seq;
-            return true;
-        }else{
-            std::cout<< "Vertex is not found: " << parent.state.head(3).transpose() << std::endl;
-        }
+        // if(V_indices.count(vertex_) > 0){
+        //     V_indices[vertex_].state_seq = state_seq;
+        //     return true;
+        // }else{
+        //     std::cout<< "Vertex is not found: " << parent.state.head(3).transpose() << std::endl;
+        // }
         return false;
     }
 
     std::vector<Eigen::MatrixXd> RRTBase::get_seq(PathNode parent){
         std::vector<Eigen::MatrixXd> seq_tmp;
         std::array<double, 3> vertex_ = {parent.state[0], parent.state[1], parent.state[2]};
-        if(V_indices.count(vertex_) > 0){
-            return V_indices[vertex_].state_seq;
-        }
+        // if(V_indices.count(vertex_) > 0){
+        //     return V_indices[vertex_].state_seq;
+        // }
         return seq_tmp;
     }
 
@@ -138,7 +138,7 @@ namespace hagen {
     }
 
     PathNode RRTBase::get_nearest(int tree, PathNode x){
-        auto veties = trees[tree].V.nearest_veties(x.state.head(3), 1);
+         std::vector<Eigen::Vector3d> veties = trees[tree].V.nearest_veties(x.state.head(3), 1);
         if(veties.size()==0){
             BOOST_LOG_TRIVIAL(warning) << FYEL("There is no any neighbors");
             PathNode temp;
@@ -158,7 +158,7 @@ namespace hagen {
         auto x_ran = X.sample_free();
         PathNode x_rand;
         x_rand.state.head(3)<< x_ran[0], x_ran[1], x_ran[2];
-        x_rand.control_input = drone_dynamics.uNominal;
+        // x_rand.control_input = drone_dynamics.uNominal;
         auto x_nearest = get_nearest(tree, x_rand);
         auto x_new = steer(x_nearest, x_rand, q[0]);
         // std::cout<<"RRTBase::new_and_near: x_rand: " << x_rand.transpose() << std::endl;
@@ -325,7 +325,7 @@ namespace hagen {
             auto current_parent = getEdge(current, tree);
             // std::cout<< "RRTBase::reconstruct_path: current 1"<< current_parent.transpose() << std::endl;
             while(!is_equal_vectors(current_parent, x_init)){
-                current_parent.state_seq = get_seq(current_parent);
+                // current_parent.state_seq = get_seq(current_parent);
                 path.push_back(current_parent);
                 // std::cout<< "RRTBase::reconstruct_path: "<< current_parent.state.head(3).transpose() << std::endl;
                 // std::cout<< "RRTBase::reconstruct_path: seq"<< seq.size() << std::endl;
@@ -339,7 +339,7 @@ namespace hagen {
                 }
             }
             // auto seq = get_seq(x_init);
-            x_init.state_seq = get_seq(x_init);
+            // x_init.state_seq = get_seq(x_init);
             // std::cout<< "RRTBase::reconstruct_path: "<< x_init.state.head(3).transpose() << std::endl;
             // std::cout<< "RRTBase::reconstruct_path: seq"<< seq.size() << std::endl;
             path.push_back(x_init);

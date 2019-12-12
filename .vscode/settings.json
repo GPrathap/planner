@@ -68,6 +68,8 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "splines": "cpp",
-        "numericaldiff": "cpp"
+        "numericaldiff": "cpp",
+        "codecvt": "cpp",
+        "future": "cpp"
     }
 }
