@@ -14,9 +14,7 @@ namespace hagen {
             x_init = options.x_init;
             x_goal = options.x_goal;
             start_position = options.start_position;
-            min_angle_allows_obs = options.min_angle_allows_obs;
             add_tree();
-            _obstacle_fail_safe_distance = options.obstacle_fail_safe_distance;
             common_utils = common_util;
             dynamic = options.dynamic;
             search_init = options.init_search;

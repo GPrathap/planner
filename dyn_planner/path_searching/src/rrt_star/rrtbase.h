@@ -60,9 +60,7 @@ namespace hagen {
             PathNode x_init;
             PathNode x_goal;
             PathNode start_position;
-            double obstacle_fail_safe_distance;
             double min_acceptable;
-            double min_angle_allows_obs;
             bool init_search;
             bool dynamic;
             Eigen::Vector3d origin_;
@@ -112,7 +110,6 @@ namespace hagen {
                 Eigen::Vector3d center_sub_search;
                 double _obstacle_fail_safe_distance = 0.5f;
                 double min_acceptable = 0.01;
-                double min_angle_allows_obs = 5.0f;
                 bool dynamic = false;
                 bool search_init = false;
                 RRTPlannerOptions opt;

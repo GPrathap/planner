@@ -70,6 +70,9 @@
     <param name="search/margin" value="0.4" type="double"/>
     <param name="search/allocate_num" value="100000" type="int"/>
     <param name="search/check_num" value="5" type="int"/>
+    <param name="search/number_of_paths" value="6" type="int"/>
+    <param name="search/rrt_avoidance_dist" value="0.6" type="double"/>
+    <param name="search/lqr_feasibility_max_vel" value="0.25" type="double"/>
 
   <!-- trajectory optimization -->
     <param name="optimization/lamda1" value="10.0" type="double"/>

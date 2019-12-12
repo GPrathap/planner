@@ -111,7 +111,7 @@ namespace hagen {
     void RRTStar3D::add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
                                                             , std::vector<PathNode>& smoothed_path){
         auto opts = planner_opts.kino_options;
-        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, opts.dt*opts.max_vel);
+        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, opts.dt*opts.max_fes_vel);
         for(auto po : poses){
             PathNode next_pose_node;
             next_pose_node.state.head(3) << po[0], po[1], po[2];

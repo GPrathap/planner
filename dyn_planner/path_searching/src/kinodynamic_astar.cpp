@@ -41,16 +41,8 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   kamaz::hagen::CommonUtils common_utils;
 
   kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
-  kino_ops.init_max_tau = 0.5;
-  kino_ops.w_time = 0.5;
-  kino_ops.horizon = 1;
-  kino_ops.lambda_heu = 1;
-  kino_ops.time_resolution = 1;
-  kino_ops.margin = 1;
-  kino_ops.allocate_num = 1;
-  kino_ops.check_num = 1;
-  kino_ops.max_vel = 0.25;
-  kino_ops.max_fes_vel = 0.25;
+  kino_ops.max_vel = max_vel_;
+  kino_ops.max_fes_vel = lqr_feasibility_max_vel;
   kino_ops.dt = 0.5;
   kino_ops.max_itter = 30;
   kino_ops.ell = 20;
@@ -61,12 +53,6 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   Eigen::Vector2d dim_in;
   dim_in << 4, 8;
   Q.push_back(dim_in);
-  int r = 1;
-  int max_samples = 1000;
-  int rewrite_count = 32;
-  double proc = 0.1;
-  double obstacle_width = 0.6;
-  int save_data_index = 0;
 
   start_vel_ = start_v;
   start_acc_ = start_a;
@@ -75,10 +61,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.x_init = start_pt_;
   rrt_planner_options.x_goal = end_pt_;
   rrt_planner_options.start_position = start_pt_;
-  rrt_planner_options.obstacle_fail_safe_distance = 0.5;
-  rrt_planner_options.min_angle_allows_obs = 0.5;
   rrt_planner_options.init_search = true;
-  rrt_planner_options.dynamic = true;
   rrt_planner_options.dynamic = true;
   rrt_planner_options.kino_options = kino_ops;
   rrt_planner_options.lengths_of_edges = Q;
@@ -87,12 +70,13 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.pro = proc;
   rrt_planner_options.origin_ = origin_;
   rrt_planner_options.map_size_3d_ = map_size_3d_;
-
-  for (int i = 0; i < 4; i++) {
+  int times = (number_of_paths > 0) ? number_of_paths: 1;
+  rrt_avoidance_dist = (rrt_avoidance_dist > 0) ? rrt_avoidance_dist: 0.6;
+  for (int i = 0; i < times; i++) {
       Eigen::VectorXd x_dimentions(6);
       x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
       kamaz::hagen::SearchSpace X;
-      X.init_search_space(x_dimentions, max_samples, obstacle_width, 200);
+      X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist, 200);
       X.use_whole_search_sapce = true;
       X.setEnvironment(this->edt_env_);
       kamaz::hagen::RRTStar3D* rrtstart3d;
@@ -161,7 +145,9 @@ void KinodynamicAstar::setParam(ros::NodeHandle& nh)
   nh.param("search/margin", margin_, -1.0);
   nh.param("search/allocate_num", allocate_num_, -1);
   nh.param("search/check_num", check_num_, -1);
-
+  nh.param("search/number_of_paths", number_of_paths, -1);
+  nh.param("search/rrt_avoidance_dist", rrt_avoidance_dist, -1.0);
+  nh.param("search/lqr_feasibility_max_vel", lqr_feasibility_max_vel, -1.0);
   cout << "margin:" << margin_ << endl;
 }
 

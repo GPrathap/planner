@@ -159,6 +159,14 @@ private:
   int allocate_num_;
   int check_num_;
   double tie_breaker_ = 1.0 + 1.0 / 10000;
+  int number_of_paths = 4;
+  int r = 1;
+  int max_samples = 1000;
+  int rewrite_count = 32;
+  double proc = 0.1;
+  int save_data_index = 0;
+  double rrt_avoidance_dist = 0.6;
+  double lqr_feasibility_max_vel = 0.25;
   /* map */
   double resolution_, inv_resolution_, time_resolution_, inv_time_resolution_;
   Eigen::Vector3d origin_, map_size_3d_;
