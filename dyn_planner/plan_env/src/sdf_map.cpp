@@ -570,7 +570,8 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   pcl::PointXYZ pt, pt_inf;
   Eigen::Vector3d p3d, p3d_inf;
   const int ifn = ceil(inflate_ * resolution_inv_);
-
+  int obs_counter = 0;
+  obs_tree.clear();
   for (size_t i = 0; i < latest_cloud_.points.size(); ++i)
   {
     pt = latest_cloud_.points[i];
@@ -580,19 +581,24 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
     if ((center - p3d).norm() < update_range_)
     {
       /* inflate the point */
-      for (int x = -ifn; x <= ifn; ++x)
-        for (int y = -ifn; y <= ifn; ++y)
+      for (int x = -ifn; x <= ifn; ++x){
+        for (int y = -ifn; y <= ifn; ++y){
           for (int z = -ifn; z <= ifn; ++z)
           {
             p3d_inf(0) = pt_inf.x = pt.x + x * resolution_sdf_;
             p3d_inf(1) = pt_inf.y = pt.y + y * resolution_sdf_;
             p3d_inf(2) = pt_inf.z = pt.z + 0.5 * z * resolution_sdf_;
-
             this->setOccupancy(p3d_inf);
 
             if (pt_inf.z < 2.0)
               cloud_inflate_vis_.push_back(pt_inf);
           }
+        }
+      }
+      box_t b(point_t(pt_inf.x, pt_inf.y, pt_inf.z), point_t(pt_inf.x+resolution_sdf_
+                            , pt_inf.y+resolution_sdf_, pt_inf.z+resolution_sdf_));
+      obs_tree.insert(value_t(b, obs_counter));
+      obs_counter++;
     }
   }
   cloud_inflate_vis_.width = cloud_inflate_vis_.points.size();
@@ -613,12 +619,33 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
       for (double cy = center(1) - update_range_; cy <= center(1) + update_range_; cy += resolution_sdf_)
       {
         this->setOccupancy(Eigen::Vector3d(cx, cy, ceil_height_));
+        box_t b(point_t(cx, cy, ceil_height_), point_t(cx+resolution_sdf_
+                            , cy+resolution_sdf_, ceil_height_+resolution_sdf_));
+        obs_tree.insert(value_t(b, obs_counter));
+        obs_counter++;
       }
   }
-
   /* ---------- update ESDF ---------- */
   this->setUpdateRange(center - disp, center + disp);
   this->updateESDF3d(true);
+}
+
+std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Vector3d x
+                , int max_neighbours){
+        // std::vector<value_t> returned_values;
+        std::vector<Eigen::Vector3d> neighbour_points;
+        for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
+                it != obs_tree.qend() ; ++it )
+        {
+            Eigen::Vector3d pose(3);
+            auto cube = (*it).first;
+            double min_x = bg::get<bg::min_corner, 0>(cube);
+            double min_y = bg::get<bg::min_corner, 1>(cube);
+            double min_z = bg::get<bg::min_corner, 2>(cube);
+            pose << min_x, min_y, min_z;
+            neighbour_points.push_back(pose);
+        }
+        return neighbour_points;        
 }
 
 void SDFMap::init(ros::NodeHandle& nh)

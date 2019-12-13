@@ -118,6 +118,7 @@ void PlanningFSM::printExecState()
 void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 {
   static int fsm_num = 0;
+  static int avoid_if_cant_calculate = 0;
   fsm_num++;
   if (fsm_num == 100)
   {
@@ -180,10 +181,14 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       }
       else
       {
-        //TODO fix this place
-        // have_goal_ = false;
-        // changeExecState(WAIT_GOAL, "FSM");
-        changeExecState(GEN_NEW_TRAJ, "FSM");
+        if(MAX_TRIES_FOR_FIND_PATH == avoid_if_cant_calculate){
+          have_goal_ = false;
+          avoid_if_cant_calculate = 0;
+          changeExecState(WAIT_GOAL, "FSM");
+        }else{
+          changeExecState(GEN_NEW_TRAJ, "FSM");
+          avoid_if_cant_calculate++;
+        }
       }
       break;
     }

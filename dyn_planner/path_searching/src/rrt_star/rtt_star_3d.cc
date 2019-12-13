@@ -127,7 +127,7 @@ namespace hagen {
         loto::hagen::ExtendedLQR extendedLQR;
         for(auto pose : poses){
             std::vector<Eigen::Vector3d> obs_poses;
-            search_space.get_free_space(pose, 10);
+            search_space.get_free_space(pose, obs_poses, 10);
             for(auto obs : obs_poses){
                 loto::hagen::Obstacle obs_pose;
                 obs_pose.pos[0] = obs[0];
@@ -138,12 +138,10 @@ namespace hagen {
                 extendedLQR.obstacles.push_back(obs_pose);
             }
         }
+
         std::cout<< "Number of obstacles in the space: " << extendedLQR.obstacles.size() << std::endl;
         std::vector<loto::hagen::Matrix<U_DIM, X_DIM>> L;
         std::vector<loto::hagen::Matrix<U_DIM>> l;
-
-        // std::vector<loto::hagen::Matrix<U_DIM, X_DIM>> L;
-        // std::vector<loto::hagen::Matrix<U_DIM>> l;
 
         extendedLQR.xGoal = loto::hagen::zero<X_DIM>();
         extendedLQR.xGoal[0] = x_goal[0];

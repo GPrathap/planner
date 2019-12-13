@@ -80,20 +80,21 @@ namespace hagen {
 
     std::vector<Eigen::Vector3d> SearchSpace::nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours){
-        // std::vector<value_t> returned_values;
-        std::vector<Eigen::Vector3d> neighbour_points;
-        for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
-                it != obs_tree.qend() ; ++it )
-        {
-            Eigen::Vector3d pose(3);
-            auto cube = (*it).first;
-            double min_x = bg::get<bg::min_corner, 0>(cube);
-            double min_y = bg::get<bg::min_corner, 1>(cube);
-            double min_z = bg::get<bg::min_corner, 2>(cube);
-            pose << min_x, min_y, min_z;
-            neighbour_points.push_back(pose);
-        }
-        return neighbour_points;        
+        // // std::vector<value_t> returned_values;
+        // std::vector<Eigen::Vector3d> neighbour_points;
+        // for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
+        //         it != obs_tree.qend() ; ++it )
+        // {
+        //     Eigen::Vector3d pose(3);
+        //     auto cube = (*it).first;
+        //     double min_x = bg::get<bg::min_corner, 0>(cube);
+        //     double min_y = bg::get<bg::min_corner, 1>(cube);
+        //     double min_z = bg::get<bg::min_corner, 2>(cube);
+        //     pose << min_x, min_y, min_z;
+        //     neighbour_points.push_back(pose);
+        // }
+        
+        return edt_env_->nearest_obstacles_to_current_pose(x, max_neighbours);
     }
 
     double SearchSpace::get_free_space(Eigen::Vector3d pose, std::vector<Eigen::Vector3d>& obs_poses, int num_of_obs){
@@ -201,7 +202,7 @@ namespace hagen {
         return neighbour_points;        
     }
 
-     std::vector<double> SearchSpace::arange(double start, double stop, double step) {
+    std::vector<double> SearchSpace::arange(double start, double stop, double step) {
         std::vector<double> values;
         for (double value = start; value < stop; value += step)
             values.push_back(value);
@@ -377,34 +378,14 @@ namespace hagen {
 
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
-        // if(use_whole_search_sapce){
-            std::default_random_engine generator_on_x;
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto x_on = uni_dis_vector[0](generator_on_x);
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto y_on = uni_dis_vector[1](generator_on_x);
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto z_on = uni_dis_vector[2](generator_on_x);
-            random_pose << x_on, y_on, z_on ;
-            // std::cout<< "========================" << random_pose << std::endl;
-        // }
-        // else{
-        //     auto index = *(random_call);
-        //     // std::cout<< "========================1113" << std::endl;
-        //     while(true){
-        //         // std::cout<< "===="<< index << "   " << (*random_points_tank).rows() << std::endl;
-        //         if((index < (*random_points_tank).rows()) && (index>0)){
-        //             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
-        //             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
-        //             // if(is_random_tank_is_ready){
-        //                 random_pose = (*random_points_tank).row(index);
-        //                 // std::cout<< "========================1115" << std::endl;
-        //             // }
-        //             break;
-        //         }
-        //     }
-        // }
-        // std::cout<< "==========||||||||>>>" << random_pose << std::endl;
+        std::default_random_engine generator_on_x;
+        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        auto x_on = uni_dis_vector[0](generator_on_x);
+        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        auto y_on = uni_dis_vector[1](generator_on_x);
+        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        auto z_on = uni_dis_vector[2](generator_on_x);
+        random_pose << x_on, y_on, z_on ;
         return random_pose;
     }
 

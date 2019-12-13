@@ -17,6 +17,11 @@ std::vector<Eigen::Vector3d> EDTEnvironment::getMapCurrentRange(){
     return this->sdf_map_->getMapCurrentRange(); 
 }
 
+std::vector<Eigen::Vector3d> EDTEnvironment::nearest_obstacles_to_current_pose(Eigen::Vector3d x
+                , int max_neighbours){
+                  return this->sdf_map_->nearest_obstacles_to_current_pose(x, max_neighbours);
+}
+
 void EDTEnvironment::evaluateEDTWithGrad(const Eigen::Vector3d& pos, const double& time, double& dist,
                                          Eigen::Vector3d& grad)
 {
