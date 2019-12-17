@@ -3,8 +3,7 @@
 namespace kamaz {
 namespace hagen {
     SearchSpace::SearchSpace() {
-        //  random_points_tank = std::make_shared<Eigen::MatrixXd>();
-
+         random_points_tank = std::make_shared<Eigen::MatrixXd>();
     }
 
     void SearchSpace::init_search_space(Eigen::VectorXd dimension_lengths
@@ -213,8 +212,11 @@ namespace hagen {
             Eigen::Vector3d cent, int npts){
         int ndims = covmat.rows();
         number_of_points_in_random_tank = npts;
-        // *random_points_tank = Eigen::MatrixXd::Zero(npts, ndims);
+        // std::cout<< "======6" << std::endl;
+        *random_points_tank = Eigen::MatrixXd::Zero(npts, ndims);
+        // std::cout<< "======8" << std::endl;
         generate_samples_from_ellipsoid(covmat, rotation_mat, cent);
+        // std::cout<< "======9" << std::endl;
         is_random_tank_is_ready = true;
         return;
     }
@@ -296,50 +298,65 @@ namespace hagen {
     }
 
     void SearchSpace::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat, Eigen::Vector3d cent){
-        // int ndims = (*random_points_tank).cols();
-        // int npts = (*random_points_tank).rows();
-        // Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
-        // eigensolver.compute(covmat);
-        // Eigen::Vector3d eigen_values = eigensolver.eigenvalues().real();
-        // Eigen::MatrixXd eigen_vectors = eigensolver.eigenvectors().real();
-        // std::vector<std::tuple<double, Eigen::Vector3d>> eigen_vectors_and_values;
+        // std::cout<< "======11" << std::endl;
 
-        // for(int i=0; i<eigen_values.size(); i++){
-        //     std::tuple<double, Eigen::Vector3d> vec_and_val(eigen_values[i], eigen_vectors.row(i));
-        //     eigen_vectors_and_values.push_back(vec_and_val);
-        // }
-        // std::sort(eigen_vectors_and_values.begin(), eigen_vectors_and_values.end(),
-        //     [&](const std::tuple<double, Eigen::Vector3d>& a, const std::tuple<double, Eigen::Vector3d>& b) -> bool{
-        //         return std::get<0>(a) <= std::get<0>(b);
-        // });
-        // int index = 0;
-        // for(auto const vect : eigen_vectors_and_values){
-        //     eigen_values(index) = std::get<0>(vect);
-        //     eigen_vectors.row(index) = std::get<1>(vect);
-        //     index++;
-        // }
+        int ndims = (*random_points_tank).cols();
+        int npts = (*random_points_tank).rows();
+        Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
+        // std::cout<< "======12" << std::endl;
+        eigensolver.compute(covmat);
+        // std::cout<< "======13" << std::endl;
+        Eigen::Vector3d eigen_values = eigensolver.eigenvalues().real();
+        Eigen::MatrixXd eigen_vectors = eigensolver.eigenvectors().real();
+        std::vector<std::tuple<double, Eigen::Vector3d>> eigen_vectors_and_values;
+        // std::cout<< "======14" << std::endl;
+        for(int i=0; i<eigen_values.size(); i++){
+            std::tuple<double, Eigen::Vector3d> vec_and_val(eigen_values[i], eigen_vectors.row(i));
+            eigen_vectors_and_values.push_back(vec_and_val);
+        }
+        std::sort(eigen_vectors_and_values.begin(), eigen_vectors_and_values.end(),
+            [&](const std::tuple<double, Eigen::Vector3d>& a, const std::tuple<double, Eigen::Vector3d>& b) -> bool{
+                return std::get<0>(a) <= std::get<0>(b);
+        });
+        int index = 0;
+        for(auto const vect : eigen_vectors_and_values){
+            eigen_values(index) = std::get<0>(vect);
+            eigen_vectors.row(index) = std::get<1>(vect);
+            index++;
+        }
+        //  std::cout<< "======15" << std::endl;
+        Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
 
-        // Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
-
-        // std::random_device rd{};
-        // std::mt19937 gen{rd()};
-        // std::uniform_real_distribution<double> dis(0, 1);
-        // std::normal_distribution<double> normal_dis{0.0f, 1.0f};
- 
-        // Eigen::MatrixXd pt = Eigen::MatrixXd::Zero(npts, ndims).unaryExpr([&](double dummy){return (double)normal_dis(gen);});
-        // Eigen::VectorXd rs = Eigen::VectorXd::Zero(npts).unaryExpr([&](double dummy){return dis(gen);});
-        // Eigen::VectorXd fac = pt.array().pow(2).rowwise().sum();
-        // Eigen::VectorXd fac_sqrt = fac.array().sqrt();
-        // Eigen::VectorXd rs_pow = rs.array().pow(1.0/ndims);
-        // fac = rs_pow.array()/fac_sqrt.array();
-        // Eigen::VectorXd d = eigen_values_as_matrix.diagonal().array().sqrt();
-        // // std::cout << "============================================>>>>>>" << npts << std::endl;
-        // for(auto i(0); i<npts; i++){
-        //     (*random_points_tank).row(i) = fac(i)*pt.row(i).array();
-        //     Eigen::MatrixXd  fff = ((*random_points_tank).row(i).array()*d.transpose().array());
-        //     Eigen::VectorXd bn = rotation_mat*fff.transpose();
-        //     (*random_points_tank).row(i) = bn.array() + cent.head(3).array();
-        // }
+        std::random_device rd{};
+        std::mt19937 gen{rd()};
+        std::uniform_real_distribution<double> dis(0, 1);
+        std::normal_distribution<double> normal_dis{0.0f, 1.0f};
+        // std::cout<< "======16" << std::endl;
+        Eigen::MatrixXd pt = Eigen::MatrixXd::Zero(npts, ndims).unaryExpr([&](double dummy){return (double)normal_dis(gen);});
+        // std::cout<< "======17" << std::endl;
+        Eigen::VectorXd rs = Eigen::VectorXd::Zero(npts).unaryExpr([&](double dummy){return dis(gen);});
+        // std::cout<< "======18" << std::endl;
+        Eigen::VectorXd fac = pt.array().pow(2).rowwise().sum();
+        // std::cout<< "======19" << std::endl;
+        Eigen::VectorXd fac_sqrt = fac.array().sqrt();
+        // std::cout<< "======211" << std::endl;
+        Eigen::VectorXd rs_pow = rs.array().pow(1.0/ndims);
+        // std::cout<< "======221" << std::endl;
+        fac = rs_pow.array()/fac_sqrt.array();
+        // std::cout<< "======221" << std::endl;
+        Eigen::VectorXd d = eigen_values_as_matrix.diagonal().array().sqrt();
+        // std::cout << "============================================start" << npts << std::endl;
+        for(auto i(0); i<npts; i++){
+            // std::cout << "============================================>>>>>>"<< i << std::endl;
+            (*random_points_tank).row(i) = fac(i)*pt.row(i).array();
+            // std::cout << "=======4====" << std::endl;
+            Eigen::MatrixXd  fff = ((*random_points_tank).row(i).array()*d.transpose().array());
+            // std::cout << "=======4====" << std::endl;
+            Eigen::VectorXd bn = rotation_mat*fff.transpose();
+            // std::cout << "=======12====" << std::endl;
+            (*random_points_tank).row(i) = bn.array() + cent.head(3).array();
+        }
+        // std::cout << "============================================end" << npts << std::endl;
         // std::cout << "points: " << (*random_points_tank) << std::endl;
     }
 
@@ -364,7 +381,9 @@ namespace hagen {
     }
 
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
-       double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time); 
+    //    std::cout<< "=========1" << std::endl;
+       double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time);
+    //    std::cout<< "=========2" << std::endl;
        if(avoidance_width < dis){
            return true;
        }
@@ -378,27 +397,53 @@ namespace hagen {
 
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
-        std::default_random_engine generator_on_x;
-        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        auto x_on = uni_dis_vector[0](generator_on_x);
-        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        auto y_on = uni_dis_vector[1](generator_on_x);
-        generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        auto z_on = uni_dis_vector[2](generator_on_x);
-        random_pose << x_on, y_on, z_on ;
+        // std::default_random_engine generator_on_x;
+        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        // auto x_on = uni_dis_vector[0](generator_on_x);
+        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        // auto y_on = uni_dis_vector[1](generator_on_x);
+        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        // auto z_on = uni_dis_vector[2](generator_on_x);
+        // random_pose << x_on, y_on, z_on ;
+
+        if(use_whole_search_sapce){
+            std::default_random_engine generator_on_x;
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto x_on = uni_dis_vector[0](generator_on_x);
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto y_on = uni_dis_vector[1](generator_on_x);
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto z_on = uni_dis_vector[2](generator_on_x);
+            random_pose << x_on, y_on, z_on ;
+        }
+        else{
+            while(true){
+                int index = *(random_call);
+                std::cout<< "index: " << index << std::endl;
+                if((index < (*random_points_tank).rows()) && (index>0)){
+                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
+                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
+                    if(is_random_tank_is_ready){
+                        random_pose = (*random_points_tank).row(index);
+                        // std::cout<< "========================1115" << std::endl;
+                    }
+                    break;
+                }
+            }
+        }
         return random_pose;
     }
 
     Eigen::Vector3d SearchSpace::sample_free(){
-        int number_of_attempts = 0;
+        static int number_of_attempts = 0;
         while(true){
             number_of_attempts++;
             if(number_of_attempts>number_of_max_attempts){
-                std::cout<< "Giving whole space for searching..." << std::endl;
+                BOOST_LOG_TRIVIAL(info) << FCYN("Giving whole space for searching...");
                 use_whole_search_sapce = true;
             }
             auto x = sample();
-            // std::cout<< "sample--->" << x <<std::endl;
+            // std::cout<< "==========number_of_attempts=======" << number_of_attempts <<std::endl;
             if(obstacle_free(x, -1.0)){
                 // std::cout<< "free sample--->" << x.transpose() <<std::endl;
                 number_of_attempts = 0;
@@ -419,7 +464,7 @@ namespace hagen {
         , [](const int s1, const int s2) -> bool{
                 return s1 < s2;
         });
-        // std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
+        std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
         for(int i=0; i<len; i++){
             Eigen::Vector3d search_rect(3);
             search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
@@ -438,7 +483,7 @@ namespace hagen {
         std::vector<double> res_on_x = linspace(start[0], end[0], resolution);
         std::vector<double> res_on_y = linspace(start[1], end[1], resolution);
         std::vector<double> res_on_z = linspace(start[2], end[2], resolution);
-        // std::cout<< "===================:collision_free" << std::endl;
+        // std::cout<< "+===================:collision_free" << std::endl;
         // std::cout<<  res_on_x.size() << " " << res_on_y.size() <<" "<< res_on_z.size() << std::endl;
         int len = std::min({res_on_x.size(), res_on_y.size(), res_on_z.size()}
         , [](const int s1, const int s2) -> bool{

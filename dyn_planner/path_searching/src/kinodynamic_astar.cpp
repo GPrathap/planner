@@ -73,14 +73,42 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.map_size_3d_ = map_size_3d_;
   int times = (number_of_paths > 0) ? number_of_paths: 1;
   rrt_avoidance_dist = (rrt_avoidance_dist > 0) ? rrt_avoidance_dist: 0.6;
+  int number_of_random_points_in_search_space = 200;
   Eigen::VectorXd x_dimentions(6);
   x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
   std::cout<< "Dimention of map "<< x_dimentions << std::endl;
   for (int i = 0; i < times; i++) {
+      // std::cout<< "======11" << std::endl;
       kamaz::hagen::SearchSpace X;
-      X.init_search_space(x_dimentions, 'max_samples', rrt_avoidance_dist, 200);
-      X.use_whole_search_sapce = true;
+      // std::cout<< "======12" << std::endl;
+      X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist, 10);
+      // std::cout<< "======14" << std::endl;
+      X.use_whole_search_sapce = false;
       X.setEnvironment(this->edt_env_);
+      if(!X.use_whole_search_sapce){
+                // std::cout<< "======1" << end_pt_.state.head(3) << std::endl;
+                // std::cout<< "======1" << start_pt_.state.head(3) << std::endl;
+                Eigen::Vector3d center = (end_pt_.state.head(3) - start_pt_.state.head(3));
+                // Eigen::Vector3d new_center_point(4);
+                // std::cout<< "======2" << std::endl;
+                Eigen::MatrixXd covmat = Eigen::MatrixXd::Zero(3,3);
+                covmat(0,0) = (std::abs(center[0]) < 4.0) ? 4.0 : std::abs(center[0]);
+                covmat(1,1) = (std::abs(center[1]) < 4.0) ? 4.0 : std::abs(center[1]);
+                covmat(2,2) = (std::abs(center[2]) < 4.0) ? 4.0 : std::abs(center[2]);
+                // std::cout<< "======3" << std::endl;
+                center = (end_pt + start_pt)/2.0;
+                Eigen::Vector3d a(1,0,0);
+                Eigen::Matrix3d rotation_matrix;
+                rotation_matrix = Eigen::MatrixXd::Identity(3,3);
+                // std::cout<< "======4" << std::endl;
+                // common_utils.get_roration_matrix(start_pt.head(3), end_pt.head(3), rotation_matrix);
+                // std::cout<< "======5" << std::endl;
+                // Eigen::Quaternion<double> q;
+                // q = rotation_matrix;
+                // // int max_tries = 3;
+                // // int try_index = 0;
+                X.generate_search_sapce(covmat, rotation_matrix, center, number_of_random_points_in_search_space);
+      }
       kamaz::hagen::RRTStar3D* rrtstart3d;
       rrt_planner_options.search_space = X;
       rrtstart3d = new kamaz::hagen::RRTStar3D();

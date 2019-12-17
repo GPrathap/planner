@@ -74,7 +74,7 @@ namespace hagen {
         // }
     }
 
-       bool RRTBase::isEdge(PathNode point, int tree){
+    bool RRTBase::isEdge(PathNode point, int tree){
         std::array<double, 3> _key = {point.state[0], point.state[1], point.state[2]};
         return (trees[tree].E.count(_key)) > 0 ? true : false;
     }
@@ -253,11 +253,18 @@ namespace hagen {
 
     bool RRTBase::connect_to_point(int tree, PathNode x_a, PathNode x_b){
         // std::cout<< "RRTBase::connect_to_point: "<< x_b.transpose() << std::endl;
-        // std::cout<< "RRTBase::connect_to_point: "<< x_a.transpose() << std::endl;
+        // std::cout<< "RRTBase::connect_to_point: "<< x_a.state.head(3).transpose() << std::endl;
+        auto dis = (x_a.state.head(3)-x_b.state.head(3)).norm();
+        // std::cout<< "RRTBase::connect_to_point distance: " <<  dis << std::endl;
+        if(dis == 0){
+            BOOST_LOG_TRIVIAL(info) << FRED("RRTBase::connect_to_point: two points are in the same location");
+            return false;
+        }
         auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3), -1);
         auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r, -1);
         // std::cout<< "RRTBase::connect_to_point: "<< g1 << " " << g2 << std::endl;
-        if(( g1 == 1) && ( g2 == 1)){
+
+        if((g1 == 1) && (g2 == 1)){
             add_vertex(tree, x_b);
             add_edge(tree, x_b, x_a);
             return true;
@@ -382,20 +389,24 @@ namespace hagen {
     double RRTBase::path_cost(PathNode a, PathNode b, int tree){
         double cost = 0;
         // std::cout<< "RRTBase::path_cost" << std::endl;
-        // std::cout<< "RRTBase::path_cost: a" << a.transpose() << std::endl;
-        // std::cout<< "RRTBase::path_cost: b" << b.transpose() << std::endl;
+        // std::cout<< "RRTBase::path_cost: a" << a.state.head(3).transpose() << std::endl;
+        // std::cout<< "RRTBase::path_cost: b" << b.state.head(3).transpose() << std::endl;
         auto edges = trees[tree].E;
         while(!is_equal_vectors(a, b)){
-            // std::cout<< "RRTBase::path_cost:a "<< a.transpose() << "  b: "<< b.transpose() << std::endl;
+            // std::cout<< "RRTBase::path_cost:a "<< a.state.head(3).transpose() << "  b: "<< b.state.head(3).transpose() << std::endl;
             std::array<double, 3> _key = {b.state[0], b.state[1], b.state[2]};
             if(edges.count(_key)<1){
                 // std::cout<< "RRTBase::path_cost:empty edge " << std::endl;
                 break;
             }
             auto p = edges[_key];
-            // std::cout<< "-----423:"<< p.transpose() << std::endl;
-            cost += (b.state.head(3)-p.state.head(3)).norm();
-            // std::cout<< "-----424"<< a << "  "<< b << std::endl;
+            // std::cout<< "-----423:"<< p.state.head(3).transpose() << std::endl;
+            auto current_cost = (b.state.head(3)-p.state.head(3)).norm();
+            if(current_cost == 0){
+                // std::cout<< "Two edges are on the same location"<< std::endl;
+                break;
+            }
+            cost += current_cost;
             b = p;
         }
         // std::cout<< "RRTBase::path_cost: cost: " << cost << std::endl;

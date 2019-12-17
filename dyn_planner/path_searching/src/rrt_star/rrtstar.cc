@@ -47,9 +47,11 @@ namespace hagen {
             auto tent_cost = path_cost(x_init, x_new, tree) + segment_cost(x_new, x_near);
             if((tent_cost < curr_cost) && (X.collision_free(x_near.state.head(3), x_new.state.head(3), r, -1.0))){
                 // std::cout<< "========RRTStar::rewrite======"<< std::endl;
-                // std::cout<< x_near << std::endl;
-                // std::cout<< x_new << std::endl;
-                setEdge(x_near, x_new, tree);
+                // std::cout<< x_near.state.head(3) << std::endl;
+                // std::cout<< x_new.state.head(3) << std::endl;
+                if((x_near.state.head(3)-x_new.state.head(3)).norm() != 0){
+                            setEdge(x_near, x_new, tree);
+                }
             }
         }
     }
@@ -112,7 +114,7 @@ namespace hagen {
                 //        continue;
                 //    }
                 //    std::cout<< "rstar loop...." << std::endl;
-                // std::cout<< "---------------------------4" << std::endl;
+                //    std::cout<< "---------------------------4" << std::endl;
                    auto l_near = get_nearby_vertices(0, x_init, x_new);
                 //    std::cout<< "---------------------------5" << std::endl;
                    connect_shortest_valid(0, x_new, l_near);

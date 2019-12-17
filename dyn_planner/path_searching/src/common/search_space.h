@@ -27,6 +27,7 @@
 #include <boost/foreach.hpp>
 #include "../utils/common_utils.h"
 #include "plan_env/edt_environment.h"
+#include "../../include/colours.h"
 #include <random>
 
 namespace kamaz {
@@ -122,7 +123,7 @@ namespace hagen {
                 int dementions = 3;
                 Eigen::VectorXd dim_lengths;
                 // std::vector<uint64_t> res;
-                // std::shared_ptr<Eigen::MatrixXd> random_points_tank;
+                std::shared_ptr<Eigen::MatrixXd> random_points_tank;
                 int number_of_rand_points;
                 Random_call* random_call;
                 bool use_whole_search_sapce = false;
