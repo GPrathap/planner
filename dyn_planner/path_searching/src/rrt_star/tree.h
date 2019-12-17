@@ -34,6 +34,7 @@ namespace hagen {
                 int time_idx;
                 char node_state;
                 bool is_valid = true;
+                bool is_horizon = false;
                 PathNode()
                 {
                     node_state = 0;

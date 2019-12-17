@@ -30,11 +30,5 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall")
 
-add_library( bspline_opt 
-    src/bspline_optimizer.cpp 
-    src/non_uniform_bspline.cpp 
-    )
-target_link_libraries( bspline_opt
-    ${catkin_LIBRARIES} 
-    /usr/local/lib/libnlopt.so
-    )  
+
+

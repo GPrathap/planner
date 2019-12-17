@@ -84,6 +84,13 @@ namespace hagen {
         add_edge(0, x_init, none_pose);
         // std::cout<< "-----21" << std::endl;
         std::vector<PathNode> path;
+        if(!X.obstacle_free(x_init.state.head(3), -1)){
+            BOOST_LOG_TRIVIAL(error) << FRED("Start position here is an obstacle");
+            return path;
+        }
+        if(!X.obstacle_free(x_goal.state.head(3), -1)){
+            BOOST_LOG_TRIVIAL(error) << FRED("Goal position here is an obstacle");
+        }
         while(true){
             for(auto const q : Q){
                 for(int i=0; i<q[1]; i++){

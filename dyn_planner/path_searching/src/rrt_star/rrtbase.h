@@ -63,6 +63,7 @@ namespace hagen {
             double min_acceptable;
             bool init_search;
             bool dynamic;
+            double horizon;
             Eigen::Vector3d origin_;
             Eigen::Vector3d map_size_3d_;
             RRTKinoDynamicsOptions kino_options;

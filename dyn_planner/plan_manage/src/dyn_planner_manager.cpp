@@ -137,7 +137,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
   cout << "ts: " << ts << endl;
   // cout << "sample:\n" << samples.transpose() << endl;
-  cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
+  // cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
   
   kamaz::hagen::TrajectoryPlanning trajectory_planner1;
   trajectory_planner1.generate_ts(samples_rrt);

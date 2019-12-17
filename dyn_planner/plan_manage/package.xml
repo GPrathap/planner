@@ -56,9 +56,11 @@
   <build_depend>bspline_opt</build_depend>
   <build_depend>traj_utils</build_depend>
   <build_depend>message_runtime</build_depend>
+  <build_depend>mavros</build_depend>
 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>mavros</build_export_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -67,7 +69,7 @@
   <exec_depend>bspline_opt</exec_depend>
   <exec_depend>traj_utils</exec_depend>
   <exec_depend>message_runtime</exec_depend>
-
+   <exec_depend>mavros</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

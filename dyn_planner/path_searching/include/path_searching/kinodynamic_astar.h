@@ -166,6 +166,8 @@ private:
   double proc = 0.1;
   int save_data_index = 0;
   double rrt_avoidance_dist = 0.6;
+  double lqr_min_dis = 1.0;
+  double lqr_min_dt = 0.1;
   double lqr_feasibility_max_vel = 0.25;
   /* map */
   double resolution_, inv_resolution_, time_resolution_, inv_time_resolution_;
@@ -211,7 +213,6 @@ public:
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
   std::vector<std::vector<kamaz::hagen::PathNode>> smoothed_paths;
-  std::vector<double> path_costs;
   int index_of_loweres_cost = -1;
   typedef shared_ptr<KinodynamicAstar> Ptr;
 };

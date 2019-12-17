@@ -37,21 +37,21 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   kamaz::hagen::PathNode end_pt_;
   end_pt_.state.head(3) = end_pt;
   end_pt_.state.tail(3) = end_v;
-
+  
   kamaz::hagen::CommonUtils common_utils;
 
   kamaz::hagen::RRTKinoDynamicsOptions kino_ops;
   kino_ops.max_vel = max_vel_;
   kino_ops.max_fes_vel = lqr_feasibility_max_vel;
-  kino_ops.dt = 0.5;
+  kino_ops.dt = lqr_min_dt;
   kino_ops.max_itter = 30;
   kino_ops.ell = 20;
   kino_ops.initdt = 0.05;
-  kino_ops.min_dis = 1.0;
-
+  kino_ops.min_dis = lqr_min_dis;
+ 
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
-  dim_in << 4, 8;
+  dim_in << 4, 6;
   Q.push_back(dim_in);
 
   start_vel_ = start_v;
@@ -68,15 +68,17 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   rrt_planner_options.max_samples = max_samples;
   rrt_planner_options.resolution = r; 
   rrt_planner_options.pro = proc;
+  rrt_planner_options.horizon = horizon_;
   rrt_planner_options.origin_ = origin_;
   rrt_planner_options.map_size_3d_ = map_size_3d_;
   int times = (number_of_paths > 0) ? number_of_paths: 1;
   rrt_avoidance_dist = (rrt_avoidance_dist > 0) ? rrt_avoidance_dist: 0.6;
+  Eigen::VectorXd x_dimentions(6);
+  x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
+  std::cout<< "Dimention of map "<< x_dimentions << std::endl;
   for (int i = 0; i < times; i++) {
-      Eigen::VectorXd x_dimentions(6);
-      x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
       kamaz::hagen::SearchSpace X;
-      X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist, 200);
+      X.init_search_space(x_dimentions, 'max_samples', rrt_avoidance_dist, 200);
       X.use_whole_search_sapce = true;
       X.setEnvironment(this->edt_env_);
       kamaz::hagen::RRTStar3D* rrtstart3d;
@@ -87,29 +89,52 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   }
 
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
+
+  kamaz::hagen::RRTStar3D rrtstart3d_procesor;
+  kamaz::hagen::SearchSpace X;
+  X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist, 200);
+  X.use_whole_search_sapce = true;
+  X.setEnvironment(this->edt_env_);
+  rrt_planner_options.search_space = X;
+  rrtstart3d_procesor.rrt_init(rewrite_count, rrt_planner_options, common_utils, save_data_index);
+
   bool is_path_found = false;
   smoothed_paths.clear();
-  path_costs.clear();
-  double lowerst_cost = 1000000;
+  double lowerst_cost_complete = 1000000;
+  double lowerst_cost_horizon = 1000000;
   index_of_loweres_cost = -1;
+  int index_of_loweres_cost_horizon = -1;
   for(auto result : pending_data){
-    std::vector<kamaz::hagen::PathNode> smoothed_path = result.get();
+    std::vector<kamaz::hagen::PathNode> _path = result.get();
     int counter=0;
-    if(smoothed_path.size()>2){
-          smoothed_paths.push_back(smoothed_path);
-          auto cost = get_distance(smoothed_path);
-          path_costs.push_back(cost);
-          if(lowerst_cost > cost){
-              lowerst_cost = cost;
+    if(_path.size()>1){
+          smoothed_paths.push_back(_path);
+          auto cost = get_distance(_path);
+          bool is_horizon = _path.back().is_horizon;
+          if(!is_horizon){
+            if(lowerst_cost_complete > cost){
+              lowerst_cost_complete = cost;
               index_of_loweres_cost = counter;
+            }
+          }else{
+            if(lowerst_cost_horizon > cost){
+              lowerst_cost_horizon = cost;
+              index_of_loweres_cost_horizon = counter;
+            }
           }
           counter++;
-      }   
+    }   
+  }
+  if(index_of_loweres_cost == -1){
+    index_of_loweres_cost = index_of_loweres_cost_horizon;
   }
   std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
+    std::vector<kamaz::hagen::PathNode> smoothed_path;
+    rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_loweres_cost], smoothed_path);
+    smoothed_paths[index_of_loweres_cost] = smoothed_path;
     return REACH_HORIZON;
   }else{
     std::cout<< "No path found..." << std::endl;
@@ -148,6 +173,9 @@ void KinodynamicAstar::setParam(ros::NodeHandle& nh)
   nh.param("search/number_of_paths", number_of_paths, -1);
   nh.param("search/rrt_avoidance_dist", rrt_avoidance_dist, -1.0);
   nh.param("search/lqr_feasibility_max_vel", lqr_feasibility_max_vel, -1.0);
+  nh.param("search/lqr_min_dis", lqr_min_dis, -1.0);
+  nh.param("search/lqr_min_dt", lqr_min_dt, -1.0);
+
   cout << "margin:" << margin_ << endl;
 }
 

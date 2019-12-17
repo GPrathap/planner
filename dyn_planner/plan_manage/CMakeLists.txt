@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   bspline_opt
   traj_utils
   message_generation
+  mavros
 )
 
 # Generate messages in the 'msg' folder

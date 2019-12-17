@@ -5,10 +5,12 @@
 #include "quadrotor_msgs/PositionCommand.h"
 #include "std_msgs/Empty.h"
 #include "visualization_msgs/Marker.h"
-
+#include <mavros_msgs/PositionTarget.h>
+#include <mavros_msgs/GlobalPositionTarget.h>
+#include <geometry_msgs/TwistStamped.h>
 using namespace dyn_planner;
 
-ros::Publisher state_pub, pos_cmd_pub, traj_pub;
+ros::Publisher state_pub, pos_cmd_pub, traj_pub, pos_pub, vel_pub;
 
 nav_msgs::Odometry odom;
 
@@ -190,15 +192,39 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.velocity.y = vel(1);
   cmd.velocity.z = vel(2);
 
-  // cmd.acceleration.x = acc(0);
-  // cmd.acceleration.y = acc(1);
-  // cmd.acceleration.z = acc(2);
-
   cmd.acceleration.x = 0;
   cmd.acceleration.y = 0;
   cmd.acceleration.z = 0;
 
+  // auto target = boost::make_shared<mavros_msgs::PositionTarget>();
+
+  // target->header.stamp = time_now;
+	// target->header.frame_id = "world";
+
+	// // target->position.x = pos(0);
+	// // target->position.y = pos(1);
+	// // target->position.z = pos(2);
+
+  // target->velocity.x = vel(0);
+	// target->velocity.y = vel(1);
+	// target->velocity.z = vel(2);
+
+  // target->acceleration_or_force.x = 0;
+	// target->acceleration_or_force.y = 0;
+	// target->acceleration_or_force.z = 0;
+
+  geometry_msgs::TwistStamped ctr_msg;
+
+  ctr_msg.twist.linear.x = vel(0);
+  ctr_msg.twist.linear.y = vel(1);
+  ctr_msg.twist.linear.z = vel(2);
+
+	// target->yaw = tgt.yaw;
+	// target->yaw_rate = tgt.yaw_rate;
+
+  vel_pub.publish(ctr_msg);
   pos_cmd_pub.publish(cmd);
+  // pos_pub.publish(target);
 
   drawState(pos, vel, 0, Eigen::Vector4d(0, 1, 0, 1));
   drawState(pos, acc, 1, Eigen::Vector4d(0, 0, 1, 1));
@@ -225,6 +251,8 @@ int main(int argc, char** argv) {
   pos_cmd_pub =
       node.advertise<quadrotor_msgs::PositionCommand>("/position_cmd", 50);
 
+  pos_pub = node.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local", 50);
+  vel_pub = node.advertise<geometry_msgs::TwistStamped> ("/mavros/setpoint_velocity/cmd_vel", 50);
   ros::Timer vis_timer = node.createTimer(ros::Duration(0.5), visCallback);
   traj_pub = node.advertise<visualization_msgs::Marker>("planning/traj", 10);
 

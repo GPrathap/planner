@@ -25,8 +25,8 @@ namespace hagen {
             std::cout<< "Path can not be found" << std::endl;
             return path;
         }
-        std::vector<PathNode> smoothed_path;
-        get_smoothed_waypoints(path, smoothed_path);
+        // std::vector<PathNode> smoothed_path;
+        // get_smoothed_waypoints(path, smoothed_path);
         // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
 
         // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
@@ -37,9 +37,10 @@ namespace hagen {
         // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
         // save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
         // save_path(path, stotage_location + "rrt_star_path.npy");
-            // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
-        return smoothed_path;
+        // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        // std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
+        // return smoothed_path;
+        return path;
     }
 
 
@@ -135,7 +136,7 @@ namespace hagen {
                 obs_pose.pos[2] = obs[2];
                 obs_pose.radius = 0.4;
                 obs_pose.dim = 2;
-                extendedLQR.obstacles.push_back(obs_pose);
+                // extendedLQR.obstacles.push_back(obs_pose);
             }
         }
 
@@ -166,18 +167,19 @@ namespace hagen {
 
         loto::hagen::Matrix<X_DIM> xStartInit = extendedLQR.xStart;
         xStartInit[X_DIM-1] = log(opts.initdt);
-        double dt;
+        double dt_lqr;
         bool dynamics_present = true;
         try{
-            dt = extendedLQR.extendedLQRItr(opts.ell, xStartInit, extendedLQR.uNominal, L, l
+            dt_lqr = extendedLQR.extendedLQRItr(opts.ell, xStartInit, extendedLQR.uNominal, L, l
                             , opts.max_itter);
         }catch(const std::runtime_error& error){
             dynamics_present = false;
-            std::cout<< "Using same waypoints..." << std::endl;
+            BOOST_LOG_TRIVIAL(warning) << FYEL("Using same waypoints...");
+            
         }
         if(dynamics_present){
             loto::hagen::Matrix<X_DIM> x = extendedLQR.xStart;
-            x[X_DIM-1] = log(dt);
+            x[X_DIM-1] = log(dt_lqr);
             for (size_t t = 0; t < opts.ell; ++t) {
                 // std::cout << x << std::endl;
                 x = extendedLQR.g(x, L[t]*x + l[t]);
@@ -187,6 +189,12 @@ namespace hagen {
             }
         }else{
             // TODO list...
+            PathNode next_pose;
+            next_pose.state.head(3) = x_start;
+            smoothed_path.push_back(next_pose);
+
+            next_pose.state.head(3) = x_goal;
+            smoothed_path.push_back(next_pose);
         }
     }
 
@@ -307,7 +315,7 @@ namespace hagen {
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-            BOOST_LOG_TRIVIAL(info) << "Next pose of the cant be equal or less than zero..."<< next_pose;
+            BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if( diff < distance){
             return start_position;
@@ -334,7 +342,7 @@ namespace hagen {
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-          BOOST_LOG_TRIVIAL(info) << "Next pose of the cant be equal or less than zero..."<< next_pose;
+          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if( diff < distance){
          return end_position;
@@ -362,7 +370,7 @@ namespace hagen {
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-          BOOST_LOG_TRIVIAL(info) << "Next pose of the cant be equal or less than zero..."<< next_pose;
+          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if(diff < distance){
             poses.push_back(end_position);

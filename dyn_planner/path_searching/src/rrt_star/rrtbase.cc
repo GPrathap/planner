@@ -159,9 +159,9 @@ namespace hagen {
         // x_rand.control_input = drone_dynamics.uNominal;
         auto x_nearest = get_nearest(tree, x_rand);
         auto x_new = steer(x_nearest, x_rand, q[0]);
-        // std::cout<<"RRTBase::new_and_near: x_rand: " << x_rand.transpose() << std::endl;
-        // std::cout<<"RRTBase::new_and_near: x_nearest: " << x_nearest.transpose() << std::endl;
-        // std::cout<<"RRTBase::new_and_near: x_new " << x_new.transpose() << std::endl;
+        // std::cout<<"RRTBase::new_and_near: x_rand: " << x_rand.state.head(3).transpose() << std::endl;
+        // std::cout<<"RRTBase::new_and_near: x_nearest: " << x_nearest.state.head(3).transpose() << std::endl;
+        // std::cout<<"RRTBase::new_and_near: x_new " << x_new.state.head(3).transpose() << std::endl;
         // printEdge(0);
         if(x_new.is_valid){
             sample_taken += 1;
@@ -285,6 +285,12 @@ namespace hagen {
         }
         if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, -1.0)){
             //  std::cout<< "RRTBase::can_connect_to_goal: collision_free true"<< std::endl;
+            return true;
+        }
+        if((x_init.state.head(3)-x_nearest.state.head(3)).norm() > opt.horizon){
+            BOOST_LOG_TRIVIAL(info) << FRED("Horizon is met, not going to plan rest of it");
+            x_goal.is_horizon = true;
+            connect_to_the_goal(0);
             return true;
         }
         return false;
