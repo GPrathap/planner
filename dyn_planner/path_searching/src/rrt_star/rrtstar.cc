@@ -43,14 +43,18 @@ namespace hagen {
     void RRTStar::rewrite(int tree, PathNode x_new, std::vector<std::tuple<double, PathNode>> L_near){
         for (auto const l_near : L_near){
             auto x_near = std::get<1>(l_near);
+            // std::cout<< "============path_cost 1==========" << std::endl;
             auto curr_cost = path_cost(x_init, x_near, tree);
+            // std::cout<< "============path_cost 2==========" << std::endl;
             auto tent_cost = path_cost(x_init, x_new, tree) + segment_cost(x_new, x_near);
-            if((tent_cost < curr_cost) && (X.collision_free(x_near.state.head(3), x_new.state.head(3), r, -1.0))){
+            // std::cout<< "============path_cost 3==========" << std::endl;
+            if((tent_cost < curr_cost)
+                && (X.collision_free(x_near.state.head(3), x_new.state.head(3), r, -1.0))){
                 // std::cout<< "========RRTStar::rewrite======"<< std::endl;
                 // std::cout<< x_near.state.head(3) << std::endl;
                 // std::cout<< x_new.state.head(3) << std::endl;
-                if((x_near.state.head(3)-x_new.state.head(3)).norm() != 0){
-                            setEdge(x_near, x_new, tree);
+                if((x_near.state.head(3)-x_new.state.head(3)).norm() > 0.4){
+                    setEdge(x_near, x_new, tree);
                 }
             }
         }
@@ -64,11 +68,12 @@ namespace hagen {
             // std::cout<<"c_near: " << c_near << std::endl;
             auto x_near = std::get<1>(l_near);
             auto cost_go = cost_to_go(x_near, x_goal);
-            // std::cout<<"cost_go: " << cost_go << std::endl;
+            std::cout<<"cost_go: " << cost_go << std::endl;
             auto is_connected = connect_to_point(tree, x_near, x_new);
             if((c_near+cost_go < c_best) && is_connected){
                 break;
             }
+            std:cout<<"================================noconnected"<< std::endl;
         }
     }
 
@@ -121,6 +126,7 @@ namespace hagen {
                    if (isEdge(x_new, 0)){
                        rewrite(0, x_new, l_near);
                    }
+                   std::cout<< "============end of rewire==========" << std::endl;
                    auto solution = check_solution(path);
                    if(solution){
                        return path;

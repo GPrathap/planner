@@ -7,9 +7,14 @@ namespace hagen{
   //https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d/476311#476311
   void CommonUtils::get_roration_matrix(Eigen::Vector3d a
       , Eigen::Vector3d b, Eigen::Matrix3d& r){
-        a = a/a.norm();
-        double b_norm = b.norm();
-        b = b/b_norm;
+
+        if(a.norm() != 0){
+            a = a/a.norm();
+        }
+        if(b.norm() != 0){
+            b = b/b.norm();
+        }
+
         Eigen::Vector3d v = a.cross(b);
         double s = v.norm();
         double c = a.dot(b);

@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <bspline_opt/non_uniform_bspline.h>
+#include <visualization_msgs/MarkerArray.h>
 
 using std::vector;
 namespace dyn_planner
@@ -47,6 +48,9 @@ public:
                    double size2 = 0.1, Eigen::Vector4d color2 = Eigen::Vector4d(1, 1, 0, 1), int id1 = 0, int id2 = 0);
 
   void drawGoal(Eigen::Vector3d goal, double resolution, Eigen::Vector4d color, int id = 0);
+
+  void publish_marker(visualization_msgs::Marker, int id_
+        , std::string name_space);
 
   typedef std::shared_ptr<PlanningVisualization> Ptr;
 };

@@ -37,7 +37,7 @@ void DynPlannerManager::setEnvironment(const EDTEnvironment::Ptr& env)
   edt_env_ = env;
 }
 
-bool DynPlannerManager::checkTrajCollision()
+bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, bool& intermidiate_goal_is_set)
 {
   /* check collision */
   for (double t = t_start_; t <= t_end_; t += 0.02)
@@ -48,6 +48,11 @@ bool DynPlannerManager::checkTrajCollision()
 
     if (dist < margin_)
     {
+      if( (t-0.2) > t_start_){
+          intermidiate_goal = traj_pos_.evaluateDeBoor(t-0.2);
+          intermidiate_goal_is_set = true;
+      }
+      intermidiate_goal_is_set = false;
       return false;
     }
   }

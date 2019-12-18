@@ -328,7 +328,10 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
   /* ---------- check trajectory ---------- */
   if (exec_state_ == EXEC_STATE::EXEC_TRAJ)
   {
-    bool safe = planner_manager_->checkTrajCollision();
+    Eigen::Vector3d intermidiate_goal;
+    bool intermidiate_goal_is_set = false;
+    bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
+
     if (!safe)
     {
       // cout << "current traj in collision." << endl;
@@ -387,8 +390,13 @@ bool PlanningFSM::planSearchOpt()
         visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
         visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));
-
+        visualization_msgs::Marker marker;
+        bool is_using_whole_space = path_finder_->get_search_space(marker);
+        if(is_using_whole_space){
+          visualization_->publish_marker(marker, 22, "seach_space");
+        }
     }
+
     return true;
   }
   else

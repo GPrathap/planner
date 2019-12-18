@@ -212,9 +212,14 @@ public:
   std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
+  bool get_search_space(visualization_msgs::Marker& marker);
+  void create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
+            , Eigen::Quaternion<double> q);
   std::vector<std::vector<kamaz::hagen::PathNode>> smoothed_paths;
   int index_of_loweres_cost = -1;
+  visualization_msgs::Marker search_space_marker;
   typedef shared_ptr<KinodynamicAstar> Ptr;
+  bool is_using_whole_space = false;
 };
 
 }  // namespace dyn_planner

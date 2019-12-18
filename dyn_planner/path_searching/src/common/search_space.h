@@ -139,6 +139,17 @@ namespace hagen {
                     }
                 };
 
+                double *ellipsoid_grid(int n, int ng );
+                int ellipsoid_grid_count(int n, Eigen::Vector3d radios,
+                                 Eigen::Vector3d center);
+                int i4_ceiling (double x);
+                void r83vec_print_part(int n, double a[], Eigen::Vector3d center_pose, Eigen::Matrix3d rotation_matrix, std::string file_name);
+                void r8mat_write(std::string output_filename, int m, int n, double table[] );
+                double r8vec_min(int n, double r8vec[]);
+                void generate_points( int n, Eigen::Vector3d radios, Eigen::Vector3d center_pose
+                    , Eigen::Matrix3d rotation_matrix);
+                void timestamp();
+
                 GeometryRTreeSearchCallback geometry_rtree_callback;
                 RTree bg_tree;
                 RTree current_trajectory;
@@ -150,6 +161,9 @@ namespace hagen {
                 bool is_random_tank_is_ready = false;
                 int obstacle_counter = 0;
                 double avoidance_width = 0.5;
+            private:
+                double r[3];
+                double c[3];
         };
     }
 }

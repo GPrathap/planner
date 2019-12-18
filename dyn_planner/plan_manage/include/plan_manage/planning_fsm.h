@@ -7,6 +7,7 @@
 #include <vector>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Empty.h>
 
@@ -97,6 +98,7 @@ public:
   }
 
   void init(ros::NodeHandle& nh);
+  bool intermidiate_goal_is_set = false;
 };
 
 }  // namespace dyn_planner

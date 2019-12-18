@@ -75,7 +75,9 @@ public:
   // void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
   void setEnvironment(const EDTEnvironment::Ptr& env);
 
-  bool checkTrajCollision();
+  bool checkTrajCollision(Eigen::Vector3d& intermidiate_goal
+                                                    , bool& intermidiate_goal_is_set);
+
 
   /* ---------- evaluation ---------- */
   void getSolvingTime(double& ts, double& to, double& ta);
