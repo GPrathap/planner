@@ -27,6 +27,7 @@ private:
   /* data */
   ros::NodeHandle node;
   ros::Publisher traj_pub;
+  ros::Publisher search_space_publisher;
 
   void displaySphereList(vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color, int id);
 

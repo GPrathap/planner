@@ -7,8 +7,8 @@ namespace dyn_planner
 PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh)
 {
   node = nh;
-
   traj_pub = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 10);
+  search_space_publisher = node.advertise<visualization_msgs::Marker>("/planning_vis/search_space", 10);
 }
 
 void PlanningVisualization::displaySphereList(vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color,
@@ -52,6 +52,7 @@ void PlanningVisualization::drawBspline(NonUniformBspline bspline, double size, 
   if (!show_ctrl_pts)
     return;
 
+
   Eigen::MatrixXd ctrl_pts = bspline.getControlPoint();
 
   vector<Eigen::Vector3d> ctp;
@@ -61,6 +62,34 @@ void PlanningVisualization::drawBspline(NonUniformBspline bspline, double size, 
     ctp.push_back(pt);
   }
   displaySphereList(ctp, size2, color2, BSPLINE_CTRL_PT + id2 % 100);
+}
+
+void PlanningVisualization::create_marker_point(Eigen::Vector3d _point_on_path,
+        Eigen::MatrixXd covmat, , Eigen::Quaternion<double> q, int id_, std::string name_space){ 
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "world";
+        marker.header.stamp = ros::Time();
+        marker.ns = name_space;
+        marker.id = id_;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.pose.position.x = _point_on_path[0];
+        marker.pose.position.y = _point_on_path[1];
+        marker.pose.position.z = _point_on_path[2];
+        marker.pose.orientation.x = q.x();
+        marker.pose.orientation.y = q.y();
+        marker.pose.orientation.z = q.z();
+        marker.pose.orientation.w = q.w();
+        marker.scale.x = covmat(0,0);
+        marker.scale.y = covmat(1,1);
+        marker.scale.z = covmat(2,2);
+        marker.color.a = 0.2;
+        marker.color.r = 0.0;
+        marker.color.g = 0.0;
+        marker.color.b = 0.8;
+        marker.lifetime = ros::Duration(); 
+        search_space_publisher.publish(marker);
+        return;
 }
 
 void PlanningVisualization::drawGoal(Eigen::Vector3d goal, double resolution, Eigen::Vector4d color, int id)

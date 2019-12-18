@@ -57,13 +57,13 @@
     <param name="manager/time_sample" value="0.5" type="double"/>
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="manager/dynamic" value="$(arg dynamic)" type="int"/>
-    <param name="manager/margin" value="0.1" type="double"/>
+    <param name="manager/margin" value="0.5" type="double"/>
 
   <!-- path searching -->
     <param name="astar/lambda_heu" value="10.0" type="double"/>
     <param name="astar/resolution_astar" value="0.1" type="double"/>
     <param name="astar/time_resolution" value="0.8" type="double"/>
-    <param name="astar/margin" value="0.1" type="double"/>
+    <param name="astar/margin" value="0.5" type="double"/>
     <param name="astar/allocate_num" value="100000" type="int"/>
 
   <!-- path searching -->
@@ -76,7 +76,7 @@
     <param name="search/lambda_heu" value="5.0" type="double"/>
     <param name="search/resolution_astar" value="0.3" type="double"/>
     <param name="search/time_resolution" value="0.8" type="double"/>
-    <param name="search/margin" value="0.4" type="double"/>
+    <param name="search/margin" value="0.5" type="double"/>
     <param name="search/allocate_num" value="100000" type="int"/>
     <param name="search/check_num" value="5" type="int"/>
 

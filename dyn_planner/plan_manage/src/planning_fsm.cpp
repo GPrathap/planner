@@ -387,8 +387,8 @@ bool PlanningFSM::planSearchOpt()
         visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
         visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));
+
     }
-    
     return true;
   }
   else
