@@ -1,4 +1,4 @@
-#include <path_searching/kinodynamic_astar.h>
+#include <path_searching/kinodynamic_rrt_star.h>
 #include <sstream>
 
 using namespace std;
@@ -6,7 +6,7 @@ using namespace Eigen;
 
 namespace dyn_planner
 {
-KinodynamicAstar::~KinodynamicAstar()
+KinodynamicRRTstar::~KinodynamicRRTstar()
 {
   for (int i = 0; i < allocate_num_; i++)
   {
@@ -14,7 +14,7 @@ KinodynamicAstar::~KinodynamicAstar()
   }
 }
 
-void KinodynamicAstar::push_job(kamaz::hagen::RRTStar3D* worker) {
+void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
         ptask_t task = boost::make_shared<task_t>(boost::bind(&kamaz::hagen::RRTStar3D::rrt_planner_and_save
                     , worker));
         boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
@@ -23,7 +23,7 @@ void KinodynamicAstar::push_job(kamaz::hagen::RRTStar3D* worker) {
         io_service.post(boost::bind(&task_t::operator(), task));
 }
 
-int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
+int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
                              Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
   
@@ -45,17 +45,16 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   kino_ops.max_fes_vel = lqr_feasibility_max_vel;
   kino_ops.dt = lqr_min_dt;
   kino_ops.max_itter = 30;
-  kino_ops.ell = 20;
+  kino_ops.ell = lqr_num_of_iteration;
   kino_ops.initdt = 0.05;
   kino_ops.min_dis = lqr_min_dis;
  
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
-  dim_in << 2, 4;
+  dim_in << rrt_star_steer_min, rrt_star_steer_max;
   Q.push_back(dim_in);
 
   start_vel_ = start_v;
-  start_acc_ = start_a;
 
   kamaz::hagen::RRTPlannerOptions rrt_planner_options;
   rrt_planner_options.x_init = start_pt_;
@@ -77,7 +76,6 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   Eigen::VectorXd x_dimentions(6);
   x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
   std::cout<< "Dimention of map "<< x_dimentions << std::endl;
-
   Eigen::MatrixXd covmat;
   Eigen::Vector3d center;
   Eigen::Matrix3d rotation_matrix;
@@ -85,11 +83,8 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   Eigen::Quaternion<double> q;
   is_using_whole_space = false;
   for (int i = 0; i < times; i++) {
-      // std::cout<< "======11" << std::endl;
       kamaz::hagen::SearchSpace X;
-      // std::cout<< "======12" << std::endl;
       X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist, 10);
-      // std::cout<< "======14" << std::endl;
       X.use_whole_search_sapce = is_using_whole_space;
       X.setEnvironment(this->edt_env_);
       if(!X.use_whole_search_sapce){
@@ -107,9 +102,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
                 Eigen::Vector3d a(0,0,1);
                 Eigen::Vector3d b = end_pt_.state.head(3) - start_pt_.state.head(3);
                 // rotation_matrix = Eigen::MatrixXd::Identity(3,3);
-                std::cout<< "======4" << std::endl;
-                common_utils.get_roration_matrix(a,b, rotation_matrix);
-                std::cout<< "======5"<<  rotation_matrix << std::endl;
+                common_utils.get_roration_matrix(a, b, rotation_matrix);
                 // // int max_tries = 3;
                 // // int try_index = 0;
                 X.generate_points(4, radious, center, rotation_matrix);
@@ -128,7 +121,6 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   }
 
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
-
   kamaz::hagen::RRTStar3D rrtstart3d_procesor;
   kamaz::hagen::SearchSpace X;
   X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist, 200);
@@ -181,7 +173,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   }
 }
 
-bool KinodynamicAstar::get_search_space(visualization_msgs::Marker& marker){
+bool KinodynamicRRTstar::get_search_space(visualization_msgs::Marker& marker){
   if(!is_using_whole_space){
     marker = search_space_marker;
     return true;
@@ -189,7 +181,7 @@ bool KinodynamicAstar::get_search_space(visualization_msgs::Marker& marker){
   return false;
 }
 
- void KinodynamicAstar::create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
+ void KinodynamicRRTstar::create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
                 , Eigen::Quaternion<double> q){
         search_space_marker.type = visualization_msgs::Marker::SPHERE;
         search_space_marker.action = visualization_msgs::Marker::ADD;
@@ -211,7 +203,7 @@ bool KinodynamicAstar::get_search_space(visualization_msgs::Marker& marker){
         return;
 }
 
-double  KinodynamicAstar::get_distance(std::vector<kamaz::hagen::PathNode> trajectory_){
+double  KinodynamicRRTstar::get_distance(std::vector<kamaz::hagen::PathNode> trajectory_){
 			double distance = 0.0f;
         if(trajectory_.size() < 1){
             return distance;
@@ -225,7 +217,7 @@ double  KinodynamicAstar::get_distance(std::vector<kamaz::hagen::PathNode> traje
         return distance;
 }
 
-void KinodynamicAstar::setParam(ros::NodeHandle& nh)
+void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
 {
   nh.param("search/max_tau", max_tau_, -1.0);
   nh.param("search/init_max_tau", init_max_tau_, -1.0);
@@ -244,11 +236,13 @@ void KinodynamicAstar::setParam(ros::NodeHandle& nh)
   nh.param("search/lqr_feasibility_max_vel", lqr_feasibility_max_vel, -1.0);
   nh.param("search/lqr_min_dis", lqr_min_dis, -1.0);
   nh.param("search/lqr_min_dt", lqr_min_dt, -1.0);
-
+  nh.param("search/lqr_num_of_iteration", lqr_num_of_iteration, -1);
+  nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1);
+  nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1);
   cout << "margin:" << margin_ << endl;
 }
 
-void KinodynamicAstar::init()
+void KinodynamicRRTstar::init()
 {
   /* ---------- map params ---------- */
   this->inv_resolution_ = 1.0 / resolution_;
@@ -288,12 +282,12 @@ void KinodynamicAstar::init()
   // std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
 }
 
-void KinodynamicAstar::setEnvironment(const EDTEnvironment::Ptr& env)
+void KinodynamicRRTstar::setEnvironment(const EDTEnvironment::Ptr& env)
 {
   this->edt_env_ = env;
 }
 
-void KinodynamicAstar::reset()
+void KinodynamicRRTstar::reset()
 {
   expanded_nodes_.clear();
   path_nodes_.clear();
@@ -313,7 +307,7 @@ void KinodynamicAstar::reset()
   is_shot_succ_ = false;
 }
 
-std::vector<std::vector<Eigen::Vector3d>> KinodynamicAstar::getRRTTrajS(double delta_t){
+std::vector<std::vector<Eigen::Vector3d>> KinodynamicRRTstar::getRRTTrajS(double delta_t){
   std::vector<std::vector<Eigen::Vector3d>> path_list;
   for(auto path_i : smoothed_paths){
     path_list.push_back(getRRTTraj(0, path_i));
@@ -321,7 +315,7 @@ std::vector<std::vector<Eigen::Vector3d>> KinodynamicAstar::getRRTTrajS(double d
   return path_list;
 }
 
-std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path){
+std::vector<Eigen::Vector3d> KinodynamicRRTstar::getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path){
     std::vector<Eigen::Vector3d> state_list;
     for(auto pose : smoothed_path){
       state_list.push_back(pose.state.head(3));
@@ -350,7 +344,7 @@ std::vector<Eigen::Vector3d> KinodynamicAstar::getRRTTraj(double delta_t, std::v
     return state_list;
 }
 
-Eigen::MatrixXd KinodynamicAstar::getSamplesRRT(double& ts, int& K)
+Eigen::MatrixXd KinodynamicRRTstar::getSamplesRRT(double& ts, int& K)
 {
   //  kamaz::hagen::TrajectoryPlanning trajectory_planner(2);
   /* ---------- final trajectory time ---------- */
@@ -382,7 +376,7 @@ Eigen::MatrixXd KinodynamicAstar::getSamplesRRT(double& ts, int& K)
   return samples;
 }
 
-Eigen::Vector3i KinodynamicAstar::posToIndex(Eigen::Vector3d pt)
+Eigen::Vector3i KinodynamicRRTstar::posToIndex(Eigen::Vector3d pt)
 {
   Vector3i idx = ((pt - origin_) * inv_resolution_).array().floor().cast<int>();
   // idx << floor((pt(0) - origin_(0)) * inv_resolution_), floor((pt(1) - origin_(1)) * inv_resolution_),
@@ -390,7 +384,7 @@ Eigen::Vector3i KinodynamicAstar::posToIndex(Eigen::Vector3d pt)
   return idx;
 }
 
-int KinodynamicAstar::timeToIndex(double time)
+int KinodynamicRRTstar::timeToIndex(double time)
 {
   int idx = floor((time - time_origin_) * inv_time_resolution_);
   return idx;

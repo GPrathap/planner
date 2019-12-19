@@ -121,7 +121,7 @@ public:
 };
 
 typedef Eigen::Spline<double, 3> Spline3d;
-class KinodynamicAstar
+class KinodynamicRRTstar
 {
 private:
 
@@ -188,8 +188,8 @@ private:
   std::unique_ptr<boost::asio::io_service::work> service_work;
 
 public:
-  KinodynamicAstar(){};
-  ~KinodynamicAstar();
+  KinodynamicRRTstar(){};
+  ~KinodynamicRRTstar();
 
   enum
   {
@@ -218,8 +218,11 @@ public:
   std::vector<std::vector<kamaz::hagen::PathNode>> smoothed_paths;
   int index_of_loweres_cost = -1;
   visualization_msgs::Marker search_space_marker;
-  typedef shared_ptr<KinodynamicAstar> Ptr;
+  typedef shared_ptr<KinodynamicRRTstar> Ptr;
   bool is_using_whole_space = false;
+  int rrt_star_steer_min = 4;
+  int  rrt_star_steer_max = 6;
+  int lqr_num_of_iteration = 20;
 };
 
 }  // namespace dyn_planner

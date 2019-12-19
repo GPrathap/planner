@@ -17,9 +17,9 @@ namespace hagen {
         int vector_dim = path.rows();
         // way_points = Eigen::MatrixXd::Zero(size_of_the_path, vector_dim); 
         // way_points = path.transpose().block(1, 0, size_of_the_path-1, vector_dim)
-        std::cout<< "-======2 " << std::endl;
+        // std::cout<< "-======2 " << std::endl;
         way_points = path.block(0, 0, vector_dim, size_of_the_path).transpose();
-        std::cout<< "-======3 " << std::endl;
+        // std::cout<< "-======3 " << std::endl;
         // int row_index = 0;
         // for(auto way_point : path){
         //     way_points.row(row_index) = way_point;

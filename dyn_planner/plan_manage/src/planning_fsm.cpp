@@ -40,7 +40,7 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   path_finder0_->setEnvironment(edt_env_);
   path_finder0_->init();
 
-  path_finder_.reset(new KinodynamicAstar);
+  path_finder_.reset(new KinodynamicRRTstar);
   path_finder_->setParam(nh);
   path_finder_->setEnvironment(edt_env_);
   path_finder_->init();
@@ -396,7 +396,6 @@ bool PlanningFSM::planSearchOpt()
           visualization_->publish_marker(marker, 22, "seach_space");
         }
     }
-
     return true;
   }
   else

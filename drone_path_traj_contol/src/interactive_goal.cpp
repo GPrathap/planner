@@ -20,7 +20,6 @@ double getYawFromQuat(geometry_msgs::Quaternion quat)
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
-
   return yaw;
 }
 

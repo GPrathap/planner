@@ -257,11 +257,11 @@ namespace hagen {
         auto dis = (x_a.state.head(3)-x_b.state.head(3)).norm();
         // std::cout<< "RRTBase::connect_to_point distance: " <<  dis << std::endl;
         if(isEdge(x_b, 0)){
-            BOOST_LOG_TRIVIAL(info) << FRED("RRTBase::connect_to_point: acrylic is not allowed");
+            // BOOST_LOG_TRIVIAL(info) << FRED("RRTBase::connect_to_point: acrylic is not allowed");
             return false;
         }
         if(dis < 0.05){
-            BOOST_LOG_TRIVIAL(info) << FRED("RRTBase::connect_to_point: two points are in the same location");
+            // BOOST_LOG_TRIVIAL(info) << FRED("RRTBase::connect_to_point: two points are in the same location");
             return false;
         }
 
@@ -398,7 +398,7 @@ namespace hagen {
         // std::cout<< "RRTBase::path_cost: b" << b.state.head(3).transpose() << std::endl;
         auto edges = trees[tree].E;
         while(!is_equal_vectors(a, b)){
-            std::cout<< "RRTBase::path_cost:a "<< a.state.head(3).transpose() << "  b: "<< b.state.head(3).transpose() << std::endl;
+            // std::cout<< "RRTBase::path_cost:a "<< a.state.head(3).transpose() << "  b: "<< b.state.head(3).transpose() << std::endl;
             std::array<double, 3> _key = {b.state[0], b.state[1], b.state[2]};
             if(edges.count(_key)<1){
                 // std::cout<< "RRTBase::path_cost:empty edge " << std::endl;
@@ -406,11 +406,11 @@ namespace hagen {
             }
             auto p = edges[_key];
 
-            std::cout<< "-----423:"<< p.state.head(3).transpose() << std::endl;
+            // std::cout<< "-----423:"<< p.state.head(3).transpose() << std::endl;
             auto current_cost = (b.state.head(3)-p.state.head(3)).norm();
             // std::cout<< "-----423:current_cost: "<< current_cost << std::endl;
             if(current_cost < 0.05){
-                std::cout<< "Two edges are on the same location"<< std::endl;
+                // std::cout<< "Two edges are on the same location"<< std::endl;
                 break;
             }
             cost += current_cost;

@@ -22,7 +22,7 @@ void DynPlannerManager::setPathFinder0(const Astar::Ptr& finder)
   path_finder0_ = finder;
 }
 
-void DynPlannerManager::setPathFinder(const KinodynamicAstar::Ptr& finder)
+void DynPlannerManager::setPathFinder(const KinodynamicRRTstar::Ptr& finder)
 {
   path_finder_ = finder;
 }
@@ -106,12 +106,12 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   path_finder_->reset();
 
   int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_);
-  if (status == KinodynamicAstar::NO_PATH)
+  if (status == KinodynamicRRTstar::NO_PATH)
   {
     cout << "[planner]: init search fail!" << endl;
     path_finder_->reset();
     status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false, dynamic_, time_start_);
-    if (status == KinodynamicAstar::NO_PATH)
+    if (status == KinodynamicRRTstar::NO_PATH)
     {
       cout << "[planner]: Can't find path." << endl;
       return false;
@@ -197,7 +197,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   // bspline_optimizer_->setControlPoints(control_pts);
   // bspline_optimizer_->setBSplineInterval(ts);
 
-  // if (status != KinodynamicAstar::REACH_END)
+  // if (status != KinodynamicRRTstar::REACH_END)
   //   bspline_optimizer_->optimize(BsplineOptimizer::SOFT_CONSTRAINT, dynamic_, time_start_);
   // else
   //   bspline_optimizer_->optimize(BsplineOptimizer::HARD_CONSTRAINT, dynamic_, time_start_);

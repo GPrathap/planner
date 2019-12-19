@@ -162,23 +162,16 @@ void nav_vel_cb(const geometry_msgs::TwistStampedConstPtr &data) {
 
 
 /*----Функции управления дроном----*/
-
 std::vector<double_t> get_control(quadrotor_msgs::PositionCommand data) {
-    //
     std::vector<double_t> coords_vec = {data.position.x - drone_pose.position.x,
                                         data.position.y - drone_pose.position.y,
                                         data.position.z - drone_pose.position.z};
-
     double current_yaw = getYawFromQuat(drone_pose.orientation);
-
     double_t diff_ang = goal_yaw - current_yaw;
-
     std::vector<double_t> current_acc_vel = {current_vel.twist.linear.x,
                                              current_vel.twist.linear.y,
                                              current_vel.twist.linear.z};
-
     std::vector<double_t> vel_ctr_vec = get_linear_vel_vec(coords_vec, current_acc_vel);
-
     double_t ang = get_angular_vel(diff_ang, current_vel.twist.angular.z, angular_p, angular_d);
     // std::vector<double_t> res_ctr_vec = limit_vector(vel_ctr_vec, max_hor_vel);
     vel_ctr_vec.push_back(ang);
@@ -206,14 +199,11 @@ void set_mode(string new_mode) {
 }
 
 /*----Вспомогательные функции----*/
-
 double_t angle_between(std::vector<double_t> vec1, std::vector<double_t> vec2) {
     // Возвращает угол между двумя двухмерными векторами
-
     double_t x = (vec2[1] - vec1[1]);
     double_t y = -(vec2[0] - vec1[0]);
     double_t res = atan2(x, y) + M_PI;
-
     if (res > M_PI)
         res -= 2 * M_PI;
     if (res < -M_PI)
@@ -236,7 +226,6 @@ std::vector<double_t> limit_vector(std::vector<double_t> r, double_t max_val) {
 
 std::vector<double_t> get_linear_vel_vec(std::vector<double_t> r, std::vector<double_t> vel) {
     // возвращает вектор линейных скоростей
-
     double_t error = norm_d(r);
     std::vector<double_t> v = {0.0, 0.0, 0.0};
     v[0] = r[0] * hor_kp - vel[0] * hor_kd;
@@ -259,11 +248,9 @@ std::vector<double_t> get_linear_vel_vec(std::vector<double_t> r, std::vector<do
 
 double_t get_angular_vel(double_t ang, double_t vel, double_t k, double_t d) {
     // возвращает угловую скорость
-
     if (ang == 0) {
         return 0;
     }
-
     if (ang > M_PI)
         ang -= 2 * M_PI;
     if (ang < -M_PI)
@@ -296,14 +283,12 @@ visualization_msgs::Marker setup_marker(geometry_msgs::Point point) {
     marker.pose.position.x = point.x;
     marker.pose.position.y = point.y;
     marker.pose.position.z = point.z;
-
     return marker;
 }
 
 void set_server_value() {
     /***/
 }
-
 
 double_t norm_d(std::vector<double_t> r) {
     // норма вектора
@@ -318,31 +303,24 @@ double_t degToRad(double_t deg) {
 /*----Главная функция----*/
 
 int main(int argc, char** argv) {
-
     ros::init(argc, argv, "drone_reg_vel_node");
     ros::NodeHandle n("~");
-
     ros::Rate loop_rate(30);
-
     ros::Publisher vel_pub, pub_marker;
     ros::Subscriber goalSub, navPosSub, navVelSub, stateSub, exStateSub, velFieldSub, altSonarSub, goal_ps_Sub;
-
     //инициализация сервера динамической реконцигурации
     if (n.getParam("yaml_path", yaml_path))
     {
         n.param<std::string>("yaml_path", yaml_path, "");
     }
-
     if (n.getParam("use_rotate", use_rotate))
     {
         n.param<bool>("use_rotate", use_rotate, use_rotate);
     }
-
     if (n.getParam("speed_rotate", speed_rotate))
     {
         n.param<double>("speed_rotate", speed_rotate, speed_rotate);
     }
-
     dynamic_reconfigure::Server<drone_path_traj_contol::DroneRegConfig> server;
     dynamic_reconfigure::Server<drone_path_traj_contol::DroneRegConfig>::CallbackType f;
     f = boost::bind(&cfg_callback, _1, _2);
@@ -350,33 +328,21 @@ int main(int argc, char** argv) {
     if (fileExists(yaml_path)) {
         //апдейтим значения на сервере из ямла
         drone_path_traj_contol::DroneRegConfig yaml_cfg = getYamlCfg();
-        // server.updateConfig(yaml_cfg);
+        server.updateConfig(yaml_cfg);
     }
     //получаем данные с сервера
     server.setCallback(f);
-
-
     velFieldSub = n.subscribe("/field_vel", queue_size, vel_field_cb);
     navVelSub = n.subscribe(mavros_root + "/local_position/velocity_local", queue_size, nav_vel_cb);
-
     goalSub = n.subscribe("/planning/pos_cmd", queue_size, goal_cb);
     goal_ps_Sub = n.subscribe("/goal", queue_size, goal_ps_cb);
-
     navPosSub = n.subscribe(local_pose_topic, queue_size, nav_pos_cb);
-
-
     vel_pub = n.advertise<geometry_msgs::TwistStamped> (mavros_root + "/setpoint_velocity/cmd_vel", queue_size);
     pub_marker = n.advertise<visualization_msgs::Marker> ("/marker_reg_point", queue_size);
-
-
-
     geometry_msgs::TwistStamped ctr_msg;
-
     double old_time = ros::Time::now().toSec();
     double dt = 0.0;
-
     std::vector<double_t> control;
-
     double angle = 0.;
     while (ros::ok()) {
         dt = ros::Time::now().toSec() - old_time;
@@ -384,22 +350,17 @@ int main(int argc, char** argv) {
         pose_timer += dt;
         print_timer += dt;
         old_time = ros::Time::now().toSec();
-
         pub_marker.publish(setup_marker(goal.position));
-
         control = get_control(goal);
-
         ctr_msg.twist.linear.x = control[0] + vel_field.twist.linear.x + goal.velocity.x;
         ctr_msg.twist.linear.y = control[1] + vel_field.twist.linear.y + goal.velocity.y;
         ctr_msg.twist.linear.z = control[2] + vel_field.twist.linear.z + goal.velocity.z;
         ctr_msg.twist.angular.z = control[3];
-
         if (use_rotate)
         {
             angle +=  speed_rotate*dt*0.0174533;
             ctr_msg.twist.angular.z = angle;
         }
-
         if (pose_timer < pose_lost_time)
             vel_pub.publish(ctr_msg);
         else {
@@ -408,13 +369,11 @@ int main(int argc, char** argv) {
                 print_timer = 0;
             }
         }
-
         ros::spinOnce();
         loop_rate.sleep();
     }
     geometry_msgs::TwistStamped ctr_msg_sd;
     vel_pub.publish(ctr_msg_sd);
     ROS_INFO("shutdown");
-
     return 0;
 }

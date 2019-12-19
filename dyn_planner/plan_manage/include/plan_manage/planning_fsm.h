@@ -14,7 +14,7 @@
 #include <traj_utils/planning_visualization.h>
 #include <plan_env/sdf_map.h>
 #include <plan_env/edt_environment.h>
-#include <path_searching/kinodynamic_astar.h>
+#include <path_searching/kinodynamic_rrt_star.h>
 #include <bspline_opt/bspline_optimizer.h>
 #include <plan_manage/dyn_planner_manager.h>
 #include "plan_manage/Bspline.h"
@@ -53,7 +53,7 @@ private:
   EDTEnvironment::Ptr edt_env_;
 
   Astar::Ptr path_finder0_;
-  KinodynamicAstar::Ptr path_finder_;
+  KinodynamicRRTstar::Ptr path_finder_;
   BsplineOptimizer::Ptr bspline_optimizer_;
 
   DynPlannerManager::Ptr planner_manager_;

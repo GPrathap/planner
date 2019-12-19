@@ -2,10 +2,7 @@
   <arg name="max_vel" value="1.5" />
   <arg name="max_acc" value="1.0" />
   <arg name="dynamic" value="0" />
-   
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
-
-
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
                 <param name="resolution" value="0.3" />
                 <param name="frame_id" type="string" value="map" />
@@ -76,9 +73,19 @@
     <param name="search/lambda_heu" value="5.0" type="double"/>
     <param name="search/resolution_astar" value="0.3" type="double"/>
     <param name="search/time_resolution" value="0.8" type="double"/>
-    <param name="search/margin" value="0.5" type="double"/>
     <param name="search/allocate_num" value="100000" type="int"/>
     <param name="search/check_num" value="5" type="int"/>
+    <param name="search/allocate_num" value="100000" type="int"/>
+    <param name="search/check_num" value="5" type="int"/>
+    <param name="search/number_of_paths" value="6" type="int"/>
+    <param name="search/lqr_feasibility_max_vel" value="0.15" type="double"/>
+    <param name="search/lqr_min_dis" value="0.6" type="double"/>
+    <param name="search/lqr_min_dt" value="0.15" type="double"/>
+     <param name="search/lqr_num_of_iteration" value="20" type="int"/>
+    <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>
+    <param name="search/rrt_star_steer_min" value="4" type="int"/>
+    <param name="search/rrt_star_steer_max" value="5" type="int"/>
+   
 
   <!-- trajectory optimization -->
     <param name="optimization/lamda1" value="10.0" type="double"/>

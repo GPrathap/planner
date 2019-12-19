@@ -68,12 +68,12 @@ namespace hagen {
             // std::cout<<"c_near: " << c_near << std::endl;
             auto x_near = std::get<1>(l_near);
             auto cost_go = cost_to_go(x_near, x_goal);
-            std::cout<<"cost_go: " << cost_go << std::endl;
+            // std::cout<<"cost_go: " << cost_go << std::endl;
             auto is_connected = connect_to_point(tree, x_near, x_new);
             if((c_near+cost_go < c_best) && is_connected){
                 break;
             }
-            std:cout<<"================================noconnected"<< std::endl;
+            // std:cout<<"================================noconnected"<< std::endl;
         }
     }
 
@@ -126,7 +126,7 @@ namespace hagen {
                    if (isEdge(x_new, 0)){
                        rewrite(0, x_new, l_near);
                    }
-                   std::cout<< "============end of rewire==========" << std::endl;
+                //    std::cout<< "============end of rewire==========" << std::endl;
                    auto solution = check_solution(path);
                    if(solution){
                        return path;

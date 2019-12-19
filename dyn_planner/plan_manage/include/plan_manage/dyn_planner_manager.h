@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <path_searching/astar.h>
-#include <path_searching/kinodynamic_astar.h>
+#include <path_searching/kinodynamic_rrt_star.h>
 // #include <bspline_opt/bspline_optimizer.h>
 #include <bspline_opt/non_uniform_bspline.h>
 #include <plan_env/edt_environment.h>
@@ -16,13 +16,13 @@ class DynPlannerManager
 {
 private:
   /* algorithm */
-  // shared_ptr<KinodynamicAstar> path_finder;
+  // shared_ptr<KinodynamicRRTstar> path_finder;
 
   EDTEnvironment::Ptr edt_env_;
 
   Astar::Ptr path_finder0_;
 
-  KinodynamicAstar::Ptr path_finder_;
+  KinodynamicRRTstar::Ptr path_finder_;
 
   // BsplineOptimizer::Ptr bspline_optimizer_;
 
@@ -71,7 +71,7 @@ public:
 
   void setParam(ros::NodeHandle& nh);
   void setPathFinder0(const Astar::Ptr& finder);
-  void setPathFinder(const KinodynamicAstar::Ptr& finder);
+  void setPathFinder(const KinodynamicRRTstar::Ptr& finder);
   // void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
   void setEnvironment(const EDTEnvironment::Ptr& env);
 

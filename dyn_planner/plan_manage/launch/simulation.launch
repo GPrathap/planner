@@ -2,7 +2,8 @@
   <arg name="max_vel" value="1.5" />
   <arg name="max_acc" value="1.0" />
   <arg name="dynamic" value="0" />
-
+  <!-- <arg name="use_sim_time" value="0" /> -->
+  
   <!-- main node -->
   <node pkg="plan_manage" name="dyn_planner_node" type="dyn_planner_node" output="screen">
   <!-- remap -->
@@ -57,7 +58,7 @@
     <param name="astar/margin" value="0.5" type="double"/>
     <param name="astar/allocate_num" value="100000" type="int"/>
 
-  <!-- path searching -->
+    <!-- path searching -->
     <param name="search/max_tau" value="0.8" type="double"/>
     <param name="search/init_max_tau" value="0.8" type="double"/>
     <param name="search/max_vel" value="$(arg max_vel)" type="double"/>
@@ -75,6 +76,9 @@
     <param name="search/lqr_feasibility_max_vel" value="0.15" type="double"/>
     <param name="search/lqr_min_dis" value="0.6" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
+    <param name="search/lqr_num_of_iteration" value="20" type="int"/>
+    <param name="search/rrt_star_steer_min" value="4" type="int"/>
+    <param name="search/rrt_star_steer_max" value="5" type="int"/>
 
   <!-- trajectory optimization -->
     <param name="optimization/lamda1" value="10.0" type="double"/>

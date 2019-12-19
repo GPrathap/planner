@@ -419,7 +419,7 @@ namespace hagen {
         else{
             while(true){
                 int index = *(random_call);
-                std::cout<< "index: " << index << std::endl;
+                // std::cout<< "index: " << index << std::endl;
                 if((index < (*random_points_tank).rows()) && (index>0)){
                     // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
                     // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
@@ -765,8 +765,8 @@ namespace hagen {
         Eigen::Vector3d c(0,0,0);
         int ng = ellipsoid_grid_count(n, radios, c);
         number_of_points_in_random_tank = ng-2;
-        std::cout << "\n";
-        std::cout << "  Number of grid points will be " << ng << "\n";
+        // std::cout << "\n";
+        // std::cout << "  Number of grid points will be " << ng << "\n";
         double* a = ellipsoid_grid(n, ng);
         *random_points_tank = Eigen::MatrixXd::Zero(ng-2, 3);
         int i;
