@@ -81,7 +81,7 @@
     <param name="search/lqr_feasibility_max_vel" value="0.15" type="double"/>
     <param name="search/lqr_min_dis" value="0.6" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
-     <param name="search/lqr_num_of_iteration" value="20" type="int"/>
+    <param name="search/lqr_num_of_iteration" value="20" type="int"/>
     <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>
     <param name="search/rrt_star_steer_min" value="4" type="int"/>
     <param name="search/rrt_star_steer_max" value="5" type="int"/>
@@ -113,7 +113,6 @@
   </node>
 
   <!-- use simulator -->
-
   <include file="$(find plan_manage)/launch/path_px4.xml">
   </include>
 

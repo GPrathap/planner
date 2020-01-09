@@ -50,10 +50,7 @@ endforeach()
 set(TRACKING_ESTIMATION_LIB ${TRACKING_ESTIMATION_LIB} ${Boost_LIBRARIES})
 set(TRACKING_ESTIMATION_LIB  ${TRACKING_ESTIMATION_LIB} try_rrt_star try_common try_utils cnpy z)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O2 -Wall")
-add_library( path_searching 
-    src/kinodynamic_rrt_star.cpp 
-    src/astar.cpp
-    )
+add_library( path_searching  src/kinodynamic_rrt_star.cpp )
 
 target_link_libraries(path_searching -Wl,--start-group  
                                 ${TRACKING_ESTIMATION_LIB} -Wl,--end-group)

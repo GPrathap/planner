@@ -34,12 +34,6 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   edt_env_.reset(new EDTEnvironment);
   edt_env_->setMap(sdf_map_);
 
-  /* ---------- init path finder and optimizer ---------- */
-  path_finder0_.reset(new Astar);
-  path_finder0_->setParam(nh);
-  path_finder0_->setEnvironment(edt_env_);
-  path_finder0_->init();
-
   path_finder_.reset(new KinodynamicRRTstar);
   path_finder_->setParam(nh);
   path_finder_->setEnvironment(edt_env_);
@@ -51,7 +45,6 @@ void PlanningFSM::init(ros::NodeHandle& nh)
 
   planner_manager_.reset(new DynPlannerManager);
   planner_manager_->setParam(nh);
-  planner_manager_->setPathFinder0(path_finder0_);
   planner_manager_->setPathFinder(path_finder_);
   // planner_manager_->setOptimizer(bspline_optimizer_);
   planner_manager_->setEnvironment(edt_env_);
@@ -111,7 +104,6 @@ void PlanningFSM::changeExecState(EXEC_STATE new_state, string pos_call)
 void PlanningFSM::printExecState()
 {
   string state_str[5] = { "INIT", "WAIT_GOAL", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ" };
-
   cout << "[FSM]: state: " + state_str[int(exec_state_)] << endl;
 }
 
