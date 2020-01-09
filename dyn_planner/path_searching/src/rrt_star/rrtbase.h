@@ -45,6 +45,9 @@ namespace hagen {
             int ell;
             double initdt;
             double min_dis;
+            double obstacle_radios;
+            bool consider_obs;
+            int number_of_closest_obs;
         };
 
         struct RRTPlannerOptions {

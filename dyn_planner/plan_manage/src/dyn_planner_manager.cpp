@@ -94,7 +94,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   time_traj_start_ = ros::Time::now();
   time_start_ = -1.0;
 
-  double t_search = 0.0, t_sample = 0.0, t_axb = 0.0, t_opt = 0.0, t_adjust = 0.0;
+  double t_search = 0.0, t_sample = 0.0, t_axb = 0.0, t_adjust = 0.0;
 
   Eigen::Vector3d init_pos = start_pt;
   Eigen::Vector3d init_vel = start_vel;
@@ -140,9 +140,9 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   // Eigen::MatrixXd samples = path_finder_->getSamples(ts, K);
   Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
-  cout << "ts: " << ts << endl;
+  // cout << "ts: " << ts << endl;
   // cout << "sample:\n" << samples_rrt.transpose() << endl;
-  cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
+  // cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
   
   // kamaz::hagen::TrajectoryPlanning trajectory_planner1;
   // trajectory_planner1.generate_ts(samples_rrt);
@@ -185,29 +185,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   
 
-  /* ---------- optimize trajectory ---------- */
-  t1 = ros::Time::now();
-
-  // cout << "ctrl pts:" << control_pts << endl;
-  // cout << "ctrl pts rrt:" << control_pts_rrt << endl;
-
-  // bspline_optimizer_->setControlPoints(control_pts_rrt);
-  // bspline_optimizer_->setBSplineInterval(ts_rrt);
-
-  // bspline_optimizer_->setControlPoints(control_pts);
-  // bspline_optimizer_->setBSplineInterval(ts);
-
-  // if (status != KinodynamicRRTstar::REACH_END)
-  //   bspline_optimizer_->optimize(BsplineOptimizer::SOFT_CONSTRAINT, dynamic_, time_start_);
-  // else
-  //   bspline_optimizer_->optimize(BsplineOptimizer::HARD_CONSTRAINT, dynamic_, time_start_);
-
-  // control_pts = bspline_optimizer_->getControlPoints();
-  // control_pts_rrt = bspline_optimizer_->getControlPoints();
-
-  t2 = ros::Time::now();
-  t_opt = (t2 - t1).toSec();
-
   /* ---------- time adjustment ---------- */
 
   t1 = ros::Time::now();
@@ -243,15 +220,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   /* save result */
   traj_pos_ = pos;
-
-  // double t_total = t_search + t_sample + t_axb + t_opt + t_adjust;
-
-  // cout << "[planner]: time: " << t_total << ", search: " << t_search << ", optimize: " << t_sample + t_axb + t_opt
-  //      << ", adjust time:" << t_adjust << endl;
-
-  // time_search_ = t_search;
-  // time_optimize_ = t_sample + t_axb + t_opt;
-  // time_adjust_ = t_adjust;
 
   time_traj_start_ = ros::Time::now();
   time_start_ = -1.0;

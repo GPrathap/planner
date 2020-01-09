@@ -223,6 +223,9 @@ public:
   int rrt_star_steer_min = 4;
   int  rrt_star_steer_max = 6;
   int lqr_num_of_iteration = 20;
+  double obstacle_radios = 0.4;
+  bool consider_obs = true;
+  int number_of_closest_obs = 10;
 };
 
 }  // namespace dyn_planner

@@ -48,7 +48,9 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   kino_ops.ell = lqr_num_of_iteration;
   kino_ops.initdt = 0.05;
   kino_ops.min_dis = lqr_min_dis;
- 
+  kino_ops.obstacle_radios = obstacle_radios;
+  kino_ops.consider_obs = consider_obs;
+  kino_ops.number_of_closest_obs = number_of_closest_obs;
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
   dim_in << rrt_star_steer_min, rrt_star_steer_max;
@@ -240,6 +242,9 @@ void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
   nh.param("search/lqr_num_of_iteration", lqr_num_of_iteration, -1);
   nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1);
   nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1);
+  nh.param("search/lqr_obs_radius", obstacle_radios, -1.0);
+  nh.param("search/lqr_consider_obs", consider_obs, false);
+  nh.param("search/lqr_number_of_closest_obs", number_of_closest_obs, -1);
   cout << "margin:" << margin_ << endl;
 }
 

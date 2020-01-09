@@ -75,7 +75,7 @@
     <param name="search/allocate_num" value="100000" type="int"/>
     <param name="search/check_num" value="5" type="int"/>
     <param name="search/allocate_num" value="100000" type="int"/>
-    <param name="search/number_of_paths" value="1" type="int"/>
+    <param name="search/number_of_paths" value="4" type="int"/>
     <param name="search/lqr_feasibility_max_vel" value="0.15" type="double"/>
     <param name="search/lqr_min_dis" value="0.6" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
@@ -83,6 +83,9 @@
     <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>
     <param name="search/rrt_star_steer_min" value="4" type="int"/>
     <param name="search/rrt_star_steer_max" value="5" type="int"/>
+    <param name="search/lqr_obs_radius" value="0.4" type="double"/>
+    <param name="search/lqr_consider_obs" value="true" type="bool"/>
+    <param name="search/lqr_number_of_closest_obs" value="10" type="int"/>
     <param name="search/margin" value="0.5" type="double"/>
 
   <!-- trajectory optimization -->

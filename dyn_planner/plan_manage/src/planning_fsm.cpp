@@ -310,7 +310,6 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
         // changeExecState(WAIT_GOAL, "SAFETY");
         cout << "goal near collision, keep retry" << endl;
         changeExecState(REPLAN_TRAJ, "FSM");
-
         std_msgs::Empty emt;
         replan_pub_.publish(emt);
       }
