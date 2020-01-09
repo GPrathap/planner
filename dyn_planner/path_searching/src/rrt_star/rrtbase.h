@@ -155,8 +155,8 @@ namespace hagen {
                 double path_cost(PathNode a, PathNode b, int tree);
                 double segment_cost(PathNode a, PathNode b);
                 double get_cost_of_path(std::vector<PathNode> path1);
-                void apply_dynamics(PathNode cur_node, PathNode goal, double distance
-                                                                                , std::vector<Eigen::MatrixXd>& xHit);
+                // void apply_dynamics(PathNode cur_node, PathNode goal, double distance
+                                                                                // , std::vector<Eigen::MatrixXd>& xHit);
         };
     }
 }

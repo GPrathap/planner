@@ -2,7 +2,6 @@
 #define _KGB_TRAJECTORY_GENERATOR_H_
 
 #include <ros/ros.h>
-#include <path_searching/astar.h>
 #include <path_searching/kinodynamic_rrt_star.h>
 // #include <bspline_opt/bspline_optimizer.h>
 #include <bspline_opt/non_uniform_bspline.h>
@@ -19,8 +18,6 @@ private:
   // shared_ptr<KinodynamicRRTstar> path_finder;
 
   EDTEnvironment::Ptr edt_env_;
-
-  Astar::Ptr path_finder0_;
 
   KinodynamicRRTstar::Ptr path_finder_;
 
@@ -70,7 +67,6 @@ public:
   void retrieveTrajectory();
 
   void setParam(ros::NodeHandle& nh);
-  void setPathFinder0(const Astar::Ptr& finder);
   void setPathFinder(const KinodynamicRRTstar::Ptr& finder);
   // void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
   void setEnvironment(const EDTEnvironment::Ptr& env);

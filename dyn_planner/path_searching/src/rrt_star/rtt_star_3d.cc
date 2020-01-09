@@ -79,12 +79,12 @@ namespace hagen {
                 add_waypoints_on_straight_line(expected_next, next_node, smoothed_path);
             }else{
                 for(int i=3; i <= path.size(); i++){
-                    std::cout<< "previous: " << previous_node.transpose() << std::endl;
-                    std::cout<< "current_node: " << current_node.transpose() << std::endl;
-                    std::cout<< "next_node: " << next_node.transpose() << std::endl;
+                    // std::cout<< "previous: " << previous_node.transpose() << std::endl;
+                    // std::cout<< "current_node: " << current_node.transpose() << std::endl;
+                    // std::cout<< "next_node: " << next_node.transpose() << std::endl;
                     add_waypoints_on_straight_line(previous_node, expected_preceding, smoothed_path);
-                    std::cout<< "expected_next: " << expected_next.transpose() << std::endl;
-                    std::cout<< "expected_preceding: " << expected_preceding.transpose() << std::endl;
+                    // std::cout<< "expected_next: " << expected_next.transpose() << std::endl;
+                    // std::cout<< "expected_preceding: " << expected_preceding.transpose() << std::endl;
                     apply_dynamics_smoothing(expected_preceding, expected_next, smoothed_path);
                     previous_node = expected_next;
                     current_node = next_node;

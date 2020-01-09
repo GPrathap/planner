@@ -172,21 +172,21 @@ namespace hagen {
         return new_and_near_vec;
     }
 
-    void RRTBase::apply_dynamics(PathNode cur_node, PathNode goal, double distance, std::vector<Eigen::MatrixXd>& xHit){
-        Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);
-        double ba_length = ab.norm();
-        Eigen::Vector3d unit_vector = ab/ba_length;
-        Eigen::Vector3d scaled_vector = unit_vector*distance;
-        Eigen::Vector3d steered_point = cur_node.state.head(3) + scaled_vector.head(3);
-        std::vector<Eigen::MatrixXd> L;
-        std::vector<Eigen::MatrixXd> l;
-        // std::vector<Eigen::MatrixXd> xHit;
-        Eigen::Vector3d velocity = opt.kino_options.max_vel*unit_vector;
-        cur_node.state.block<3,1>(3,0) = velocity;
-        cur_node.state.block<6,1>(6,0) = Eigen::MatrixXd::Zero(6,1);
-        cur_node.state(12) = log(drone_dynamics.dt);
-        drone_dynamics.extendedLQR(cur_node.state, drone_dynamics.uNominal, L, l, xHit, steered_point);
-    }
+    // void RRTBase::apply_dynamics(PathNode cur_node, PathNode goal, double distance, std::vector<Eigen::MatrixXd>& xHit){
+    //     Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);
+    //     double ba_length = ab.norm();
+    //     Eigen::Vector3d unit_vector = ab/ba_length;
+    //     Eigen::Vector3d scaled_vector = unit_vector*distance;
+    //     Eigen::Vector3d steered_point = cur_node.state.head(3) + scaled_vector.head(3);
+    //     std::vector<Eigen::MatrixXd> L;
+    //     std::vector<Eigen::MatrixXd> l;
+    //     // std::vector<Eigen::MatrixXd> xHit;
+    //     Eigen::Vector3d velocity = opt.kino_options.max_fes_vel*unit_vector;
+    //     cur_node.state.block<3,1>(3,0) = velocity;
+    //     cur_node.state.block<6,1>(6,0) = Eigen::MatrixXd::Zero(6,1);
+    //     cur_node.state(12) = log(drone_dynamics.dt);
+    //     drone_dynamics.extendedLQR(cur_node.state, drone_dynamics.uNominal, L, l, xHit, steered_point);
+    // }
 
    PathNode RRTBase::steer(PathNode cur_node, PathNode goal, double distance){
         // Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);

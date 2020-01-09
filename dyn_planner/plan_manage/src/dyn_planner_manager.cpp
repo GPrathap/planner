@@ -17,11 +17,6 @@ void DynPlannerManager::setParam(ros::NodeHandle& nh)
   nh.param("manager/margin", margin_, -1.0);
 }
 
-void DynPlannerManager::setPathFinder0(const Astar::Ptr& finder)
-{
-  path_finder0_ = finder;
-}
-
 void DynPlannerManager::setPathFinder(const KinodynamicRRTstar::Ptr& finder)
 {
   path_finder_ = finder;

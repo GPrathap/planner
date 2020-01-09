@@ -52,7 +52,6 @@ private:
 
   EDTEnvironment::Ptr edt_env_;
 
-  Astar::Ptr path_finder0_;
   KinodynamicRRTstar::Ptr path_finder_;
   BsplineOptimizer::Ptr bspline_optimizer_;
 

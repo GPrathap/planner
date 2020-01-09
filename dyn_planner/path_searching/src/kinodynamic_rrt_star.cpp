@@ -138,9 +138,9 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   double lowerst_cost_horizon = 1000000;
   index_of_loweres_cost = -1;
   int index_of_loweres_cost_horizon = -1;
+  int counter=0;
   for(auto result : pending_data){
     std::vector<kamaz::hagen::PathNode> _path = result.get();
-    int counter=0;
     if(_path.size()>1){
           smoothed_paths.push_back(_path);
           auto cost = get_distance(_path);
@@ -162,8 +162,8 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   if(index_of_loweres_cost == -1){
     index_of_loweres_cost = index_of_loweres_cost_horizon;
   }
-  std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
-  std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
+  // std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
+  // std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
     std::vector<kamaz::hagen::PathNode> smoothed_path;

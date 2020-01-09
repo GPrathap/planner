@@ -210,7 +210,7 @@ double ExtendedLQR::extendedLQRItr(const size_t& ell, const Matrix<X_DIM>& start
 			, const Matrix<U_DIM>& uNominal, std::vector<Matrix<U_DIM,X_DIM> >& L
 			, std::vector<Matrix<U_DIM> >& l, size_t& iter) {
 
-	size_t maxIter = 1000;
+	size_t maxIter = 20;
 
 	// Initialization
 	L.resize(ell, zeros<U_DIM,X_DIM>());
