@@ -141,34 +141,34 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   // Eigen::MatrixXd samples = path_finder_->getSamples(ts, K);
   Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
   cout << "ts: " << ts << endl;
-  // cout << "sample:\n" << samples.transpose() << endl;
-  // cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
+  // cout << "sample:\n" << samples_rrt.transpose() << endl;
+  cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
   
-  kamaz::hagen::TrajectoryPlanning trajectory_planner1;
-  trajectory_planner1.generate_ts(samples_rrt);
-  std::cout<< "Total time: " << trajectory_planner1.total_time << std::endl;
-  trajectory_planner1.traj_opt7();
+  // kamaz::hagen::TrajectoryPlanning trajectory_planner1;
+  // trajectory_planner1.generate_ts(samples_rrt);
+  // std::cout<< "Total time: " << trajectory_planner1.total_time << std::endl;
+  // trajectory_planner1.traj_opt7();
 
-  double cstep = 0.05;
-  double time_ = 0.0;
-  double tstep = 0.01;
+  // double cstep = 0.05;
+  // double time_ = 0.0;
+  // double tstep = 0.01;
 
-  int max_iter = (int) (trajectory_planner1.total_time / cstep); 
-  std::cout<< "===============max_iter============"<< max_iter << std::endl;
-  desired_poses.clear();
-  desired_velocities.clear();
-  for (int iter =1; iter < max_iter; iter++){
-    std::vector<Eigen::VectorXd> desired_state;
-    // std::cout<< "=======2" << std::endl;
-    trajectory_planner1.get_desired_state(time_+cstep, desired_state);
-    // desired_states.push_back(desired_state);
-    desired_poses.push_back(desired_state[0]);
-    desired_velocities.push_back(desired_state[1]);
-    time_ = time_ + cstep;
-  }
+  // int max_iter = (int) (trajectory_planner1.total_time / cstep); 
+  // std::cout<< "===============max_iter============"<< max_iter << std::endl;
+  // desired_poses.clear();
+  // desired_velocities.clear();
+  // for (int iter =1; iter < max_iter; iter++){
+  //   std::vector<Eigen::VectorXd> desired_state;
+  //   // std::cout<< "=======2" << std::endl;
+  //   trajectory_planner1.get_desired_state(time_+cstep, desired_state);
+  //   // desired_states.push_back(desired_state);
+  //   desired_poses.push_back(desired_state[0]);
+  //   desired_velocities.push_back(desired_state[1]);
+  //   time_ = time_ + cstep;
+  // }
 
-  t2 = ros::Time::now();
-  t_sample = (t2 - t1).toSec();
+  // t2 = ros::Time::now();
+  // t_sample = (t2 - t1).toSec();
 
   t1 = ros::Time::now();
 

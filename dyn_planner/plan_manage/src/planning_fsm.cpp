@@ -378,8 +378,8 @@ bool PlanningFSM::planSearchOpt()
     }
     if(rrt_paths.size()>0){
         // visualization_->drawPath(rrt_paths[path_finder_->rrtstart3d.index_of_loweres_cost], 0.1, Eigen::Vector4d(0.2, 1 ,0.5, 1), ids);
-        std::cout << "size of desired path...:"<< planner_manager_->desired_poses.size() << std::endl;
-        visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
+        // std::cout << "size of desired path...:"<< planner_manager_->desired_poses.size() << std::endl;
+        // visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
         visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
                                 Eigen::Vector4d(0, 1, 0, 1));
         visualization_msgs::Marker marker;

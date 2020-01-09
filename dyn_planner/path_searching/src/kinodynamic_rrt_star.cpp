@@ -55,7 +55,8 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   Q.push_back(dim_in);
 
   start_vel_ = start_v;
-
+  end_vel_ = end_v;
+  
   kamaz::hagen::RRTPlannerOptions rrt_planner_options;
   rrt_planner_options.x_init = start_pt_;
   rrt_planner_options.x_goal = end_pt_;
