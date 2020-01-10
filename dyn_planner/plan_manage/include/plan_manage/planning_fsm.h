@@ -81,12 +81,14 @@ private:
 
   ros::Subscriber waypoint_sub_;
 
-  ros::Publisher replan_pub_, bspline_pub_;
+  ros::Publisher replan_pub_, bspline_pub_, wait_for_goal, stat_moving;
 
   void execFSMCallback(const ros::TimerEvent& e);
   void safetyCallback(const ros::TimerEvent& e);
 
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
+
+  double increase_cleareance = 0;
 
 public:
   PlanningFSM(/* args */)

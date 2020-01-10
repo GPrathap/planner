@@ -115,6 +115,21 @@ void goal_cb(const quadrotor_msgs::PositionCommand &data) {
     // goal_pose callback
     goal = data;
     goal_timer = 0.0;
+    // goal_yaw = data.yaw;
+}
+
+void stopping_callback(std_msgs::Empty msg) {
+  /* stop moving */
+//   std::cout<< "===================================stopping...." << std::endl;
+  const double time_out = 0.25;
+  is_regulating = false;
+}
+
+void starting_callback(std_msgs::Empty msg) {
+  /* stop moving */
+//   std::cout<< "===================================wait for goal...." << std::endl;
+  const double time_out = 0.25;
+  is_regulating = true;
 }
 
 void goal_ps_cb(const geometry_msgs::PoseStamped &data) {
@@ -172,6 +187,7 @@ std::vector<double_t> get_control(quadrotor_msgs::PositionCommand data) {
                                              current_vel.twist.linear.y,
                                              current_vel.twist.linear.z};
     std::vector<double_t> vel_ctr_vec = get_linear_vel_vec(coords_vec, current_acc_vel);
+    // std::cout<< "angular_p: " << angular_p << " angular_d:" << angular_d << std::endl;
     double_t ang = get_angular_vel(diff_ang, current_vel.twist.angular.z, angular_p, angular_d);
     // std::vector<double_t> res_ctr_vec = limit_vector(vel_ctr_vec, max_hor_vel);
     vel_ctr_vec.push_back(ang);
@@ -307,7 +323,8 @@ int main(int argc, char** argv) {
     ros::NodeHandle n("~");
     ros::Rate loop_rate(30);
     ros::Publisher vel_pub, pub_marker;
-    ros::Subscriber goalSub, navPosSub, navVelSub, stateSub, exStateSub, velFieldSub, altSonarSub, goal_ps_Sub;
+    ros::Subscriber goalSub, navPosSub, navVelSub, stateSub, exStateSub, velFieldSub, altSonarSub, goal_ps_Sub
+        , stopping_sub, starting_sub;
     //инициализация сервера динамической реконцигурации
     if (n.getParam("yaml_path", yaml_path))
     {
@@ -339,6 +356,8 @@ int main(int argc, char** argv) {
     navPosSub = n.subscribe(local_pose_topic, queue_size, nav_pos_cb);
     vel_pub = n.advertise<geometry_msgs::TwistStamped> (mavros_root + "/setpoint_velocity/cmd_vel", queue_size);
     pub_marker = n.advertise<visualization_msgs::Marker> ("/marker_reg_point", queue_size);
+    stopping_sub = n.subscribe("/planning/wait_for_goal", 10, stopping_callback);
+    starting_sub = n.subscribe("/planning/start_moving", 10, starting_callback);
     geometry_msgs::TwistStamped ctr_msg;
     double old_time = ros::Time::now().toSec();
     double dt = 0.0;
@@ -361,6 +380,12 @@ int main(int argc, char** argv) {
             angle +=  speed_rotate*dt*0.0174533;
             ctr_msg.twist.angular.z = angle;
         }
+        // if(!is_regulating){
+        //     ctr_msg.twist.linear.x = 0;
+        //     ctr_msg.twist.linear.y = 0;
+        //     ctr_msg.twist.linear.z = 0;
+        //     ctr_msg.twist.angular.z = 0;
+        // }
         if (pose_timer < pose_lost_time)
             vel_pub.publish(ctr_msg);
         else {

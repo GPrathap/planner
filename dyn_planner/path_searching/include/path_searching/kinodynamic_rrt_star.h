@@ -28,6 +28,10 @@
 #include <boost/move/move.hpp>
 #include <iostream>
 #include <unistd.h>
+#include <iostream>
+#include <vector>
+#include <numeric>   
+#include <algorithm> 
 
 namespace asio = boost::asio; 
 
@@ -204,7 +208,7 @@ public:
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
              Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, bool init, bool dynamic = false,
-             double time_start = -1.0);
+             double time_start = -1.0, double increase_cleareance = 0.0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path);
@@ -215,8 +219,25 @@ public:
   bool get_search_space(visualization_msgs::Marker& marker);
   void create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
             , Eigen::Quaternion<double> q);
+  Eigen::MatrixXd getSamplesRRTAlternative(double& ts, int& K, bool& is_exist);
   std::vector<std::vector<kamaz::hagen::PathNode>> smoothed_paths;
+
+  template <typename T> std::vector<size_t> sort_indexes(const std::vector<T> &v) {
+    // initialize original index locations
+    std::vector<size_t> idx(v.size());
+    std::iota(idx.begin(), idx.end(), 0);
+    // sort indexes based on comparing values in v
+    // using std::stable_sort instead of std::sort
+    // to avoid unnecessary index re-orderings
+    // when v contains elements of equal values 
+    std::stable_sort(idx.begin(), idx.end(),[&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
+    return idx;
+  }
+
+  std::vector<double> paths_costs;
+  std::vector<size_t> path_cost_indices;
   int index_of_loweres_cost = -1;
+  int index_of_alternative_cost = -1;
   visualization_msgs::Marker search_space_marker;
   typedef shared_ptr<KinodynamicRRTstar> Ptr;
   bool is_using_whole_space = false;

@@ -196,6 +196,10 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.acceleration.y = 0;
   cmd.acceleration.z = 0;
 
+  Eigen::Vector3d normalized_vector = vel.normalized();
+  double yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
+  
+  cmd.yaw = yaw_angle;
   // auto target = boost::make_shared<mavros_msgs::PositionTarget>();
 
   // target->header.stamp = time_now;
@@ -222,7 +226,7 @@ void cmdCallback(const ros::TimerEvent& e) {
 	// target->yaw = tgt.yaw;
 	// target->yaw_rate = tgt.yaw_rate;
 
-  vel_pub.publish(ctr_msg);
+  // vel_pub.publish(ctr_msg);
   pos_cmd_pub.publish(cmd);
   // pos_pub.publish(target);
 

@@ -59,6 +59,8 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   waypoint_sub_ = node_.subscribe("/waypoint_generator/waypoints", 1, &PlanningFSM::waypointCallback, this);
 
   replan_pub_ = node_.advertise<std_msgs::Empty>("planning/replan", 10);
+  wait_for_goal = node_.advertise<std_msgs::Empty>("planning/wait_for_goal", 10);
+  stat_moving = node_.advertise<std_msgs::Empty>("planning/start_moving", 10);
   bspline_pub_ = node_.advertise<plan_manage::Bspline>("planning/bspline", 10);
 }
 
@@ -145,8 +147,12 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
     case WAIT_GOAL:
     {
-      if (!have_goal_)
+      if (!have_goal_){
+        // std::cout<< "Wait for goal..." << std::endl;
+        std_msgs::Empty emt;
+        wait_for_goal.publish(emt);
         return;
+      }
       else
       {
         changeExecState(GEN_NEW_TRAJ, "FSM");
@@ -169,6 +175,9 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       bool success = planSearchOpt();
       if (success)
       {
+        // std::cout<< "starting..." << std::endl;
+        std_msgs::Empty emt;
+        stat_moving.publish(emt);
         changeExecState(EXEC_TRAJ, "FSM");
       }
       else
@@ -220,6 +229,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
     case REPLAN_TRAJ:
     {
+      
       ros::Time time_now = ros::Time::now();
       double t_cur = (time_now - planner_manager_->time_traj_start_).toSec();
       start_pt_ = planner_manager_->traj_pos_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
@@ -235,12 +245,14 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       bool success = planSearchOpt();
       if (success)
       {
+        increase_cleareance = 0;
         changeExecState(EXEC_TRAJ, "FSM");
       }
       else
       {
         // have_goal_ = false;
         // changeExecState(WAIT_GOAL, "FSM");
+        increase_cleareance += 0.1;
         changeExecState(GEN_NEW_TRAJ, "FSM");
       }
       break;
@@ -334,7 +346,7 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
 
 bool PlanningFSM::planSearchOpt()
 {
-  bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_);
+  bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_, increase_cleareance);
 
   if (plan_success)
   {

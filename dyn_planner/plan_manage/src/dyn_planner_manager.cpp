@@ -35,6 +35,7 @@ void DynPlannerManager::setEnvironment(const EDTEnvironment::Ptr& env)
 bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, bool& intermidiate_goal_is_set)
 {
   /* check collision */
+  // std::cout<< "Check on the closest path..." << std::endl;
   for (double t = t_start_; t <= t_end_; t += 0.02)
   {
     Eigen::Vector3d pos = traj_pos_.evaluateDeBoor(t);
@@ -48,10 +49,33 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
           intermidiate_goal_is_set = true;
       }
       intermidiate_goal_is_set = false;
+      // if(!is_alternative_path_exist){
+      //   return false;
+      // }else{
+      //   break;
+      // }
       return false;
     }
   }
+  // std::cout<< "Check on the alternative path..." << std::endl;
+  // for (double t = t_start_; t <= t_end_; t += 0.02)
+  // {
+  //   Eigen::Vector3d pos = traj_pos_alternative.evaluateDeBoor(t);
+  //   double dist = dynamic_ ? edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_) :
+  //                            edt_env_->evaluateCoarseEDT(pos, -1.0);
 
+  //   if (dist < margin_)
+  //   {
+  //     if( (t-0.2) > t_start_){
+  //         intermidiate_goal = traj_pos_.evaluateDeBoor(t-0.2);
+  //         intermidiate_goal_is_set = true;
+  //     }
+  //     intermidiate_goal_is_set = false;
+  //     return false;
+  //   }
+  // }
+  // std::cout<< "Setting alternative path as the main path..." << std::endl;
+  // traj_pos_ = traj_pos_alternative;
   return true;
 }
 
@@ -73,8 +97,8 @@ void DynPlannerManager::getSolvingTime(double& ts, double& to, double& ta)
   ta = time_adjust_;
 }
 
-bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
-                                           Eigen::Vector3d start_acc, Eigen::Vector3d end_pt, Eigen::Vector3d end_vel)
+bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc
+                                                    , Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, double increase_cleareance)
 {
   std::cout << "[planner]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", " << start_acc.transpose()
@@ -100,7 +124,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- search kino path ---------- */
   path_finder_->reset();
 
-  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_);
+  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_, increase_cleareance);
   if (status == KinodynamicRRTstar::NO_PATH)
   {
     cout << "[planner]: init search fail!" << endl;
@@ -135,6 +159,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   // Eigen::MatrixXd samples = path_finder_->getSamples(ts, K);
   Eigen::MatrixXd samples_rrt = path_finder_->getSamplesRRT(ts_rrt, K_rrt);
+
   // cout << "ts: " << ts << endl;
   // cout << "sample:\n" << samples_rrt.transpose() << endl;
   // cout << "samples_rrt:\n" << samples_rrt.transpose() << endl;
@@ -173,8 +198,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   Eigen::MatrixXd control_pts_rrt;
   NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
-  // NonUniformBspline init_rrt = NonUniformBspline(control_pts_rrt, 3, ts);
-
   t2 = ros::Time::now();
   t_axb = (t2 - t1).toSec();
 
@@ -216,8 +239,61 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* save result */
   traj_pos_ = pos;
 
-  time_traj_start_ = ros::Time::now();
-  time_start_ = -1.0;
+
+
+  // =========================================================
+  // int K_rrt_alter;
+  // double ts_rrt_alter = 0.1;
+  
+  // Eigen::MatrixXd samples_rrt_alternative = path_finder_->getSamplesRRTAlternative(ts_rrt_alter, K_rrt_alter
+  //                                                                                   , is_alternative_path_exist);
+  // if(!is_alternative_path_exist){
+  //    return true;
+  // }
+
+  // Eigen::MatrixXd control_pts_rrt_alter;
+  // NonUniformBspline::getControlPointEqu3(samples_rrt_alternative, ts_rrt_alter, control_pts_rrt_alter);
+  // t2 = ros::Time::now();
+  // t_axb = (t2 - t1).toSec();
+
+  
+
+  /* ---------- time adjustment ---------- */
+
+  // t1 = ros::Time::now();
+  // // NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
+  // NonUniformBspline pos_alter = NonUniformBspline(control_pts_rrt_alter, 3, ts_rrt_alter);
+
+  // // double tm, tmp, to, tn;
+  // pos_alter.getTimeSpan(tm, tmp);
+  // to = tmp - tm;
+
+  // feasible = pos_alter.checkFeasibility(false);
+
+  // iter_num = 0;
+  // while (!feasible && ros::ok())
+  // {
+  //   ++iter_num;
+  //   feasible = pos_alter.reallocateTime();
+  //   /* actually this not needed, converges within 10 iteration */
+  //   if (iter_num >= 50)
+  //     break;
+  // }
+
+  // cout << "[Main]: iter num: " << iter_num << endl;
+  // pos_alter.getTimeSpan(tm, tmp);
+  // tn = tmp - tm;
+  // cout << "[planner]: Reallocate ratio: " << tn / to << endl;
+
+  // t2 = ros::Time::now();
+  // t_adjust = (t2 - t1).toSec();
+
+  // pos_alter.checkFeasibility(true);
+  // // drawVelAndAccPro(pos);
+  // traj_pos_alternative = pos_alter;
+
+  // time_traj_start_ = ros::Time::now();
+  // time_start_ = -1.0;
 
   return true;
 }

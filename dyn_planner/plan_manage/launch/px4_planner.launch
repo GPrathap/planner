@@ -78,7 +78,7 @@
     <param name="search/allocate_num" value="100000" type="int"/>
     <param name="search/number_of_paths" value="4" type="int"/>
     <param name="search/lqr_feasibility_max_vel" value="0.15" type="double"/>
-    <param name="search/lqr_min_dis" value="0.6" type="double"/>
+    <param name="search/lqr_min_dis" value="0.4" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
     <param name="search/lqr_num_of_iteration" value="20" type="int"/>
     <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>

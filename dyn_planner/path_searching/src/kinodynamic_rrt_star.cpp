@@ -24,7 +24,7 @@ void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
 }
 
 int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
-                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
+                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start, double increase_cleareance)
 {
   
   std::vector<Eigen::Vector3d> curr_range = this->edt_env_->getMapCurrentRange();
@@ -75,6 +75,12 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   rrt_planner_options.map_size_3d_ = map_size_3d_;
   int times = (number_of_paths > 0) ? number_of_paths: 1;
   rrt_avoidance_dist = (rrt_avoidance_dist > 0) ? rrt_avoidance_dist: 0.6;
+
+  double rrt_avoidance_dist_mod = rrt_avoidance_dist + increase_cleareance;
+  rrt_avoidance_dist_mod = (rrt_avoidance_dist_mod < 1.0 ) ? rrt_avoidance_dist_mod: 1.0;
+
+
+
   int number_of_random_points_in_search_space = 200;
   Eigen::VectorXd x_dimentions(6);
   x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
@@ -87,7 +93,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   is_using_whole_space = false;
   for (int i = 0; i < times; i++) {
       kamaz::hagen::SearchSpace X;
-      X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist, 10);
+      X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist_mod, 10);
       X.use_whole_search_sapce = is_using_whole_space;
       X.setEnvironment(this->edt_env_);
       if(!X.use_whole_search_sapce){
@@ -126,7 +132,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
   kamaz::hagen::RRTStar3D rrtstart3d_procesor;
   kamaz::hagen::SearchSpace X;
-  X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist, 200);
+  X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist_mod, 200);
   X.use_whole_search_sapce = true;
   X.setEnvironment(this->edt_env_);
   rrt_planner_options.search_space = X;
@@ -134,41 +140,77 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
 
   bool is_path_found = false;
   smoothed_paths.clear();
+  paths_costs.clear();
   double lowerst_cost_complete = 1000000;
   double lowerst_cost_horizon = 1000000;
   index_of_loweres_cost = -1;
-  int index_of_loweres_cost_horizon = -1;
-  int counter=0;
+  index_of_alternative_cost = -1;
   for(auto result : pending_data){
     std::vector<kamaz::hagen::PathNode> _path = result.get();
     if(_path.size()>1){
           smoothed_paths.push_back(_path);
           auto cost = get_distance(_path);
           bool is_horizon = _path.back().is_horizon;
-          if(!is_horizon){
-            if(lowerst_cost_complete > cost){
-              lowerst_cost_complete = cost;
-              index_of_loweres_cost = counter;
-            }
-          }else{
-            if(lowerst_cost_horizon > cost){
-              lowerst_cost_horizon = cost;
-              index_of_loweres_cost_horizon = counter;
-            }
+          if(is_horizon){
+            cost += lowerst_cost_horizon;
           }
-          counter++;
+          paths_costs.push_back(cost);
     }   
   }
-  if(index_of_loweres_cost == -1){
-    index_of_loweres_cost = index_of_loweres_cost_horizon;
+  std::cout<< "Path costs: " << std::endl;
+  path_cost_indices = sort_indexes(paths_costs);
+  for (auto i: path_cost_indices) {
+      std::cout << paths_costs[i] << std::endl;
   }
+
+  // int index_of_loweres_cost_horizon = -1;
+  // int counter=0;
+  // for(auto result : pending_data){
+  //   std::vector<kamaz::hagen::PathNode> _path = result.get();
+  //   if(_path.size()>1){
+  //         smoothed_paths.push_back(_path);
+  //         auto cost = get_distance(_path);
+  //         bool is_horizon = _path.back().is_horizon;
+  //         if(!is_horizon){
+  //           if(lowerst_cost_complete > cost){
+  //             lowerst_cost_complete = cost;
+  //             index_of_loweres_cost = counter;
+  //           }
+  //         }else{
+  //           if(lowerst_cost_horizon > cost){
+  //             lowerst_cost_horizon = cost;
+  //             index_of_loweres_cost_horizon = counter;
+  //           }
+  //         }
+  //         counter++;
+  //   }   
+  // }
+  // if(index_of_loweres_cost == -1){
+  //   index_of_loweres_cost = index_of_loweres_cost_horizon;
+  // }
   // std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
-  // std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
+  
+  if(path_cost_indices.size() > 0){
+    index_of_loweres_cost = (int)path_cost_indices[0];
+  }
+  if(path_cost_indices.size() > 1){
+    if(std::abs(paths_costs[path_cost_indices[0]] - paths_costs[path_cost_indices[1]])>0.5){
+      index_of_alternative_cost = (int)path_cost_indices[1];
+    }
+  }
+
+  std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
+  std::cout<< "index_of_alternative_cost " << index_of_alternative_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
     std::vector<kamaz::hagen::PathNode> smoothed_path;
     rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_loweres_cost], smoothed_path);
     smoothed_paths[index_of_loweres_cost] = smoothed_path;
+    if(index_of_alternative_cost >= 0){
+      std::vector<kamaz::hagen::PathNode> smoothed_alternative_path;
+      rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_alternative_cost], smoothed_alternative_path);
+      smoothed_paths[index_of_alternative_cost] = smoothed_alternative_path;
+    }
     return REACH_HORIZON;
   }else{
     std::cout<< "No path found..." << std::endl;
@@ -379,6 +421,41 @@ Eigen::MatrixXd KinodynamicRRTstar::getSamplesRRT(double& ts, int& K)
   samples.col(ki+1) = end_vel_;
   //TODO try to fix this
   samples.col(ki+2) << 0 , 0 , 0;
+  return samples;
+}
+
+Eigen::MatrixXd KinodynamicRRTstar::getSamplesRRTAlternative(double& ts, int& K, bool& is_exist)
+{
+  //  kamaz::hagen::TrajectoryPlanning trajectory_planner(2);
+  /* ---------- final trajectory time ---------- */
+  if(smoothed_paths.size() == 0 || index_of_alternative_cost < 0){
+    Eigen::MatrixXd samples(3, 1);
+    is_exist = false;
+    return samples;
+  }
+  auto selected_path = smoothed_paths[index_of_alternative_cost];
+  int ki = selected_path.size();
+  Eigen::MatrixXd samples(3, ki+3);
+  if(ki<2){
+     is_exist = false;
+    return samples;
+  }
+  Eigen::VectorXd sx(ki), sy(ki), sz(ki);
+  int sample_num = 0;
+  for(auto knok : selected_path){
+    sx(sample_num) = knok.state[0], sy(sample_num) = knok.state[1], sz(sample_num) = knok.state[2];
+    sample_num++;
+  }
+  K = ki;
+  ts = 0.25;
+  samples.block(0, 0, 1, ki) = sx.transpose();
+  samples.block(1, 0, 1, ki) = sy.transpose();
+  samples.block(2, 0, 1, ki) = sz.transpose();
+  samples.col(ki) = start_vel_;
+  samples.col(ki+1) = end_vel_;
+  //TODO try to fix this
+  samples.col(ki+2) << 0 , 0 , 0;
+  is_exist = true;
   return samples;
 }
 

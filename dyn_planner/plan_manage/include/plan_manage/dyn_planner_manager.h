@@ -46,7 +46,8 @@ public:
   double traj_duration_, t_start_, t_end_, margin_, time_start_;
   ros::Time time_traj_start_;
   Eigen::Vector3d pos_traj_start_;
-  NonUniformBspline traj_pos_, traj_vel_, traj_acc_;
+  NonUniformBspline traj_pos_, traj_vel_, traj_acc_, traj_pos_alternative;
+  bool is_alternative_path_exist;
   // kamaz::hagen::TrajectoryPlanning trajectory_planner;
   std::vector<Eigen::Vector3d> desired_poses;
   std::vector<Eigen::Vector3d> desired_velocities;
@@ -56,7 +57,7 @@ public:
   vector<Eigen::Vector3d> guide_pts_;
 
   bool generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
-                          Eigen::Vector3d end_pt, Eigen::Vector3d end_vel);  // front-end && back-end
+                          Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, double increase_cleareance);  // front-end && back-end
 
   bool orthoGradReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d end_pt,
                        Eigen::Vector3d end_vel);  // gradient-based replan using orthogonal gradient

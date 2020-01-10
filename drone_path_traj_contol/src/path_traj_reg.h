@@ -29,7 +29,7 @@
 #include <drone_path_traj_contol/DroneRegConfig.h>
 #include <std_msgs/Float32.h>
 #include <quadrotor_msgs/PositionCommand.h>
-
+#include <std_msgs/Empty.h>
 
 /*----Глобальные переменные----*/
 
@@ -57,6 +57,8 @@ quadrotor_msgs::PositionCommand prev_goal;
 geometry_msgs::TwistStamped current_vel;            // Текущая скорость дрона
 geometry_msgs::TwistStamped vel_field;
 mavros_msgs::State drone_status;
+
+bool is_regulating = false;
 
 std::string mavros_root = "/mavros";
 std::string OFFBOARD = "OFFBOARD";
@@ -104,6 +106,8 @@ void vel_field_cb(const geometry_msgs::TwistStampedConstPtr &data);
 
 void nav_vel_cb(const geometry_msgs::TwistStampedConstPtr &data);
 
+void stopping_callback(std_msgs::Empty msg);
+void starting_callback(std_msgs::Empty msg);
 /*----Функции управления дроном----*/
 
 std::vector<double_t> get_control(quadrotor_msgs::PositionCommand data);

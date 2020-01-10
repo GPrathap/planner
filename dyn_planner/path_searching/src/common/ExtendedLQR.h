@@ -232,7 +232,7 @@ namespace hagen{
 
 			for (size_t i = 0; i < obstacles.size(); ++i) {
 				Matrix<DIM> d = pos - obstacles[i].pos;
-				d[obstacles[i].dim] = 0;
+				//d[obstacles[i].dim] = 0;
 				double dist = std::sqrt(scalar(~d*d)) - robotRadius - obstacles[i].radius;
 				cost += obstacleFactor * std::exp(-scaleFactor*dist);
 			}
@@ -255,13 +255,13 @@ namespace hagen{
 
 			for (size_t i = 0; i < obstacles.size(); ++i) {
 				Matrix<DIM> d = pos - obstacles[i].pos;
-				d[obstacles[i].dim] = 0;
+				// d[obstacles[i].dim] = 0;
 				double distr = std::sqrt(scalar(~d*d));
 				d /= distr;
 				double dist = distr - robotRadius - obstacles[i].radius;
 
 				Matrix<DIM> n = zero<DIM>();
-				n[obstacles[i].dim] = 1.0;
+				// n[obstacles[i].dim] = 1.0;
 				Matrix<DIM> d_ortho = skewSymmetric(n)*d;
 
 				double a0 = obstacleFactor * std::exp(-scaleFactor*dist);
