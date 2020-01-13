@@ -39,10 +39,6 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   path_finder_->setEnvironment(edt_env_);
   path_finder_->init();
 
-  bspline_optimizer_.reset(new BsplineOptimizer);
-  bspline_optimizer_->setParam(nh);
-  bspline_optimizer_->setEnvironment(edt_env_);
-
   planner_manager_.reset(new DynPlannerManager);
   planner_manager_->setParam(nh);
   planner_manager_->setPathFinder(path_finder_);

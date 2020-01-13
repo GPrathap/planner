@@ -187,11 +187,20 @@ namespace hagen {
         if(dynamics_present){
             loto::hagen::Matrix<X_DIM> x = extendedLQR.xStart;
             x[X_DIM-1] = log(dt_lqr);
+            std::cout << "========================================" << std::endl;
             for (size_t t = 0; t < opts.ell; ++t) {
-                // std::cout << x << std::endl;
                 x = extendedLQR.g(x, L[t]*x + l[t]);
+                // std::cout << x << std::endl;
                 PathNode next_pose;
                 next_pose.state.head(3) << x[0], x[1], x[2];
+                if(ba_length*1.2 < (next_pose.state.head(3)-x_start.head(3)).norm()){
+                    // For stopping the overshoot
+                    PathNode next_pose;
+                    next_pose.state.head(3) = x_goal;
+                    smoothed_path.push_back(next_pose);
+                    std::cout<< "Stoping the overshotting .....==============>" << std::endl;
+                    break;
+                }
                 smoothed_path.push_back(next_pose);
             }
         }else{

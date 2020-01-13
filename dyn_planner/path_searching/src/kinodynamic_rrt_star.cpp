@@ -198,7 +198,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
       index_of_alternative_cost = (int)path_cost_indices[1];
     }
   }
-
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
   std::cout<< "index_of_alternative_cost " << index_of_alternative_cost << std::endl;
   pending_data.clear();

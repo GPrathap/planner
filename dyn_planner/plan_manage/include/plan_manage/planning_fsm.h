@@ -15,7 +15,6 @@
 #include <plan_env/sdf_map.h>
 #include <plan_env/edt_environment.h>
 #include <path_searching/kinodynamic_rrt_star.h>
-#include <bspline_opt/bspline_optimizer.h>
 #include <plan_manage/dyn_planner_manager.h>
 #include "plan_manage/Bspline.h"
 
@@ -53,7 +52,6 @@ private:
   EDTEnvironment::Ptr edt_env_;
 
   KinodynamicRRTstar::Ptr path_finder_;
-  BsplineOptimizer::Ptr bspline_optimizer_;
 
   DynPlannerManager::Ptr planner_manager_;
 

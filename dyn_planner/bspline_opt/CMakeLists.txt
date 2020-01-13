@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   plan_env
 )
 
-
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES bspline_opt
