@@ -39,21 +39,12 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
   for (double t = t_start_; t <= t_end_; t += 0.02)
   {
     Eigen::Vector3d pos = traj_pos_.evaluateDeBoor(t);
-    double dist = dynamic_ ? edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_) :
-                             edt_env_->evaluateCoarseEDT(pos, -1.0);
-
+    // double dist = dynamic_ ? edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_) :
+    //                          edt_env_->evaluateCoarseEDT(pos, -1.0);
+    double dist = edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_);
+    // double dist = edt_env_->evaluateCoarseEDT(pos, -1.0);
     if (dist < margin_)
     {
-      if( (t-0.2) > t_start_){
-          intermidiate_goal = traj_pos_.evaluateDeBoor(t-0.2);
-          intermidiate_goal_is_set = true;
-      }
-      intermidiate_goal_is_set = false;
-      // if(!is_alternative_path_exist){
-      //   return false;
-      // }else{
-      //   break;
-      // }
       return false;
     }
   }
@@ -98,7 +89,8 @@ void DynPlannerManager::getSolvingTime(double& ts, double& to, double& ta)
 }
 
 bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc
-                                                    , Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, double increase_cleareance)
+                                                    , Eigen::Vector3d end_pt, Eigen::Vector3d end_vel
+                                                    , double increase_cleareance, int path_index)
 {
   std::cout << "[planner]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", " << start_acc.transpose()
@@ -124,12 +116,14 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- search kino path ---------- */
   path_finder_->reset();
 
-  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_, increase_cleareance);
+  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_
+                                      , increase_cleareance, path_index);
   if (status == KinodynamicRRTstar::NO_PATH)
   {
     cout << "[planner]: init search fail!" << endl;
     path_finder_->reset();
-    status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false, dynamic_, time_start_);
+    status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false, dynamic_, time_start_
+                                     , increase_cleareance, path_index);
     if (status == KinodynamicRRTstar::NO_PATH)
     {
       cout << "[planner]: Can't find path." << endl;

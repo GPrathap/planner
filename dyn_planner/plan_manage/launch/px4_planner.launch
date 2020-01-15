@@ -4,7 +4,7 @@
   <arg name="dynamic" value="0" />
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
-                <param name="resolution" value="0.3" />
+                <param name="resolution" value="0.2" />
                 <param name="frame_id" type="string" value="map" />
                 <param name="sensor_model/max_range" value="3.0" />
                 <remap from="cloud_in" to="/r200/depth/points" />
@@ -18,22 +18,22 @@
   <!-- sdf map updating -->
     <param name="sdf_map/origin_x" value="-20.0" type="double"/>
     <param name="sdf_map/origin_y" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_z" value="-0.5" type="double"/>
+    <param name="sdf_map/origin_z" value="0.0" type="double"/>
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
     <param name="sdf_map/map_size_z" value="6.0" type="double"/>
 
-    <param name="sdf_map/resolution_sdf" value="0.3" type="double"/>
+    <param name="sdf_map/resolution_sdf" value="0.2" type="double"/>
     <param name="sdf_map/ceil_height" value="2.5" type="double"/>
     <param name="sdf_map/update_rate" value="2.0" type="double"/>
-    <param name="sdf_map/update_range" value="3.0" type="double"/>
+    <param name="sdf_map/update_range" value="4.0" type="double"/>
     <param name="sdf_map/inflate" value="0.0" type="double"/>
-    <param name="sdf_map/radius_ignore" value="0.0" type="double"/>
+    <param name="sdf_map/radius_ignore" value="0.2" type="double"/>
 
   <!-- planning fsm -->
     <param name="fsm/flight_type" value="1" type="int"/>
-    <param name="fsm/thresh_replan" value="2.0" type="double"/>
+    <param name="fsm/thresh_replan" value="4.0" type="double"/>
     <param name="fsm/thresh_no_replan" value="3.0" type="double"/>
 
     <param name="fsm/wp_num" value="3" type="int"/>
@@ -82,8 +82,8 @@
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
     <param name="search/lqr_num_of_iteration" value="20" type="int"/>
     <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>
-    <param name="search/rrt_star_steer_min" value="4" type="int"/>
-    <param name="search/rrt_star_steer_max" value="5" type="int"/>
+    <param name="search/rrt_star_steer_min" value="3.0" type="double"/>
+    <param name="search/rrt_star_steer_max" value="4" type="double"/>
     <param name="search/lqr_obs_radius" value="0.4" type="double"/>
     <param name="search/lqr_consider_obs" value="true" type="bool"/>
     <param name="search/lqr_number_of_closest_obs" value="10" type="int"/>
@@ -108,9 +108,10 @@
   </node>
 
   <!-- trajectory server -->
-  <node pkg="plan_manage" name="traj_server" type="traj_server" output="log" respawn="true">
+  <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="10" type="int"/>
   </node>
 
   <!-- use simulator -->

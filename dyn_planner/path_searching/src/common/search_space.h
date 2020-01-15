@@ -86,9 +86,9 @@ namespace hagen {
                 void insert_obstacles(std::vector<Rect> obstacles);
                 void insert_trajectory(std::vector<Rect> trajectory);
                 void search_all_obstacles();
-                bool obstacle_free(Rect search_rect);
+                // bool obstacle_free(Rect search_rect);
                 void setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env);
-                bool obstacle_free(Eigen::Vector3d search_rect);
+                // bool obstacle_free(Eigen::Vector3d search_rect);
                 bool obstacle_free(Eigen::Vector3d search_rect, double optimal_time);
                 Eigen::Vector3d sample_free();
                 Eigen::Vector3d sample();

@@ -92,11 +92,12 @@ namespace hagen {
         // std::cout<< "-----21" << std::endl;
         std::vector<PathNode> path;
         if(!X.obstacle_free(x_init.state.head(3), -1)){
-            BOOST_LOG_TRIVIAL(error) << FRED("Start position here is an obstacle");
+            BOOST_LOG_TRIVIAL(error) << FRED("Start position here is an obstacle: ") << x_init.state.head(3).transpose();
             return path;
         }
         if(!X.obstacle_free(x_goal.state.head(3), -1)){
-            BOOST_LOG_TRIVIAL(error) << FRED("Goal position here is an obstacle");
+            BOOST_LOG_TRIVIAL(error) << FRED("Goal position here is an obstacle")<< x_goal.state.head(3).transpose();
+            return path;
         }
         while(true){
             for(auto const q : Q){

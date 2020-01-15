@@ -280,22 +280,22 @@ namespace hagen {
         // cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)(*random_points_tank).rows(), (unsigned int)(*random_points_tank).cols()},"w");
     }
 
-    bool SearchSpace::obstacle_free(Rect search_rect){
-        box_t search_box(
-        point_t(search_rect.min[0], search_rect.min[1], search_rect.min[2]),
-        point_t(search_rect.max[0], search_rect.max[1], search_rect.max[2]));
-        size_t sum = 0;
-        // boost::timer t;
-        // res.clear();
-        sum += obs_tree.query(bgi::intersects(search_box)
-        , boost::make_function_output_iterator(geometry_rtree_callback));
-        // double s = t.elapsed();
-        // std::cout << search_rect.min[0] << " " << search_rect.min[1] << " " << search_rect.min[2] << std::endl;
-        // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
+    // bool SearchSpace::obstacle_free(Rect search_rect){
+    //     box_t search_box(
+    //     point_t(search_rect.min[0], search_rect.min[1], search_rect.min[2]),
+    //     point_t(search_rect.max[0], search_rect.max[1], search_rect.max[2]));
+    //     size_t sum = 0;
+    //     // boost::timer t;
+    //     // res.clear();
+    //     sum += obs_tree.query(bgi::intersects(search_box)
+    //     , boost::make_function_output_iterator(geometry_rtree_callback));
+    //     // double s = t.elapsed();
+    //     // std::cout << search_rect.min[0] << " " << search_rect.min[1] << " " << search_rect.min[2] << std::endl;
+    //     // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
 
-        // std::cout << "sum up..." << sum << std::endl;
-        return sum > 0 ? false : true;
-    }
+    //     // std::cout << "sum up..." << sum << std::endl;
+    //     return sum > 0 ? false : true;
+    // }
 
     void SearchSpace::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat, Eigen::Vector3d cent){
         // std::cout<< "======11" << std::endl;
@@ -361,30 +361,30 @@ namespace hagen {
     }
 
 
-    bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect){
-        box_t search_box(
-        point_t(search_rect[0], search_rect[1], search_rect[2]),
-        point_t(search_rect[0]+avoidance_width, search_rect[1]+avoidance_width, search_rect[2]+avoidance_width));
-        size_t sum = 0;
-        // boost::timer t;
-        // res.clear();
-        sum += obs_tree.query(bgi::intersects(search_box)
-        , boost::make_function_output_iterator(geometry_rtree_callback));
-        // double s = t.elapsed();
-        // std::cout <<" SearchSpace::obstacle_free: sum: " << sum << std::endl;
-        // std::cout << search_rect.transpose() << std::endl;
-        // // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
+    // bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect){
+    //     box_t search_box(
+    //     point_t(search_rect[0], search_rect[1], search_rect[2]),
+    //     point_t(search_rect[0]+avoidance_width, search_rect[1]+avoidance_width, search_rect[2]+avoidance_width));
+    //     size_t sum = 0;
+    //     // boost::timer t;
+    //     // res.clear();
+    //     sum += obs_tree.query(bgi::intersects(search_box)
+    //     , boost::make_function_output_iterator(geometry_rtree_callback));
+    //     // double s = t.elapsed();
+    //     // std::cout <<" SearchSpace::obstacle_free: sum: " << sum << std::endl;
+    //     // std::cout << search_rect.transpose() << std::endl;
+    //     // // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
 
-        // std::cout << "sum up..." << sum << std::endl;
+    //     // std::cout << "sum up..." << sum << std::endl;
   
-        return sum > 0 ? false : true;
-    }
+    //     return sum > 0 ? false : true;
+    // }
 
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
     //    std::cout<< "=========1" << std::endl;
        double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time);
-    //    std::cout<< "=========2" << std::endl;
-       if(avoidance_width < dis){
+    //    std::cout<< "=============>> "<< dis << "  " << avoidance_width << std::endl;
+       if((avoidance_width < dis)){
            return true;
        }
        return false;

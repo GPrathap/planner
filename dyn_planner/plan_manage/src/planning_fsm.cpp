@@ -42,7 +42,6 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   planner_manager_.reset(new DynPlannerManager);
   planner_manager_->setParam(nh);
   planner_manager_->setPathFinder(path_finder_);
-  // planner_manager_->setOptimizer(bspline_optimizer_);
   planner_manager_->setEnvironment(edt_env_);
 
   visualization_.reset(new PlanningVisualization(nh));
@@ -57,6 +56,7 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   replan_pub_ = node_.advertise<std_msgs::Empty>("planning/replan", 10);
   wait_for_goal = node_.advertise<std_msgs::Empty>("planning/wait_for_goal", 10);
   stat_moving = node_.advertise<std_msgs::Empty>("planning/start_moving", 10);
+  stop_moving = node_.advertise<std_msgs::Empty>("planning/stop_moving", 10);
   bspline_pub_ = node_.advertise<plan_manage::Bspline>("planning/bspline", 10);
 }
 
@@ -147,6 +147,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
         // std::cout<< "Wait for goal..." << std::endl;
         std_msgs::Empty emt;
         wait_for_goal.publish(emt);
+        stop_moving.publish(emt);
         return;
       }
       else
@@ -158,6 +159,8 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
     case GEN_NEW_TRAJ:
     {
+      std_msgs::Empty emt;
+      stop_moving.publish(emt);
       nav_msgs::Odometry odom = edt_env_->getOdom();
       start_pt_(0) = odom.pose.pose.position.x;
       start_pt_(1) = odom.pose.pose.position.y;
@@ -167,10 +170,24 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       start_vel_(1) = odom.twist.twist.linear.y;
       start_vel_(2) = odom.twist.twist.linear.z;
       start_acc_.setZero();
-
+      path_finder_->setEnvironment(edt_env_);
       bool success = planSearchOpt();
       if (success)
       {
+        // Eigen::Vector3d intermidiate_goal;
+        // bool intermidiate_goal_is_set = false;
+        // bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
+        // if (!safe)
+        // {
+        //   change_path_index++;
+        //   ROS_WARN("New traj in collision: ");
+        //   std::cout<< change_path_index << std::endl;
+        //   increase_cleareance += 0.0;
+        //   changeExecState(GEN_NEW_TRAJ, "FSM");
+        // }else{
+        //   change_path_index = 0;
+        //   changeExecState(EXEC_TRAJ, "FSM");
+        // }
         // std::cout<< "starting..." << std::endl;
         std_msgs::Empty emt;
         stat_moving.publish(emt);
@@ -181,10 +198,12 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
         if(MAX_TRIES_FOR_FIND_PATH == avoid_if_cant_calculate){
           have_goal_ = false;
           avoid_if_cant_calculate = 0;
+          std_msgs::Empty emt;
+          stop_moving.publish(emt);
           changeExecState(WAIT_GOAL, "FSM");
         }else{
-          changeExecState(GEN_NEW_TRAJ, "FSM");
           avoid_if_cant_calculate++;
+          changeExecState(GEN_NEW_TRAJ, "FSM");
         }
       }
       break;
@@ -203,6 +222,8 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       {
         cout << "-------- planner_manager_->traj_duration_ "<< planner_manager_->traj_duration_ << endl;
         have_goal_ = false;
+        std_msgs::Empty emt;
+        stop_moving.publish(emt);
         changeExecState(WAIT_GOAL, "FSM");
         return;
       }
@@ -225,19 +246,29 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
     case REPLAN_TRAJ:
     {
-      
+      std_msgs::Empty emt;
+      stop_moving.publish(emt);
       ros::Time time_now = ros::Time::now();
       double t_cur = (time_now - planner_manager_->time_traj_start_).toSec();
-      start_pt_ = planner_manager_->traj_pos_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
-      start_vel_ = planner_manager_->traj_vel_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
+      // start_pt_ = planner_manager_->traj_pos_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
+      // start_vel_ = planner_manager_->traj_vel_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
+      nav_msgs::Odometry odom = edt_env_->getOdom();
+      start_pt_(0) = odom.pose.pose.position.x;
+      start_pt_(1) = odom.pose.pose.position.y;
+      start_pt_(2) = odom.pose.pose.position.z;
+
+      start_vel_(0) = odom.twist.twist.linear.x;
+      start_vel_(1) = odom.twist.twist.linear.y;
+      start_vel_(2) = odom.twist.twist.linear.z;
       start_acc_.setZero();
+
       cout << "t_cur: " << t_cur << endl;
-      cout << "start pt: " << start_pt_.transpose() << endl;
+      // cout << "start pt: " << start_pt_.transpose() << endl;
 
       /* inform server */
-      std_msgs::Empty replan_msg;
-      replan_pub_.publish(replan_msg);
-
+      // std_msgs::Empty replan_msg;
+      // replan_pub_.publish(replan_msg);
+      path_finder_->setEnvironment(edt_env_);
       bool success = planSearchOpt();
       if (success)
       {
@@ -248,9 +279,25 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       {
         // have_goal_ = false;
         // changeExecState(WAIT_GOAL, "FSM");
-        increase_cleareance += 0.1;
+        increase_cleareance += 0.0;
         changeExecState(GEN_NEW_TRAJ, "FSM");
       }
+
+      //  Eigen::Vector3d intermidiate_goal;
+      //   bool intermidiate_goal_is_set = false;
+      //   bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
+      //   if (!safe)
+      //   {
+      //     change_path_index++;
+      //     ROS_WARN("Generated traj in collision: ");
+      //     std::cout<< change_path_index << std::endl;
+      //     increase_cleareance += 0.0;
+      //     changeExecState(GEN_NEW_TRAJ, "FSM");
+      //   }else{
+      //     change_path_index = 0;
+      //     changeExecState(EXEC_TRAJ, "FSM");
+      //   }
+      // }
       break;
     }
   }
@@ -258,6 +305,23 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
 void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
 {
+  /* ---------- check trajectory ---------- */
+  if (exec_state_ == EXEC_STATE::EXEC_TRAJ)
+  {
+    Eigen::Vector3d intermidiate_goal;
+    bool intermidiate_goal_is_set = false;
+    bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
+    if (!safe)
+    {
+      change_path_index++;
+      ROS_WARN("Current traj in collision: ");
+      std::cout<< change_path_index << std::endl;
+      changeExecState(REPLAN_TRAJ, "SAFETY");
+      return;
+    }else{
+      change_path_index = 0;
+    }
+  }
   /* ---------- check goal safety ---------- */
   if (have_goal_)
   {
@@ -323,26 +387,14 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
       }
     }
   }
-
-  /* ---------- check trajectory ---------- */
-  if (exec_state_ == EXEC_STATE::EXEC_TRAJ)
-  {
-    Eigen::Vector3d intermidiate_goal;
-    bool intermidiate_goal_is_set = false;
-    bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
-
-    if (!safe)
-    {
-      // cout << "current traj in collision." << endl;
-      ROS_WARN("current traj in collision.");
-      changeExecState(REPLAN_TRAJ, "SAFETY");
-    }
-  }
 }
 
 bool PlanningFSM::planSearchOpt()
 {
-  bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_, increase_cleareance);
+
+  int path_index = std::floor(change_path_index/2);
+  bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_
+            , increase_cleareance, path_index);
 
   if (plan_success)
   {

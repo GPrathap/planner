@@ -8,10 +8,42 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <mavros_msgs/GlobalPositionTarget.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <deque>
+
+
 using namespace dyn_planner;
 
-ros::Publisher state_pub, pos_cmd_pub, traj_pub, pos_pub, vel_pub;
+template <typename T, typename Total, size_t N>
+class Moving_Average
+{
+  public:
+    void operator()(T sample)
+    {
+        if (num_samples_ < N)
+        {
+            samples_[num_samples_++] = sample;
+            total_ += sample;
+        }
+        else
+        {
+            T& oldest = samples_[num_samples_++ % N];
+            total_ += sample - oldest;
+            oldest = sample;
+        }
+    }
 
+    operator double() const { return total_ / std::min(num_samples_, N); }
+
+  private:
+    T samples_[N];
+    size_t num_samples_{0};
+    Total total_{0};
+};
+
+Moving_Average<double, double, 10> mov_fil;
+Eigen::Vector3d starting_pose;
+ros::Publisher state_pub, pos_cmd_pub, traj_pub, pos_pub, vel_pub;
+int yaw_angle_smoothing_window_size = 20;
 nav_msgs::Odometry odom;
 
 quadrotor_msgs::PositionCommand cmd;
@@ -23,13 +55,41 @@ double vel_gain[3] = {3.4, 3.4, 4.0};
 bool receive_traj = false;
 vector<NonUniformBspline> traj;
 ros::Time time_traj_start;
+Eigen::Vector3d stop_pose;
 int traj_id;
 double traj_duration;
 double t_cmd_start, t_cmd_end;
-
+double target_yaw_angle = 0.0;
+double current_yaw = 0.0;
+bool stop_moving = true;
 vector<Eigen::Vector3d> traj_cmd, traj_real;
+std::deque<double> yaw_angle_changes;
 
 Eigen::Vector3d hover_pt;
+
+
+std::deque<double> linspace(double start_in, double end_in, double number_of_steps)
+{
+  std::deque<double> linspaced;
+  double start = start_in;
+  double end = end_in;
+  double num = number_of_steps;
+  if (num == 0) {
+        return linspaced; 
+  }
+  if (num == 1)
+  {
+      linspaced.push_back(start);
+      return linspaced;
+  }
+  double delta = (end - start) / (num - 1);
+  for(int i=0; i < num-1; ++i)
+  {
+      linspaced.push_back(start + delta * i);
+  }
+  linspaced.push_back(end);
+  return linspaced;
+}
 
 void displayTrajWithColor(vector<Eigen::Vector3d> path, double resolution,
                           Eigen::Vector4d color, int id) {
@@ -87,7 +147,7 @@ void drawState(Eigen::Vector3d pos, Eigen::Vector3d vec, int id,
   mk_state.points.push_back(pt);
   pt.x = pos(0) + vec(0);
   pt.y = pos(1) + vec(1);
-  pt.z = pos(2) + vec(2);
+  pt.z = pos(2) + vec(2) ;
   mk_state.points.push_back(pt);
   mk_state.color.r = color(0);
   mk_state.color.g = color(1);
@@ -125,7 +185,17 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   traj[0].getTimeSpan(t_cmd_start, t_cmd_end);
   traj_duration = t_cmd_end - t_cmd_start;
 
+  ros::Time time_now = ros::Time::now();
+  double t_cur = (time_now - time_traj_start).toSec();
+
+  Eigen::Vector3d pos, vel, acc;
+  starting_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
+  Eigen::Vector3d end_pose = traj[0].evaluateDeBoor(t_cmd_end);
+  Eigen::Vector3d normalized_vector = (end_pose-starting_pose).normalized();
+  target_yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
+  yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
   receive_traj = true;
+  stop_moving = false;
 }
 
 void replanCallback(std_msgs::Empty msg) {
@@ -137,38 +207,60 @@ void replanCallback(std_msgs::Empty msg) {
   t_cmd_end = t_cmd_start + traj_duration;
 }
 
+void stopCallback(std_msgs::Empty msg){
+  stop_moving = true;
+  ros::Time time_now = ros::Time::now();
+  double t_cur = (time_now - time_traj_start).toSec();
+  if(receive_traj){
+    if (t_cur >= traj_duration) {
+      stop_pose = traj[0].evaluateDeBoor(t_cmd_end);
+    }else{
+      stop_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
+    }
+  }else{
+    stop_pose = Eigen::Vector3d(odom.pose.pose.position.x,
+                                      odom.pose.pose.position.y,
+                                      odom.pose.pose.position.z);
+  }
+}
+
 void odomCallbck(const nav_msgs::Odometry& msg) {
   if (msg.child_frame_id == "X" || msg.child_frame_id == "O") return;
 
   odom = msg;
-
   traj_real.push_back(Eigen::Vector3d(odom.pose.pose.position.x,
                                       odom.pose.pose.position.y,
                                       odom.pose.pose.position.z));
-
   if (traj_real.size() > 10000)
     traj_real.erase(traj_real.begin(), traj_real.begin() + 1000);
 }
 
 void visCallback(const ros::TimerEvent& e) {
-  displayTrajWithColor(traj_real, 0.03, Eigen::Vector4d(0.925, 0.054, 0.964, 1),
-                       1);
+  displayTrajWithColor(traj_real, 0.03, Eigen::Vector4d(0.925, 0.054, 0.964, 1), 1);
   displayTrajWithColor(traj_cmd, 0.03, Eigen::Vector4d(1, 1, 0, 1), 2);
 }
 
 void cmdCallback(const ros::TimerEvent& e) {
   /* no publishing before receive traj */
   if (!receive_traj) return;
-
+  Eigen::Vector3d pos, vel, acc;
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - time_traj_start).toSec();
-
-  Eigen::Vector3d pos, vel, acc;
-
-  if (t_cur < traj_duration && t_cur >= 0.0) {
+  if (stop_moving) {
+    // ROS_WARN( "Stop pose of the drone");
+    pos = stop_pose;
+    vel.setZero();
+    acc.setZero();
+  }else if (t_cur < traj_duration && t_cur >= 0.0) {
     pos = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
     vel = traj[1].evaluateDeBoor(t_cmd_start + t_cur);
     acc = traj[2].evaluateDeBoor(t_cmd_start + t_cur);
+    // Eigen::Vector3d normalized_vector = vel.normalized();
+    // double yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
+    // if((starting_pose-pos).norm()>1.0){
+    //     mov_fil(yaw_angle);
+    // }
+    // cmd.yaw = mov_fil;
   } else if (t_cur >= traj_duration) {
     /* hover when finish traj */
     pos = traj[0].evaluateDeBoor(t_cmd_end);
@@ -177,11 +269,23 @@ void cmdCallback(const ros::TimerEvent& e) {
   } else {
     cout << "[Traj server]: invalid time." << endl;
   }
+  
+  if(yaw_angle_changes.empty()){
+    current_yaw = target_yaw_angle;
+  }else{
+    current_yaw = yaw_angle_changes.front();
+    yaw_angle_changes.pop_front();
+  }
 
+  if(std::abs(current_yaw - target_yaw_angle)< 0.1){
+    current_yaw = target_yaw_angle;
+  }
+
+  cmd.yaw = current_yaw;
+  cmd.yaw_dot = yaw_angle_smoothing_window_size;
   cmd.header.stamp = time_now;
   cmd.header.frame_id = "world";
-  cmd.trajectory_flag =
-      quadrotor_msgs::PositionCommand::TRAJECTORY_STATUS_READY;
+  cmd.trajectory_flag = quadrotor_msgs::PositionCommand::TRAJECTORY_STATUS_READY;
   cmd.trajectory_id = traj_id;
 
   cmd.position.x = pos(0);
@@ -192,43 +296,11 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.velocity.y = vel(1);
   cmd.velocity.z = vel(2);
 
-  cmd.acceleration.x = 0;
-  cmd.acceleration.y = 0;
-  cmd.acceleration.z = 0;
+  cmd.acceleration.x = acc(0);
+  cmd.acceleration.y = acc(1);
+  cmd.acceleration.z = acc(2);
 
-  Eigen::Vector3d normalized_vector = vel.normalized();
-  double yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
-  
-  cmd.yaw = yaw_angle;
-  // auto target = boost::make_shared<mavros_msgs::PositionTarget>();
-
-  // target->header.stamp = time_now;
-	// target->header.frame_id = "world";
-
-	// // target->position.x = pos(0);
-	// // target->position.y = pos(1);
-	// // target->position.z = pos(2);
-
-  // target->velocity.x = vel(0);
-	// target->velocity.y = vel(1);
-	// target->velocity.z = vel(2);
-
-  // target->acceleration_or_force.x = 0;
-	// target->acceleration_or_force.y = 0;
-	// target->acceleration_or_force.z = 0;
-
-  geometry_msgs::TwistStamped ctr_msg;
-
-  ctr_msg.twist.linear.x = vel(0);
-  ctr_msg.twist.linear.y = vel(1);
-  ctr_msg.twist.linear.z = vel(2);
-
-	// target->yaw = tgt.yaw;
-	// target->yaw_rate = tgt.yaw_rate;
-
-  // vel_pub.publish(ctr_msg);
   pos_cmd_pub.publish(cmd);
-  // pos_pub.publish(target);
 
   drawState(pos, vel, 0, Eigen::Vector4d(0, 1, 0, 1));
   drawState(pos, acc, 1, Eigen::Vector4d(0, 0, 1, 1));
@@ -241,24 +313,25 @@ void cmdCallback(const ros::TimerEvent& e) {
 int main(int argc, char** argv) {
   ros::init(argc, argv, "traj_server");
   ros::NodeHandle node;
-
-  ros::Subscriber bspline_sub =
-      node.subscribe("planning/bspline", 10, bsplineCallback);
-
-  ros::Subscriber replan_sub =
-      node.subscribe("planning/replan", 10, replanCallback);
-
+  ros::NodeHandle nh("~");
+   
+  nh.param("traj/yaw_angle_smoothing_window_size", yaw_angle_smoothing_window_size, -1);
+  ros::Subscriber bspline_sub = node.subscribe("planning/bspline", 10, bsplineCallback);
+  ros::Subscriber replan_sub = node.subscribe("planning/replan", 10, replanCallback);
+  ros::Subscriber stopping_sub = node.subscribe("planning/stop_moving", 10, stopCallback);
   ros::Subscriber odom_sub = node.subscribe("/odom_world", 50, odomCallbck);
 
   ros::Timer cmd_timer = node.createTimer(ros::Duration(0.01), cmdCallback);
   state_pub = node.advertise<visualization_msgs::Marker>("planning/state", 10);
-  pos_cmd_pub =
-      node.advertise<quadrotor_msgs::PositionCommand>("/position_cmd", 50);
+  pos_cmd_pub = node.advertise<quadrotor_msgs::PositionCommand>("/position_cmd", 50);
 
   pos_pub = node.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local", 50);
   vel_pub = node.advertise<geometry_msgs::TwistStamped> ("/mavros/setpoint_velocity/cmd_vel", 50);
   ros::Timer vis_timer = node.createTimer(ros::Duration(0.5), visCallback);
   traj_pub = node.advertise<visualization_msgs::Marker>("planning/traj", 10);
+
+  // node.param("bspline/limit_acc", NonUniformBspline::limit_acc_, -1.0);
+  // node.param("bspline/limit_ratio", NonUniformBspline::limit_ratio_, -1.0);
 
   /* control parameter */
   cmd.kx[0] = pos_gain[0];
@@ -270,10 +343,7 @@ int main(int argc, char** argv) {
   cmd.kv[2] = vel_gain[2];
 
   ros::Duration(1.0).sleep();
-
   cout << "[Traj server]: ready." << endl;
-
   ros::spin();
-
   return 0;
 }

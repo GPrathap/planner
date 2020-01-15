@@ -80,6 +80,7 @@ double print_timer = 0.;
 const int queue_size = 10;
 double goal_yaw = 0.0;
 bool init_server = false;
+bool is_goal_is_set = false;
 
 bool use_rotate = false;
 double speed_rotate = 0.5;
@@ -139,6 +140,7 @@ void set_server_value();
 double_t norm_d(std::vector<double_t> r);
 
 double_t degToRad(double_t rad);
+
 
 /*-------------------------------------*/
 

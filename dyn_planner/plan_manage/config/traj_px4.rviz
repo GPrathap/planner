@@ -95,7 +95,7 @@ Visualization Manager:
           Marker Topic: /planning/state
           Name: position_cmd
           Namespaces:
-            {}
+            "": true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -184,7 +184,7 @@ Visualization Manager:
           Color: 187; 187; 187
           Color Transformer: AxisColor
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 1
@@ -201,7 +201,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: false
+          Value: true
         - Alpha: 0.5
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -411,7 +411,7 @@ Visualization Manager:
           Marker Topic: /planning_vis/trajectory
           Name: prediction
           Namespaces:
-            {}
+            "": true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -489,25 +489,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 8.502198219299316
+      Distance: 14.902545928955078
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.7912921905517578
-        Y: 0.2475915253162384
-        Z: 2.384185791015625e-6
+        X: -2.5634987354278564
+        Y: 0.31772518157958984
+        Z: 1.430511474609375e-6
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -0.0752037987112999
+      Pitch: 1.3347961902618408
       Target Frame: map
       Value: XYOrbit (rviz)
-      Yaw: 4.254056930541992
+      Yaw: 1.1958717107772827
     Saved: ~
 Window Geometry:
   Displays:
@@ -525,5 +525,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1853
-  X: 64
-  Y: 2
+  X: 63
+  Y: -24

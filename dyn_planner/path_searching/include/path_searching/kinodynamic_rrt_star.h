@@ -208,7 +208,7 @@ public:
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
              Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, bool init, bool dynamic = false,
-             double time_start = -1.0, double increase_cleareance = 0.0);
+             double time_start = -1.0, double increase_cleareance = 0.0, int path_index = 0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path);
@@ -241,8 +241,8 @@ public:
   visualization_msgs::Marker search_space_marker;
   typedef shared_ptr<KinodynamicRRTstar> Ptr;
   bool is_using_whole_space = false;
-  int rrt_star_steer_min = 4;
-  int  rrt_star_steer_max = 6;
+  double rrt_star_steer_min = 4;
+  double  rrt_star_steer_max = 6;
   int lqr_num_of_iteration = 20;
   double obstacle_radios = 0.4;
   bool consider_obs = true;

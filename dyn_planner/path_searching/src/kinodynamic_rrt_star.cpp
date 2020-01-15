@@ -24,7 +24,8 @@ void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
 }
 
 int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
-                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start, double increase_cleareance)
+                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start
+                             , double increase_cleareance, int path_index)
 {
   
   std::vector<Eigen::Vector3d> curr_range = this->edt_env_->getMapCurrentRange();
@@ -157,59 +158,36 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
           paths_costs.push_back(cost);
     }   
   }
+
   std::cout<< "Path costs: " << std::endl;
   path_cost_indices = sort_indexes(paths_costs);
   for (auto i: path_cost_indices) {
       std::cout << paths_costs[i] << std::endl;
   }
 
-  // int index_of_loweres_cost_horizon = -1;
-  // int counter=0;
-  // for(auto result : pending_data){
-  //   std::vector<kamaz::hagen::PathNode> _path = result.get();
-  //   if(_path.size()>1){
-  //         smoothed_paths.push_back(_path);
-  //         auto cost = get_distance(_path);
-  //         bool is_horizon = _path.back().is_horizon;
-  //         if(!is_horizon){
-  //           if(lowerst_cost_complete > cost){
-  //             lowerst_cost_complete = cost;
-  //             index_of_loweres_cost = counter;
-  //           }
-  //         }else{
-  //           if(lowerst_cost_horizon > cost){
-  //             lowerst_cost_horizon = cost;
-  //             index_of_loweres_cost_horizon = counter;
-  //           }
-  //         }
-  //         counter++;
-  //   }   
-  // }
-  // if(index_of_loweres_cost == -1){
-  //   index_of_loweres_cost = index_of_loweres_cost_horizon;
-  // }
-  // std::cout<< "smoothed_paths size " << smoothed_paths.size() << std::endl;
-  
   if(path_cost_indices.size() > 0){
-    index_of_loweres_cost = (int)path_cost_indices[0];
-  }
-  if(path_cost_indices.size() > 1){
-    if(std::abs(paths_costs[path_cost_indices[0]] - paths_costs[path_cost_indices[1]])>0.5){
-      index_of_alternative_cost = (int)path_cost_indices[1];
+    if(path_index >= path_cost_indices.size()){
+      path_index = path_cost_indices.size()-1;
     }
+    index_of_loweres_cost = (int)path_cost_indices[path_index];
   }
+  // if(path_cost_indices.size() > 1){
+  //   if(std::abs(paths_costs[path_cost_indices[0]] - paths_costs[path_cost_indices[1]])>0.5){
+  //     index_of_alternative_cost = (int)path_cost_indices[1];
+  //   }
+  // }
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
-  std::cout<< "index_of_alternative_cost " << index_of_alternative_cost << std::endl;
+  // std::cout<< "index_of_alternative_cost " << index_of_alternative_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
     std::vector<kamaz::hagen::PathNode> smoothed_path;
     rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_loweres_cost], smoothed_path);
     smoothed_paths[index_of_loweres_cost] = smoothed_path;
-    if(index_of_alternative_cost >= 0){
-      std::vector<kamaz::hagen::PathNode> smoothed_alternative_path;
-      rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_alternative_cost], smoothed_alternative_path);
-      smoothed_paths[index_of_alternative_cost] = smoothed_alternative_path;
-    }
+    // if(index_of_alternative_cost >= 0){
+    //   std::vector<kamaz::hagen::PathNode> smoothed_alternative_path;
+    //   rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_alternative_cost], smoothed_alternative_path);
+    //   smoothed_paths[index_of_alternative_cost] = smoothed_alternative_path;
+    // }
     return REACH_HORIZON;
   }else{
     std::cout<< "No path found..." << std::endl;
@@ -281,8 +259,8 @@ void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
   nh.param("search/lqr_min_dis", lqr_min_dis, -1.0);
   nh.param("search/lqr_min_dt", lqr_min_dt, -1.0);
   nh.param("search/lqr_num_of_iteration", lqr_num_of_iteration, -1);
-  nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1);
-  nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1);
+  nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1.0);
+  nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1.0);
   nh.param("search/lqr_obs_radius", obstacle_radios, -1.0);
   nh.param("search/lqr_consider_obs", consider_obs, false);
   nh.param("search/lqr_number_of_closest_obs", number_of_closest_obs, -1);

@@ -115,6 +115,7 @@ void goal_cb(const quadrotor_msgs::PositionCommand &data) {
     // goal_pose callback
     goal = data;
     goal_timer = 0.0;
+    is_goal_is_set = true;
     // goal_yaw = data.yaw;
 }
 
@@ -182,7 +183,7 @@ std::vector<double_t> get_control(quadrotor_msgs::PositionCommand data) {
                                         data.position.y - drone_pose.position.y,
                                         data.position.z - drone_pose.position.z};
     double current_yaw = getYawFromQuat(drone_pose.orientation);
-    double_t diff_ang = goal_yaw - current_yaw;
+    double_t diff_ang = data.yaw - current_yaw;
     std::vector<double_t> current_acc_vel = {current_vel.twist.linear.x,
                                              current_vel.twist.linear.y,
                                              current_vel.twist.linear.z};

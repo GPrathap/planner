@@ -79,7 +79,7 @@ private:
 
   ros::Subscriber waypoint_sub_;
 
-  ros::Publisher replan_pub_, bspline_pub_, wait_for_goal, stat_moving;
+  ros::Publisher replan_pub_, bspline_pub_, wait_for_goal, stat_moving, stop_moving;
 
   void execFSMCallback(const ros::TimerEvent& e);
   void safetyCallback(const ros::TimerEvent& e);
@@ -98,6 +98,7 @@ public:
 
   void init(ros::NodeHandle& nh);
   bool intermidiate_goal_is_set = false;
+  int change_path_index = 0;
 };
 
 }  // namespace dyn_planner

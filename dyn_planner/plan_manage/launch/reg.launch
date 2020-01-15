@@ -5,7 +5,7 @@
   <node pkg="drone_path_traj_contol" name="drone_path_traj_reg_node" type="drone_path_traj_reg_node" 
                                                                                               respawn="true" output="screen">
       <param name="yaml_path" value="$(find drone_path_traj_contol)/cfg/pid_params_path.yaml"/>
-      <param name="use_rotate" value="true"/>
+      <param name="use_rotate" value="false"/>
       <param name="speed_rotate" value="0.5"/>
   </node>
   <!-- marker -->
