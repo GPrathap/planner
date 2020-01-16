@@ -307,7 +307,7 @@ void KinodynamicRRTstar::init()
   // std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
 }
 
-void KinodynamicRRTstar::setEnvironment(const EDTEnvironment::Ptr& env)
+void KinodynamicRRTstar::setEnvironment(const EDTMapWrapper::Ptr& env)
 {
   this->edt_env_ = env;
 }

@@ -28,11 +28,14 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   have_goal_ = false;
 
   /* ---------- init edt environment ---------- */
-  sdf_map_.reset(new SDFMap);
-  sdf_map_->init(nh);
+  // sdf_map_.reset(new SDFMap);
+  // sdf_map_->init(nh);
 
-  edt_env_.reset(new EDTEnvironment);
-  edt_env_->setMap(sdf_map_);
+  edt_env_.reset(new EDTMapWrapper);
+  edt_env_->init(nh);
+
+  // edtmap_wrapper_.reset(new EDTMapWrapper);
+  // edtmap_wrapper_.init(nh);
 
   path_finder_.reset(new KinodynamicRRTstar);
   path_finder_->setParam(nh);
@@ -58,8 +61,19 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   stat_moving = node_.advertise<std_msgs::Empty>("planning/start_moving", 10);
   stop_moving = node_.advertise<std_msgs::Empty>("planning/stop_moving", 10);
   bspline_pub_ = node_.advertise<plan_manage::Bspline>("planning/bspline", 10);
+  odometry_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 10, &PlanningFSM::odomCallback, this); 
+  edtmap_sub_ = node_.subscribe<edtmap_msg::EDTMap>("/sdf_map/edtmap", 1, &PlanningFSM::edtmapCallback, this);
 }
 
+void PlanningFSM::odomCallback(const nav_msgs::OdometryConstPtr& msg){
+  if (msg->child_frame_id == "X" || msg->child_frame_id == "O")
+    return;
+  edt_env_->setOdom(msg);
+}
+
+void PlanningFSM::edtmapCallback(const edtmap_msg::EDTMap::ConstPtr& msg){
+  edt_env_->setMap(msg->data, msg->map_valid, msg->have_odom);
+}
 
 void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
 {
@@ -71,7 +85,7 @@ void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
 
   if (flight_type_ == FLIGHT_TYPE::MANUAL_GOAL)
   {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
+    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1;
   }
   else if (flight_type_ == FLIGHT_TYPE::PRESET_GOAL)
   {
@@ -114,9 +128,9 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
   {
     printExecState();
     if (!edt_env_->odomValid())
-      cout << "no odom." << endl;
+      cout << "PlanningFSM: no odom." << endl;
     if (!edt_env_->mapValid())
-      cout << "no map." << endl;
+      cout << "PlanningFSM : no map." << endl;
     if (!trigger_)
       cout << "wait for goal." << endl;
     fsm_num = 0;

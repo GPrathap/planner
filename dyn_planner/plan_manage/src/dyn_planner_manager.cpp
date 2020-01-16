@@ -27,7 +27,7 @@ void DynPlannerManager::setPathFinder(const KinodynamicRRTstar::Ptr& finder)
 //   bspline_optimizer_ = optimizer;
 // }
 
-void DynPlannerManager::setEnvironment(const EDTEnvironment::Ptr& env)
+void DynPlannerManager::setEnvironment(const EDTMapWrapper::Ptr& env)
 {
   edt_env_ = env;
 }

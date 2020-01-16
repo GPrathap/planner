@@ -12,8 +12,7 @@
 #include <std_msgs/Empty.h>
 
 #include <traj_utils/planning_visualization.h>
-#include <plan_env/sdf_map.h>
-#include <plan_env/edt_environment.h>
+#include <plan_env/edtmap_wrapper.h>
 #include <path_searching/kinodynamic_rrt_star.h>
 #include <plan_manage/dyn_planner_manager.h>
 #include "plan_manage/Bspline.h"
@@ -47,15 +46,16 @@ private:
   void printExecState();
 
   /* ---------- planning utils ---------- */
-  SDFMap::Ptr sdf_map_;
 
-  EDTEnvironment::Ptr edt_env_;
+  EDTMapWrapper::Ptr edt_env_;
 
   KinodynamicRRTstar::Ptr path_finder_;
 
   DynPlannerManager::Ptr planner_manager_;
 
   PlanningVisualization::Ptr visualization_;
+
+  EDTMapWrapper::Ptr edtmap_wrapper_;
 
   /* ---------- parameter ---------- */
   int flight_type_;  // 1 mannual select, 2 hard code
@@ -77,12 +77,14 @@ private:
   ros::Timer exec_timer_, safety_timer_;
   ros::Timer vis_timer_, query_timer_;
 
-  ros::Subscriber waypoint_sub_;
+  ros::Subscriber waypoint_sub_, odometry_sub_, edtmap_sub_;
 
   ros::Publisher replan_pub_, bspline_pub_, wait_for_goal, stat_moving, stop_moving;
 
   void execFSMCallback(const ros::TimerEvent& e);
   void safetyCallback(const ros::TimerEvent& e);
+  void edtmapCallback(const edtmap_msg::EDTMap::ConstPtr& msg);
+  void odomCallback(const nav_msgs::OdometryConstPtr& msg);
 
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
 

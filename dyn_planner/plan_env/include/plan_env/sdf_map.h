@@ -19,23 +19,27 @@
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/timer.hpp>
 #include <boost/foreach.hpp>
+
+#include "edtmap_msg/EDTMap.h"
+
 using namespace std;
 
 namespace dyn_planner
 {
-  namespace bg = boost::geometry;
-  namespace bgi = boost::geometry::index;
+  // namespace bg = boost::geometry;
+  // namespace bgi = boost::geometry::index;
     class SDFMap
     {
-      typedef bg::model::point<double, 3, bg::cs::cartesian> point_t;
-      typedef bg::model::box<point_t> box_t;
-      typedef std::pair<box_t, uint64_t> value_t;
-      typedef boost::geometry::box_view<box_t> box_view;
-      typedef bgi::rtree<value_t, bgi::quadratic<8, 4>> RTree;
+      // typedef bg::model::point<double, 3, bg::cs::cartesian> point_t;
+      // typedef bg::model::box<point_t> box_t;
+      // typedef std::pair<box_t, uint64_t> value_t;
+      // typedef boost::geometry::box_view<box_t> box_view;
+      // typedef bgi::rtree<value_t, bgi::quadratic<8, 4>> RTree;
     private:
       // data are saved in vector
       std::vector<int> occupancy_buffer_;  // 0 is free, 1 is occupied
       std::vector<double> distance_buffer_;
+      std::vector<double> no_cloud_buffer_;
       std::vector<double> distance_buffer_neg_;
       std::vector<double> tmp_buffer1_, tmp_buffer2_;
 
@@ -44,7 +48,7 @@ namespace dyn_planner
       Eigen::Vector3i grid_size_;              // map range in index
       Eigen::Vector3i min_vec_, max_vec_;      // the min and max updated range, unit is 1
 
-      RTree obs_tree;
+      // RTree obs_tree;
 
       void posToIndex(Eigen::Vector3d pos, Eigen::Vector3i& id);
       void indexToPos(Eigen::Vector3i id, Eigen::Vector3d& pos);
@@ -69,12 +73,12 @@ namespace dyn_planner
       ros::NodeHandle node_;
       ros::Subscriber odom_sub_, cloud_sub_;
       ros::Publisher inflate_cloud_pub_;
+      ros::Publisher edtmap_pub_;
       ros::Timer update_timer_;
 
       void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg);
       void odomCallback(const nav_msgs::OdometryConstPtr& msg);
       void updateCallback(const ros::TimerEvent& e);
-
       /* --------------------------------- */
 
     public:
@@ -94,8 +98,7 @@ namespace dyn_planner
       double getIgnoreRadius() { return radius_ignore_; }
       void getInterpolationData(const Eigen::Vector3d& pos, vector<Eigen::Vector3d>& pos_vec,
                                 Eigen::Vector3d& diff);
-      std::vector<Eigen::Vector3d> nearest_obstacles_to_current_pose(Eigen::Vector3d x
-                , int max_neighbours);
+      std::vector<Eigen::Vector3d> nearest_obstacles_to_current_pose(Eigen::Vector3d x, int max_neighbours);
       // occupancy management
       void resetBuffer(Eigen::Vector3d min, Eigen::Vector3d max);
       void setOccupancy(Eigen::Vector3d pos, int occ = 1);

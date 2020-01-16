@@ -29,5 +29,5 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall")
 
-
+add_library( bspline_opt src/non_uniform_bspline.cpp)
 

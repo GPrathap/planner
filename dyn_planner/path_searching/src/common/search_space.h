@@ -26,7 +26,7 @@
 #include <boost/timer.hpp>
 #include <boost/foreach.hpp>
 #include "../utils/common_utils.h"
-#include "plan_env/edt_environment.h"
+#include "plan_env/edtmap_wrapper.h"
 #include "../../include/colours.h"
 #include <random>
 
@@ -87,7 +87,7 @@ namespace hagen {
                 void insert_trajectory(std::vector<Rect> trajectory);
                 void search_all_obstacles();
                 // bool obstacle_free(Rect search_rect);
-                void setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env);
+                void setEnvironment(const dyn_planner::EDTMapWrapper::Ptr& env);
                 // bool obstacle_free(Eigen::Vector3d search_rect);
                 bool obstacle_free(Eigen::Vector3d search_rect, double optimal_time);
                 Eigen::Vector3d sample_free();
@@ -128,7 +128,7 @@ namespace hagen {
                 Random_call* random_call;
                 bool use_whole_search_sapce = false;
                 double voxel_side_length = 0.1f;
-                dyn_planner::EDTEnvironment::Ptr edt_env_;
+                dyn_planner::EDTMapWrapper::Ptr edt_env_;
                 struct GeometryRTreeSearchCallback
                 {
                     template <typename Value>

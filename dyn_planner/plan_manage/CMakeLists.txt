@@ -49,13 +49,13 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-
 add_executable(dyn_planner_node
   src/dyn_planner_node.cpp 
   src/planning_fsm.cpp
   src/dyn_planner_manager.cpp
   src/trajectory_planning.cc
   )
+  
 target_link_libraries(dyn_planner_node 
   ${catkin_LIBRARIES}
   )
@@ -64,3 +64,10 @@ add_executable(traj_server
 src/traj_server.cpp)
 target_link_libraries(traj_server ${catkin_LIBRARIES})
 add_dependencies(traj_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+#add_library(plan_edt_map src/edtmap_wrapper.cpp)
+#target_link_libraries(plan_edt_map ${catkin_LIBRARIES})  
+
+#add_executable(edtmap_wrapper_node src/edtmap_wrapper_node.cpp src/edtmap_wrapper.cpp)
+#target_link_libraries(edtmap_wrapper_node ${catkin_LIBRARIES})
+#add_dependencies(edtmap_wrapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
