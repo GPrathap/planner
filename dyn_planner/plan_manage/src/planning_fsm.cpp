@@ -61,7 +61,7 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   stat_moving = node_.advertise<std_msgs::Empty>("planning/start_moving", 10);
   stop_moving = node_.advertise<std_msgs::Empty>("planning/stop_moving", 10);
   bspline_pub_ = node_.advertise<plan_manage::Bspline>("planning/bspline", 10);
-  odometry_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 10, &PlanningFSM::odomCallback, this); 
+  odometry_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 50, &PlanningFSM::odomCallback, this); 
   edtmap_sub_ = node_.subscribe<edtmap_msg::EDTMap>("/sdf_map/edtmap", 1, &PlanningFSM::edtmapCallback, this);
 }
 
@@ -157,11 +157,12 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
     case WAIT_GOAL:
     {
+      std_msgs::Empty emt;
+      wait_for_goal.publish(emt);
+      stop_moving.publish(emt);
+      change_path_index = 0;
       if (!have_goal_){
         // std::cout<< "Wait for goal..." << std::endl;
-        std_msgs::Empty emt;
-        wait_for_goal.publish(emt);
-        stop_moving.publish(emt);
         return;
       }
       else
@@ -267,6 +268,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       // start_pt_ = planner_manager_->traj_pos_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
       // start_vel_ = planner_manager_->traj_vel_.evaluateDeBoor(planner_manager_->t_start_ + t_cur);
       nav_msgs::Odometry odom = edt_env_->getOdom();
+      // TODO reset the velocity to zero as well
       start_pt_(0) = odom.pose.pose.position.x;
       start_pt_(1) = odom.pose.pose.position.y;
       start_pt_(2) = odom.pose.pose.position.z;
@@ -319,6 +321,7 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
 
 void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
 {
+  planner_manager_->setEnvironment(edt_env_); 
   /* ---------- check trajectory ---------- */
   if (exec_state_ == EXEC_STATE::EXEC_TRAJ)
   {
@@ -453,8 +456,8 @@ bool PlanningFSM::planSearchOpt()
         // visualization_->drawPath(rrt_paths[path_finder_->rrtstart3d.index_of_loweres_cost], 0.1, Eigen::Vector4d(0.2, 1 ,0.5, 1), ids);
         // std::cout << "size of desired path...:"<< planner_manager_->desired_poses.size() << std::endl;
         // visualization_->drawPath(planner_manager_->desired_poses, 0.2, Eigen::Vector4d(0.6, 0.5 ,0.8, 1), 3);
-        visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1), true, 0.12,
-                                Eigen::Vector4d(0, 1, 0, 1));
+        visualization_->drawBspline(planner_manager_->traj_pos_, 0.1, Eigen::Vector4d(1.0, 0.5, 0.0, 1), true, 0.12,
+                                Eigen::Vector4d(1, 0.7, 0.3, 1));
         visualization_msgs::Marker marker;
         bool is_using_whole_space = path_finder_->get_search_space(marker);
         if(is_using_whole_space){

@@ -45,6 +45,7 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
     // double dist = edt_env_->evaluateCoarseEDT(pos, -1.0);
     if (dist < margin_)
     {
+      std::cout<< dist << "   ===>>" << pos << std::endl;
       return false;
     }
   }

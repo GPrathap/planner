@@ -55,15 +55,22 @@ double vel_gain[3] = {3.4, 3.4, 4.0};
 bool receive_traj = false;
 vector<NonUniformBspline> traj;
 ros::Time time_traj_start;
+ros::Time time_stop_start;
 Eigen::Vector3d stop_pose;
+Eigen::Vector3d stop_velocity;
+bool stop_pose_is_set = false;
 int traj_id;
 double traj_duration;
+double traj_duration_for_stopping;
 double t_cmd_start, t_cmd_end;
 double target_yaw_angle = 0.0;
 double current_yaw = 0.0;
 bool stop_moving = true;
 vector<Eigen::Vector3d> traj_cmd, traj_real;
 std::deque<double> yaw_angle_changes;
+std::deque<double> velocity_regulator_on_x;
+std::deque<double> velocity_regulator_on_y;
+std::deque<double> velocity_regulator_on_z;
 
 Eigen::Vector3d hover_pt;
 
@@ -194,8 +201,10 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   Eigen::Vector3d normalized_vector = (end_pose-starting_pose).normalized();
   target_yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
   yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
+  ROS_INFO_STREAM("bsplineCallback: "<< stop_pose_is_set );
   receive_traj = true;
   stop_moving = false;
+  stop_pose_is_set = false;
 }
 
 void replanCallback(std_msgs::Empty msg) {
@@ -211,17 +220,27 @@ void stopCallback(std_msgs::Empty msg){
   stop_moving = true;
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - time_traj_start).toSec();
-  if(receive_traj){
-    if (t_cur >= traj_duration) {
-      stop_pose = traj[0].evaluateDeBoor(t_cmd_end);
-    }else{
-      stop_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
-    }
-  }else{
-    stop_pose = Eigen::Vector3d(odom.pose.pose.position.x,
-                                      odom.pose.pose.position.y,
-                                      odom.pose.pose.position.z);
-  }
+  if(!stop_pose_is_set){
+      if(receive_traj){
+        if (t_cur >= traj_duration) {
+          stop_pose = traj[0].evaluateDeBoor(t_cmd_end);
+          // stop_velocity = traj[1].evaluateDeBoor(t_cmd_end);
+           stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
+        }else{
+          stop_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
+          // stop_velocity = traj[1].evaluateDeBoor(t_cmd_start + t_cur);
+          stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
+        }
+      }else{
+          stop_pose = Eigen::Vector3d(odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z);
+          stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
+      }
+      velocity_regulator_on_x = linspace(stop_velocity[0], 0.0, traj_duration_for_stopping);
+      velocity_regulator_on_y = linspace(stop_velocity[1], 0.0, traj_duration_for_stopping);
+      velocity_regulator_on_z = linspace(stop_velocity[2], 0.0, traj_duration_for_stopping);
+      stop_pose_is_set = true;
+      time_stop_start = ros::Time::now();
+   }
 }
 
 void odomCallbck(const nav_msgs::Odometry& msg) {
@@ -246,10 +265,28 @@ void cmdCallback(const ros::TimerEvent& e) {
   Eigen::Vector3d pos, vel, acc;
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - time_traj_start).toSec();
+  
   if (stop_moving) {
-    // ROS_WARN( "Stop pose of the drone");
-    pos = stop_pose;
-    vel.setZero();
+   
+    // ROS_INFO_STREAM("Stop pose: "<< stop_pose.transpose());
+    // ROS_INFO_STREAM("Stop velocity: "<< stop_velocity.transpose());
+    Eigen::Vector3d projected_pose;
+    if(!velocity_regulator_on_x.empty()){
+      Eigen::Vector3d next_velocity(velocity_regulator_on_x.front(), velocity_regulator_on_y.front(), velocity_regulator_on_z.front());
+      velocity_regulator_on_x.pop_front();
+      velocity_regulator_on_y.pop_front();
+      velocity_regulator_on_z.pop_front();
+      ros::Time time_now = ros::Time::now();
+      double t_cur = (time_now - time_stop_start).toSec();
+      projected_pose = stop_pose + t_cur*(next_velocity - stop_velocity);
+      stop_pose = projected_pose;
+      stop_velocity = next_velocity;
+      pos = projected_pose;
+      vel = next_velocity;
+    }else{
+      pos = stop_pose;
+      vel.setZero();
+    }
     acc.setZero();
   }else if (t_cur < traj_duration && t_cur >= 0.0) {
     pos = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
@@ -316,9 +353,10 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh("~");
    
   nh.param("traj/yaw_angle_smoothing_window_size", yaw_angle_smoothing_window_size, -1);
+  nh.param("traj/traj_duration_for_stopping", traj_duration_for_stopping, 10.0);
   ros::Subscriber bspline_sub = node.subscribe("planning/bspline", 10, bsplineCallback);
   ros::Subscriber replan_sub = node.subscribe("planning/replan", 10, replanCallback);
-  ros::Subscriber stopping_sub = node.subscribe("planning/stop_moving", 10, stopCallback);
+  ros::Subscriber stopping_sub = node.subscribe("planning/stop_moving", 1, stopCallback);
   ros::Subscriber odom_sub = node.subscribe("/odom_world", 50, odomCallbck);
 
   ros::Timer cmd_timer = node.createTimer(ros::Duration(0.01), cmdCallback);

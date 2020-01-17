@@ -40,7 +40,7 @@
   <!-- sdf map updating -->
     <param name="sdf_map/origin_x" value="-20.0" type="double"/>
     <param name="sdf_map/origin_y" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_z" value="0.0" type="double"/>
+    <param name="sdf_map/origin_z" value="0.5" type="double"/>
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
@@ -133,7 +133,8 @@
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
-      <param name="traj/yaw_angle_smoothing_window_size" value="10" type="int"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="20" type="int"/>
+      <param name="traj/traj_duration_for_stopping" value="20" type="double"/>
   </node>
 
   <!-- use simulator -->
