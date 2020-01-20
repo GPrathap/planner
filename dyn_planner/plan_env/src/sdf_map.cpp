@@ -531,7 +531,7 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
   pcl::fromROSMsg(*msg, latest_cloud_);
 
   // if ((int)latest_cloud_.points.size() == 0) return;
-
+  std::cout<< "==========================================||||| get clound"<< std::endl;
   new_map_ = true;
 }
 
@@ -542,6 +542,7 @@ void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& msg)
     return;
   
   odom_ = *msg;
+  
   odom_.header.frame_id = "world";
   have_odom_ = true;
 }
@@ -554,7 +555,8 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   {
     // cout << "no new map." << endl;
     edt_map.data = no_cloud_buffer_;
-    edt_map.have_odom = true;
+    edt_map.have_odom = have_odom_;
+    // edt_map.new_map = new_map_;
     edt_map.map_valid = map_valid_;
     edtmap_pub_.publish(edt_map);
     return;
@@ -709,6 +711,7 @@ void SDFMap::init(ros::NodeHandle& nh)
 
   // initialize size of buffer
   occupancy_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
+  no_cloud_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
   distance_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
   distance_buffer_neg_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
   tmp_buffer1_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));

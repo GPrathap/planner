@@ -116,7 +116,11 @@ double EDTMapWrapper::getDistance(Eigen::Vector3d pos)
   Eigen::Vector3i id;
   posToIndex(pos, id);
   // (x, y, z) -> x*ny*nz + y*nz + z
-  return edt_map_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
+  int index = id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2);
+  if(edt_map_.size()>index){
+    return edt_map_[index];
+  }
+  return 1000;
 }
 
 double EDTMapWrapper::evaluateCoarseEDT(const Eigen::Vector3d& pos, const double& time)

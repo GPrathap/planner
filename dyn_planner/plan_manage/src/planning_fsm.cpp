@@ -72,7 +72,7 @@ void PlanningFSM::odomCallback(const nav_msgs::OdometryConstPtr& msg){
 }
 
 void PlanningFSM::edtmapCallback(const edtmap_msg::EDTMap::ConstPtr& msg){
-  edt_env_->setMap(msg->data, msg->map_valid, msg->have_odom);
+    edt_env_->setMap(msg->data, msg->map_valid, msg->have_odom);
 }
 
 void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
