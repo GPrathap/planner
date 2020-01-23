@@ -77,7 +77,7 @@ void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
 
   if (flight_type_ == FLIGHT_TYPE::MANUAL_GOAL)
   {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
+    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, msg->poses[0].pose.position.z;
   }
   else if (flight_type_ == FLIGHT_TYPE::PRESET_GOAL)
   {

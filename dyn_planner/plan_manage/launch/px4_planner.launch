@@ -2,33 +2,14 @@
   <arg name="max_vel" value="1.5" />
   <arg name="max_acc" value="1.0" />
   <arg name="dynamic" value="0" />
-  <!-- <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" /> -->
-  <!-- <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+  <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
                 <param name="resolution" value="0.2" />
                 <param name="frame_id" type="string" value="map" />
                 <param name="sensor_model/max_range" value="3.0" />
                 <remap from="cloud_in" to="/r200/depth/points" />
   </node>
 
-
-  <node pkg="plan_env" name="edt_map_builder_node" type="edt_map_builder_node" output="screen" respawn="true">
-    <remap from="/laser_cloud_surround" to="/octomap_point_cloud_centers"/>
-    <remap from="/odom_world" to="/mavros/local_position/odom"/>
-    <param name="sdf_map/origin_x" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_y" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_z" value="0.0" type="double"/>
-
-    <param name="sdf_map/map_size_x" value="40.0" type="double"/>
-    <param name="sdf_map/map_size_y" value="40.0" type="double"/>
-    <param name="sdf_map/map_size_z" value="6.0" type="double"/>
-
-    <param name="sdf_map/resolution_sdf" value="0.2" type="double"/>
-    <param name="sdf_map/ceil_height" value="2.5" type="double"/>
-    <param name="sdf_map/update_rate" value="2.0" type="double"/>
-    <param name="sdf_map/update_range" value="4.0" type="double"/>
-    <param name="sdf_map/inflate" value="0.0" type="double"/>
-    <param name="sdf_map/radius_ignore" value="0.2" type="double"/>
-  </node> -->
 
   <!-- main node -->
   <node pkg="plan_manage" name="dyn_planner_node" type="dyn_planner_node" output="screen" respawn="true">
