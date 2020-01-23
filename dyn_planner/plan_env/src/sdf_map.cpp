@@ -549,26 +549,13 @@ void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& msg)
 
 void SDFMap::updateCallback(const ros::TimerEvent& e)
 {
- 
-  edtmap_msg::EDTMap edt_map; 
   if (!new_map_)
   {
     // cout << "no new map." << endl;
-    edt_map.data = no_cloud_buffer_;
-    edt_map.have_odom = have_odom_;
-    // edt_map.new_map = new_map_;
-    edt_map.map_valid = map_valid_;
-    edtmap_pub_.publish(edt_map);
     return;
   }
-  
   map_valid_ = true;
   new_map_ = false;
-
-  edt_map.data = distance_buffer_;
-  edt_map.have_odom = true;
-  edt_map.map_valid = map_valid_;
-  edtmap_pub_.publish(edt_map);
 
   if (latest_cloud_.points.size() == 0)
     return;
@@ -576,7 +563,7 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   Eigen::Vector3d center(odom_.pose.pose.position.x, odom_.pose.pose.position.y, odom_.pose.pose.position.z);
   if (isnan(center(0)) || isnan(center(1)) || isnan(center(2)))
     return;
-  
+
   /* ---------- inflate cloud and insert to SDFMap ---------- */
   Eigen::Vector3d disp(update_range_, update_range_, update_range_ / 2.0);
   this->resetBuffer(center - disp, center + disp);
@@ -586,7 +573,7 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   Eigen::Vector3d p3d, p3d_inf;
   const int ifn = ceil(inflate_ * resolution_inv_);
   int obs_counter = 0;
-  // obs_tree.clear();
+  obs_tree.clear();
   for (size_t i = 0; i < latest_cloud_.points.size(); ++i)
   {
     pt = latest_cloud_.points[i];
@@ -604,14 +591,15 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
             p3d_inf(1) = pt_inf.y = pt.y + y * resolution_sdf_;
             p3d_inf(2) = pt_inf.z = pt.z + 0.5 * z * resolution_sdf_;
             this->setOccupancy(p3d_inf);
+
             if (pt_inf.z < 2.0)
               cloud_inflate_vis_.push_back(pt_inf);
           }
         }
       }
-      // box_t b(point_t(pt_inf.x, pt_inf.y, pt_inf.z), point_t(pt_inf.x+resolution_sdf_
-      //                       , pt_inf.y+resolution_sdf_, pt_inf.z+resolution_sdf_));
-      // obs_tree.insert(value_t(b, obs_counter));
+      box_t b(point_t(pt_inf.x, pt_inf.y, pt_inf.z), point_t(pt_inf.x+resolution_sdf_
+                            , pt_inf.y+resolution_sdf_, pt_inf.z+resolution_sdf_));
+      obs_tree.insert(value_t(b, obs_counter));
       obs_counter++;
     }
   }
@@ -633,9 +621,9 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
       for (double cy = center(1) - update_range_; cy <= center(1) + update_range_; cy += resolution_sdf_)
       {
         this->setOccupancy(Eigen::Vector3d(cx, cy, ceil_height_));
-        // box_t b(point_t(cx, cy, ceil_height_), point_t(cx+resolution_sdf_
-        //                     , cy+resolution_sdf_, ceil_height_+resolution_sdf_));
-        // obs_tree.insert(value_t(b, obs_counter));
+        box_t b(point_t(cx, cy, ceil_height_), point_t(cx+resolution_sdf_
+                            , cy+resolution_sdf_, ceil_height_+resolution_sdf_));
+        obs_tree.insert(value_t(b, obs_counter));
         obs_counter++;
       }
   }
@@ -648,18 +636,27 @@ std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Ve
                 , int max_neighbours){
         // std::vector<value_t> returned_values;
         std::vector<Eigen::Vector3d> neighbour_points;
-        // for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
-        //         it != obs_tree.qend() ; ++it )
-        // {
-        //     Eigen::Vector3d pose(3);
-        //     auto cube = (*it).first;
-        //     double min_x = bg::get<bg::min_corner, 0>(cube);
-        //     double min_y = bg::get<bg::min_corner, 1>(cube);
-        //     double min_z = bg::get<bg::min_corner, 2>(cube);
-        //     pose << min_x, min_y, min_z;
-        //     neighbour_points.push_back(pose);
-        // }
+        for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
+                it != obs_tree.qend() ; ++it )
+        {
+            Eigen::Vector3d pose(3);
+            auto cube = (*it).first;
+            double min_x = bg::get<bg::min_corner, 0>(cube);
+            double min_y = bg::get<bg::min_corner, 1>(cube);
+            double min_z = bg::get<bg::min_corner, 2>(cube);
+            pose << min_x, min_y, min_z;
+            neighbour_points.push_back(pose);
+        }
         return neighbour_points;        
+}
+
+double SDFMap::get_free_distance(Eigen::Vector3d x){
+  std::vector<Eigen::Vector3d> poses = nearest_obstacles_to_current_pose(x, 1);
+  if(poses.size()>0){
+    return (x - poses[0]).norm();
+  }else{
+    return 1000;
+  }
 }
 
 void SDFMap::init(ros::NodeHandle& nh)
@@ -693,7 +690,6 @@ void SDFMap::init(ros::NodeHandle& nh)
   update_timer_ = node_.createTimer(ros::Duration(0.1), &SDFMap::updateCallback, this);
 
   inflate_cloud_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/inflate_cloud", 1);
-  edtmap_pub_ = node_.advertise<edtmap_msg::EDTMap>("/sdf_map/edtmap", 1);
 
   /* ---------- setting ---------- */
   have_odom_ = false;

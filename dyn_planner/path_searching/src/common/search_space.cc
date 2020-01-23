@@ -23,7 +23,7 @@ namespace hagen {
         avoidance_width = _avoidance_width;
     }
 
-    void SearchSpace::setEnvironment(const dyn_planner::EDTMapWrapper::Ptr& env){
+    void SearchSpace::setEnvironment(const dyn_planner::EDTEnvironment::Ptr& env){
         edt_env_ = env;
     }
 

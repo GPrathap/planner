@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 // #include "grad_spline/sdf_map.h"
-#include <plan_env/edtmap_wrapper.h>
+#include "plan_env/edt_environment.h"
 #include <boost/functional/hash.hpp>
 #include "../../src/rrt_star/rrt_star_3d.h"
 #include "../../src/common/search_space.h"
@@ -156,7 +156,7 @@ private:
   Eigen::Vector3d start_vel_, end_vel_, start_acc_;
   Eigen::Matrix<double, 6, 6> phi_;  // state transit matrix
   // shared_ptr<SDFMap> sdf_map;
-  dyn_planner::EDTMapWrapper::Ptr edt_env_;
+  dyn_planner::EDTEnvironment::Ptr edt_env_;
   bool is_shot_succ_ = false;
   Eigen::MatrixXd coef_shot_;
   double t_shot_;
@@ -222,7 +222,7 @@ public:
              Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, bool init, bool dynamic = false,
              double time_start = -1.0, double increase_cleareance = 0.0, int path_index = 0);
 
-  void setEnvironment(const EDTMapWrapper::Ptr& env);
+  void setEnvironment(const EDTEnvironment::Ptr& env);
   std::vector<Eigen::Vector3d> getRRTTraj(double delta_t, std::vector<kamaz::hagen::PathNode> smoothed_path);
   double get_distance(std::vector<kamaz::hagen::PathNode> trajectory_);
   std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);

@@ -27,7 +27,7 @@ void DynPlannerManager::setPathFinder(const KinodynamicRRTstar::Ptr& finder)
 //   bspline_optimizer_ = optimizer;
 // }
 
-void DynPlannerManager::setEnvironment(const EDTMapWrapper::Ptr& env)
+void DynPlannerManager::setEnvironment(const EDTEnvironment::Ptr& env)
 {
   edt_env_ = env;
 }
@@ -45,7 +45,6 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
     // double dist = edt_env_->evaluateCoarseEDT(pos, -1.0);
     if (dist < margin_)
     {
-      std::cout<< dist << "   ===>>" << pos << std::endl;
       return false;
     }
   }

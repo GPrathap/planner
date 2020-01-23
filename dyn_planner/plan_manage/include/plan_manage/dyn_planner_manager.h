@@ -5,7 +5,7 @@
 #include <path_searching/kinodynamic_rrt_star.h>
 // #include <bspline_opt/bspline_optimizer.h>
 #include <bspline_opt/non_uniform_bspline.h>
-#include <plan_env/edtmap_wrapper.h>
+#include <plan_env/edt_environment.h>
 #include "trajectory_planning.h"
 
 
@@ -17,7 +17,7 @@ private:
   /* algorithm */
   // shared_ptr<KinodynamicRRTstar> path_finder;
 
-  EDTMapWrapper::Ptr edt_env_;
+  EDTEnvironment::Ptr edt_env_;
 
   KinodynamicRRTstar::Ptr path_finder_;
 
@@ -70,7 +70,7 @@ public:
   void setParam(ros::NodeHandle& nh);
   void setPathFinder(const KinodynamicRRTstar::Ptr& finder);
   // void setOptimizer(const BsplineOptimizer::Ptr& optimizer);
-  void setEnvironment(const EDTMapWrapper::Ptr& env);
+  void setEnvironment(const EDTEnvironment::Ptr& env);
 
   bool checkTrajCollision(Eigen::Vector3d& intermidiate_goal
                                                     , bool& intermidiate_goal_is_set);
