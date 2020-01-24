@@ -46,7 +46,6 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
     // }else{
       // double dist = edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_);
       double second_dist = edt_env_->get_free_distance(pos);
-     
       // double dist = edt_env_->evaluateCoarseEDT(pos, -1.0);
       if (second_dist < margin_)
       {
