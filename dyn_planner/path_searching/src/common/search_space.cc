@@ -401,6 +401,14 @@ namespace hagen {
        return dis;
     }
 
+
+    // Eigen::Vector3d SearchSpace::get_sample_with_the_space(Eigen::Vector3d sample_){
+    //      while(true){
+             
+    //          edt_env_->is_inside_map(sample_)
+    //      }
+    // }
+
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
         // std::default_random_engine generator_on_x;
@@ -411,32 +419,34 @@ namespace hagen {
         // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
         // auto z_on = uni_dis_vector[2](generator_on_x);
         // random_pose << x_on, y_on, z_on ;
-
-        if(use_whole_search_sapce){
-            std::default_random_engine generator_on_x;
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto x_on = uni_dis_vector[0](generator_on_x);
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto y_on = uni_dis_vector[1](generator_on_x);
-            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-            auto z_on = uni_dis_vector[2](generator_on_x);
-            random_pose << x_on, y_on, z_on ;
-        }
-        else{
-            while(true){
-                int index = *(random_call);
-                // std::cout<< "index: " << index << std::endl;
-                if((index < (*random_points_tank).rows()) && (index>0)){
-                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
-                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
-                    if(is_random_tank_is_ready){
-                        random_pose = (*random_points_tank).row(index);
-                        // std::cout<< "========================1115" << std::endl;
-                    }
-                    break;
+       
+                if(use_whole_search_sapce){
+                std::default_random_engine generator_on_x;
+                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                auto x_on = uni_dis_vector[0](generator_on_x);
+                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                auto y_on = uni_dis_vector[1](generator_on_x);
+                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                auto z_on = uni_dis_vector[2](generator_on_x);
+                random_pose << x_on, y_on, z_on ;
+               
                 }
-            }
-        }
+                else{
+                    while(true){
+                        int index = *(random_call);
+                        // std::cout<< "index: " << index << std::endl;
+                        if((index < (*random_points_tank).rows()) && (index>0)){
+                            // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
+                            // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
+                            if(is_random_tank_is_ready){
+                                random_pose = (*random_points_tank).row(index);
+                                // std::cout<< "========================1115" << std::endl;
+                            }
+                            break;
+                        }
+                    }
+                }
+        // }
         return random_pose;
     }
 
@@ -448,9 +458,11 @@ namespace hagen {
                 BOOST_LOG_TRIVIAL(info) << FRED("Giving whole space for searching...");
                 use_whole_search_sapce = true;
             }
-            auto x = sample();
-            // std::cout<< "==========number_of_attempts=======" << number_of_attempts <<std::endl;
-            if(obstacle_free(x, -1.0)){
+            Eigen::Vector3d x = sample();
+            if(!edt_env_->is_inside_map(x)){
+                 std::cout<< "Sample is out of the search space..." << x.transpose() <<std::endl;
+            }
+            else if(obstacle_free(x, -1.0)){
                 // std::cout<< "free sample--->" << x.transpose() <<std::endl;
                 number_of_attempts = 0;
                 return x;

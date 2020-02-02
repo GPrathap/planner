@@ -54,25 +54,6 @@ bool DynPlannerManager::checkTrajCollision(Eigen::Vector3d& intermidiate_goal, b
       }
     // }
   }
-  // std::cout<< "Check on the alternative path..." << std::endl;
-  // for (double t = t_start_; t <= t_end_; t += 0.02)
-  // {
-  //   Eigen::Vector3d pos = traj_pos_alternative.evaluateDeBoor(t);
-  //   double dist = dynamic_ ? edt_env_->evaluateCoarseEDT(pos, time_start_ + t - t_start_) :
-  //                            edt_env_->evaluateCoarseEDT(pos, -1.0);
-
-  //   if (dist < margin_)
-  //   {
-  //     if( (t-0.2) > t_start_){
-  //         intermidiate_goal = traj_pos_.evaluateDeBoor(t-0.2);
-  //         intermidiate_goal_is_set = true;
-  //     }
-  //     intermidiate_goal_is_set = false;
-  //     return false;
-  //   }
-  // }
-  // std::cout<< "Setting alternative path as the main path..." << std::endl;
-  // traj_pos_ = traj_pos_alternative;
   return true;
 }
 

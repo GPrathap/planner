@@ -77,7 +77,7 @@ void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
 
   if (flight_type_ == FLIGHT_TYPE::MANUAL_GOAL)
   {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, msg->poses[0].pose.position.z;
+    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
   }
   else if (flight_type_ == FLIGHT_TYPE::PRESET_GOAL)
   {
@@ -173,9 +173,10 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       start_pt_(1) = odom.pose.pose.position.y;
       start_pt_(2) = odom.pose.pose.position.z;
 
-      start_vel_(0) = odom.twist.twist.linear.x;
-      start_vel_(1) = odom.twist.twist.linear.y;
-      start_vel_(2) = odom.twist.twist.linear.z;
+      // start_vel_(0) = odom.twist.twist.linear.x;
+      // start_vel_(1) = odom.twist.twist.linear.y;
+      // start_vel_(2) = odom.twist.twist.linear.z;
+      start_vel_.setZero();
       start_acc_.setZero();
       path_finder_->setEnvironment(edt_env_);
       bool success = planSearchOpt();
@@ -266,9 +267,10 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       start_pt_(1) = odom.pose.pose.position.y;
       start_pt_(2) = odom.pose.pose.position.z;
 
-      start_vel_(0) = odom.twist.twist.linear.x;
-      start_vel_(1) = odom.twist.twist.linear.y;
-      start_vel_(2) = odom.twist.twist.linear.z;
+      // start_vel_(0) = odom.twist.twist.linear.x;
+      // start_vel_(1) = odom.twist.twist.linear.y;
+      // start_vel_(2) = odom.twist.twist.linear.z;
+      start_vel_.setZero();
       start_acc_.setZero();
 
       cout << "t_cur: " << t_cur << endl;

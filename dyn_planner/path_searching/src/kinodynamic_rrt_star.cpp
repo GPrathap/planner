@@ -104,7 +104,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
                 // covmat = Eigen::MatrixXd::Zero(3,3);
                 radious[0] = (std::abs(center[0]) < 4.0) ? 4.0 : std::abs(center[0]);
                 radious[1] = (std::abs(center[1]) < 4.0) ? 4.0 : std::abs(center[1]);
-                radious[2] = (std::abs(center[2]) < 4.0) ? 4.0 : std::abs(center[2]);
+                radious[2] = (std::abs(center[2]) < 2.5) ? 2.5: std::abs(center[2]);
                 // std::cout<< "======3" << std::endl;
                 center = (end_pt + start_pt)/2.0;
                 Eigen::Vector3d a(0,0,1);

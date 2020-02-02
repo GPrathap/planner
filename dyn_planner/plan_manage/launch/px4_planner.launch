@@ -1,12 +1,12 @@
 <launch>
-  <arg name="max_vel" value="1.5" />
-  <arg name="max_acc" value="1.0" />
+  <arg name="max_vel" value="1.0" />
+  <arg name="max_acc" value="0.5" />
   <arg name="dynamic" value="0" />
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
-  <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+  <!-- <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" /> -->
     <!-- <include file="$(find dji_sdk)/launch/sdk.launch"></include> -->
 
-    <include file="$(find drone_bringup)/launch/fixed_joints.launch"/>
+    <!-- <include file="$(find drone_bringup)/launch/fixed_joints.launch"/> -->
     <!--include file="$(find drone_bringup)/launch/rs_d400_and_t265.launch"/-->
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
                 <param name="resolution" value="0.2" />
@@ -25,7 +25,7 @@
   <!-- sdf map updating -->
     <param name="sdf_map/origin_x" value="-20.0" type="double"/>
     <param name="sdf_map/origin_y" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_z" value="0.8" type="double"/>
+    <param name="sdf_map/origin_z" value="0.5" type="double"/>
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
@@ -107,8 +107,8 @@
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
-      <param name="traj/yaw_angle_smoothing_window_size" value="600" type="int"/>
-      <param name="traj/traj_duration_for_stopping" value="20" type="double"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="20" type="int"/>
+      <param name="traj/traj_duration_for_stopping" value="40" type="double"/>
   </node>
 
   <!-- use simulator -->
