@@ -3,10 +3,15 @@
   <arg name="max_acc" value="1.0" />
   <arg name="dynamic" value="0" />
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
+  <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+    <!-- <include file="$(find dji_sdk)/launch/sdk.launch"></include> -->
+
+    <include file="$(find drone_bringup)/launch/fixed_joints.launch"/>
+    <!--include file="$(find drone_bringup)/launch/rs_d400_and_t265.launch"/-->
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
                 <param name="resolution" value="0.2" />
                 <param name="frame_id" type="string" value="map" />
-                <param name="sensor_model/max_range" value="3.0" />
+                <param name="sensor_model/max_range" value="5.0" />
                 <remap from="cloud_in" to="/r200/depth/points" />
   </node>
 
@@ -20,11 +25,11 @@
   <!-- sdf map updating -->
     <param name="sdf_map/origin_x" value="-20.0" type="double"/>
     <param name="sdf_map/origin_y" value="-20.0" type="double"/>
-    <param name="sdf_map/origin_z" value="0.5" type="double"/>
+    <param name="sdf_map/origin_z" value="0.8" type="double"/>
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
-    <param name="sdf_map/map_size_z" value="6.0" type="double"/>
+    <param name="sdf_map/map_size_z" value="4.0" type="double"/>
 
     <param name="sdf_map/resolution_sdf" value="0.2" type="double"/>
     <param name="sdf_map/ceil_height" value="2.5" type="double"/>
@@ -32,38 +37,30 @@
     <param name="sdf_map/update_range" value="4.0" type="double"/>
     <param name="sdf_map/inflate" value="0.0" type="double"/>
     <param name="sdf_map/radius_ignore" value="0.2" type="double"/>
-
-  <!-- planning fsm -->
+    <!-- planning fsm -->
     <param name="fsm/flight_type" value="1" type="int"/>
     <param name="fsm/thresh_replan" value="4.0" type="double"/>
     <param name="fsm/thresh_no_replan" value="3.0" type="double"/>
-
     <param name="fsm/wp_num" value="3" type="int"/>
-
     <param name="fsm/wp0_x" value="8.0" type="double"/>
     <param name="fsm/wp0_y" value="8.0" type="double"/>
     <param name="fsm/wp0_z" value="0.5" type="double"/>
-
     <param name="fsm/wp1_x" value="-8.0" type="double"/>
     <param name="fsm/wp1_y" value="8.0" type="double"/>
     <param name="fsm/wp1_z" value="0.5" type="double"/>
-
     <param name="fsm/wp2_x" value="-8.0" type="double"/>
     <param name="fsm/wp2_y" value="-8.0" type="double"/>
     <param name="fsm/wp2_z" value="2.5" type="double"/>
-
   <!-- planner manager -->
     <param name="manager/time_sample" value="0.5" type="double"/>
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="manager/dynamic" value="$(arg dynamic)" type="int"/>
     <param name="manager/margin" value="0.5" type="double"/>
-
   <!-- path searching -->
     <param name="astar/lambda_heu" value="10.0" type="double"/>
     <param name="astar/resolution_astar" value="0.1" type="double"/>
     <param name="astar/time_resolution" value="0.8" type="double"/>
     <param name="astar/allocate_num" value="100000" type="int"/>
-
   <!-- path searching -->
     <param name="search/max_tau" value="0.8" type="double"/>
     <param name="search/init_max_tau" value="0.8" type="double"/>
@@ -89,8 +86,7 @@
     <param name="search/lqr_obs_radius" value="0.4" type="double"/>
     <param name="search/lqr_consider_obs" value="true" type="bool"/>
     <param name="search/lqr_number_of_closest_obs" value="10" type="int"/>
-
-  <!-- trajectory optimization -->
+    <!-- trajectory optimization -->
     <param name="optimization/lamda1" value="10.0" type="double"/>
     <param name="optimization/lamda2" value="0.6" type="double"/>
     <param name="optimization/lamda3" value="0.00001" type="double"/>
@@ -99,11 +95,9 @@
     <param name="optimization/dist1" value="0.0" type="double"/>
     <param name="optimization/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="optimization/max_acc" value="$(arg max_acc)" type="double"/>
-
     <param name="optimization/algorithm" value="11" type="int"/>
     <param name="optimization/max_iteration_num" value="100" type="int"/>
     <param name="optimization/order" value="3" type="int"/>
-
     <param name="bspline/limit_vel" value="$(arg max_vel)" type="double"/>
     <param name="bspline/limit_acc" value="$(arg max_acc)" type="double"/>
     <param name="bspline/limit_ratio" value="1.1" type="double"/>
@@ -113,7 +107,7 @@
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
-      <param name="traj/yaw_angle_smoothing_window_size" value="20" type="int"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="600" type="int"/>
       <param name="traj/traj_duration_for_stopping" value="20" type="double"/>
   </node>
 

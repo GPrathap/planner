@@ -15,12 +15,12 @@ KinodynamicRRTstar::~KinodynamicRRTstar()
 }
 
 void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
-        ptask_t task = boost::make_shared<task_t>(boost::bind(&kamaz::hagen::RRTStar3D::rrt_planner_and_save
-                    , worker));
-        boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
-        pending_data.push_back(fut);
-        // std::cout<< "Thread has been sumitted..." << std::endl;
-        io_service.post(boost::bind(&task_t::operator(), task));
+  ptask_t task = boost::make_shared<task_t>(boost::bind(&kamaz::hagen::RRTStar3D::rrt_planner_and_save
+              , worker));
+  boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
+  pending_data.push_back(fut);
+  // std::cout<< "Thread has been sumitted..." << std::endl;
+  io_service.post(boost::bind(&task_t::operator(), task));
 }
 
 int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
@@ -79,8 +79,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
 
   double rrt_avoidance_dist_mod = rrt_avoidance_dist + increase_cleareance;
   rrt_avoidance_dist_mod = (rrt_avoidance_dist_mod < 1.0 ) ? rrt_avoidance_dist_mod: 1.0;
-
-
 
   int number_of_random_points_in_search_space = 200;
   Eigen::VectorXd x_dimentions(6);

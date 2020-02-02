@@ -135,10 +135,10 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
       {
         return;
       }
-      if (!edt_env_->mapValid())
-      {
-        return;
-      }
+      // if (!edt_env_->mapValid())
+      // {
+      //   return;
+      // }
       if (!trigger_)
       {
         return;

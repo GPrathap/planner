@@ -636,24 +636,29 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   this->updateESDF3d(true);
 }
 
-std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Vector3d x, int max_neighbours){
+std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Vector3d x
+                , int max_neighbours){
         // std::vector<value_t> returned_values;
-  std::vector<Eigen::Vector3d> neighbour_points;
-  for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
-          it != obs_tree.qend() ; ++it )
-  {
-      Eigen::Vector3d pose(3);
-      auto cube = (*it).first;
-      double min_x = bg::get<bg::min_corner, 0>(cube);
-      double min_y = bg::get<bg::min_corner, 1>(cube);
-      double min_z = bg::get<bg::min_corner, 2>(cube);
-      pose << min_x, min_y, min_z;
-      neighbour_points.push_back(pose);
-  }
-  return neighbour_points;        
+        std::vector<Eigen::Vector3d> neighbour_points;
+        for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
+                it != obs_tree.qend() ; ++it )
+        {
+            Eigen::Vector3d pose(3);
+            auto cube = (*it).first;
+            double min_x = bg::get<bg::min_corner, 0>(cube);
+            double min_y = bg::get<bg::min_corner, 1>(cube);
+            double min_z = bg::get<bg::min_corner, 2>(cube);
+            pose << min_x, min_y, min_z;
+            neighbour_points.push_back(pose);
+        }
+        return neighbour_points;
 }
 
 double SDFMap::get_free_distance(Eigen::Vector3d x){
+  if(!isInMap(x)){
+    ROS_WARN_STREAM("Requested pose is not inside the map" << x.transpose());
+    return 0.0;
+  }
   std::vector<Eigen::Vector3d> poses = nearest_obstacles_to_current_pose(x, 1);
   if(poses.size()>0){
     return (x - poses[0]).norm();
