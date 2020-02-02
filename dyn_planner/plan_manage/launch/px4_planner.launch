@@ -1,6 +1,6 @@
 <launch>
-  <arg name="max_vel" value="1.0" />
-  <arg name="max_acc" value="0.5" />
+  <arg name="max_vel" value="0.8" />
+  <arg name="max_acc" value="0.3" />
   <arg name="dynamic" value="0" />
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
   <!-- <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" /> -->
@@ -107,8 +107,8 @@
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
-      <param name="traj/yaw_angle_smoothing_window_size" value="20" type="int"/>
-      <param name="traj/traj_duration_for_stopping" value="40" type="double"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="200" type="int"/>
+      <param name="traj/traj_duration_for_stopping" value="150" type="double"/>
   </node>
 
   <!-- use simulator -->

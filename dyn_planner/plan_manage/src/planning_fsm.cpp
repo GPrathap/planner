@@ -432,6 +432,17 @@ bool PlanningFSM::planSearchOpt()
     {
       bspline.knots.push_back(knots(i));
     }
+
+    Eigen::Vector3d intermidiate_goal;
+    bool intermidiate_goal_is_set = false;
+    bool safe = planner_manager_->checkTrajCollision(intermidiate_goal, intermidiate_goal_is_set);
+    if (!safe)
+    {
+      change_path_index++;
+      ROS_WARN("Current traj in collision: in new trajectory generation...");
+      return false;
+    }
+
     bspline_pub_.publish(bspline);
 
     /* visulization */

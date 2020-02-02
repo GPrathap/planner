@@ -69,7 +69,7 @@ private:
 
   bool planSearchOpt();  // front-end and back-end method
 
-  int MAX_TRIES_FOR_FIND_PATH = 2;
+  int MAX_TRIES_FOR_FIND_PATH = 10;
 
   /* ---------- sub and pub ---------- */
   ros::NodeHandle node_;

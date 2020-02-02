@@ -221,24 +221,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   traj_pos_ = pos;
 
 
-
-  // =========================================================
-  // int K_rrt_alter;
-  // double ts_rrt_alter = 0.1;
-  
-  // Eigen::MatrixXd samples_rrt_alternative = path_finder_->getSamplesRRTAlternative(ts_rrt_alter, K_rrt_alter
-  //                                                                                   , is_alternative_path_exist);
-  // if(!is_alternative_path_exist){
-  //    return true;
-  // }
-
-  // Eigen::MatrixXd control_pts_rrt_alter;
-  // NonUniformBspline::getControlPointEqu3(samples_rrt_alternative, ts_rrt_alter, control_pts_rrt_alter);
-  // t2 = ros::Time::now();
-  // t_axb = (t2 - t1).toSec();
-
-  
-
   /* ---------- time adjustment ---------- */
 
   // t1 = ros::Time::now();
