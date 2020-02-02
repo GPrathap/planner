@@ -44,6 +44,7 @@ public:
   std::vector<Eigen::Vector3d> nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours);
   double get_free_distance(Eigen::Vector3d x);
+  bool is_inside_map(Eigen::Vector3d x);
   typedef shared_ptr<EDTEnvironment> Ptr;
 };
 

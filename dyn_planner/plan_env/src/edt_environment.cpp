@@ -17,6 +17,10 @@ std::vector<Eigen::Vector3d> EDTEnvironment::getMapCurrentRange(){
     return this->sdf_map_->getMapCurrentRange(); 
 }
 
+bool EDTEnvironment::is_inside_map(Eigen::Vector3d pos){
+  return this->sdf_map_->isInMap(pos);
+}
+
 std::vector<Eigen::Vector3d> EDTEnvironment::nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours){
                   return this->sdf_map_->nearest_obstacles_to_current_pose(x, max_neighbours);

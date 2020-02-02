@@ -9,6 +9,7 @@
 #include <mavros_msgs/GlobalPositionTarget.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <deque>
+#include <math.h>
 
 
 using namespace dyn_planner;
@@ -200,6 +201,10 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   Eigen::Vector3d end_pose = traj[0].evaluateDeBoor(t_cmd_end);
   Eigen::Vector3d normalized_vector = (end_pose-starting_pose).normalized();
   target_yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
+  if(std::abs(target_yaw_angle) > M_PI){
+    double sign = (target_yaw_angle>0) ? 1.0 : -1.0;
+    target_yaw_angle = (2*M_PI - std::abs(target_yaw_angle))*sign*-1.0;
+  }
   yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
   ROS_INFO_STREAM("bsplineCallback: "<< stop_pose_is_set );
   receive_traj = true;

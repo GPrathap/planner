@@ -27,6 +27,10 @@ namespace hagen {
         edt_env_ = env;
     }
 
+    // bool SearchSpace::is_inside_map(Eigen::Vector3d pos){
+    //     edt_env_->is_inside_map
+    // }
+
     void SearchSpace::generate_random_objects(int num_of_objects){
         for (int i = 0 ; i < num_of_objects ; ++i)
         {
@@ -392,7 +396,7 @@ namespace hagen {
     }
 
     double SearchSpace::get_free_space(Eigen::Vector3d search_rect, double optimal_time){
-    //  double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time); 
+    //  double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time);
         double dis = edt_env_->get_free_distance(search_rect);
        return dis;
     }
@@ -582,7 +586,7 @@ namespace hagen {
                             + pow ( ( y - c[1] ) / r[1], 2 )
                             + pow ( ( z - c[2] ) / r[2], 2 ) )
                     {
-                    break;
+                        break;
                     }
                     np = 0;
                     p[0+np*3] = x;
@@ -592,43 +596,43 @@ namespace hagen {
 
                     if ( 0 < i )
                     {
-                    for ( m = 0; m < np; m++ )
-                    {
-                        p[0+(np+m)*3] = 2.0 * c[0] - p[0+m*3];
-                        p[1+(np+m)*3] = p[1+m*3];
-                        p[2+(np+m)*3] = p[2+m*3];
-                    }
-                    np = 2 * np;
+                        for ( m = 0; m < np; m++ )
+                        {
+                            p[0+(np+m)*3] = 2.0 * c[0] - p[0+m*3];
+                            p[1+(np+m)*3] = p[1+m*3];
+                            p[2+(np+m)*3] = p[2+m*3];
+                        }
+                        np = 2 * np;
                     }
 
                     if ( 0 < j )
                     {
-                    for ( m = 0; m < np; m++ )
-                    {
-                        p[0+(np+m)*3] = p[0+m*3];
-                        p[1+(np+m)*3] = 2.0 * c[1] - p[1+m*3];
-                        p[2+(np+m)*3] = p[2+m*3];
-                    }
-                    np = 2 * np;
+                        for ( m = 0; m < np; m++ )
+                        {
+                            p[0+(np+m)*3] = p[0+m*3];
+                            p[1+(np+m)*3] = 2.0 * c[1] - p[1+m*3];
+                            p[2+(np+m)*3] = p[2+m*3];
+                        }
+                        np = 2 * np;
                     }
 
                     if ( 0 < k )
                     {
-                    for ( m = 0; m < np; m++ )
-                    {
-                        p[0+(np+m)*3] = p[0+m*3];
-                        p[1+(np+m)*3] = p[1+m*3];
-                        p[2+(np+m)*3] = 2.0 * c[2] - p[2+m*3];
-                    }
-                    np = 2 * np;
+                        for ( m = 0; m < np; m++ )
+                        {
+                            p[0+(np+m)*3] = p[0+m*3];
+                            p[1+(np+m)*3] = p[1+m*3];
+                            p[2+(np+m)*3] = 2.0 * c[2] - p[2+m*3];
+                        }
+                        np = 2 * np;
                     }
 
                     for ( m = 0; m < np; m++ )
                     {
-                    for ( ii = 0; ii < 3; ii++ )
-                    {
-                        xyz[ii+(ng2+m)*3] = p[ii+m*3];
-                    }
+                        for ( ii = 0; ii < 3; ii++ )
+                        {
+                            xyz[ii+(ng2+m)*3] = p[ii+m*3];
+                        }
                     }
                     ng2 = ng2 + np;
                 }
