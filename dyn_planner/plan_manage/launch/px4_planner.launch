@@ -14,8 +14,6 @@
                 <param name="sensor_model/max_range" value="5.0" />
                 <remap from="cloud_in" to="/r200/depth/points" />
   </node>
-
-
   <!-- main node -->
   <node pkg="plan_manage" name="dyn_planner_node" type="dyn_planner_node" output="screen" respawn="true">
   <!-- remap -->
@@ -118,4 +116,14 @@
 <!--
   <node pkg="rosbag" type="record" name="rosbag_record" args="/octomap_point_cloud_centers /mavros/local_position/pose /tf /goal/marker_text /goal /visualization_marker /dynamic/obj /dynamic/pose_0 /planning_vis/trajectory  /dynamic/pose_1 /dynamic/pose_2 /dynamic/pose_3 /dynamic/pose_4 /dynamic/pose_5 /dynamic/pose_6 /dynamic/pose_7 /dynamic/pose_8 /dynamic/pose_9 /filter/traj /start_goal /planning/traj /planning/path /planning/state /hybridastar/path /astar/visited /basic_controls/update -o /home/op/rosbags/fast_planner" respawn="true" />
 -->
+
+ <!-- <node pkg="rosbag" type="record" name="rosbag_record_drone" args="/pylon_camera_node_aca1300/image_raw/compressed /velodyne_packets /dji_sdk/acceleration_ground_fused 
+ /dji_sdk/angular_velocity_fused /dji_sdk/display_mode /dji_sdk/flight_status /dji_sdk/gimbal_angle /dji_sdk/gps_health /dji_sdk/gps_position /dji_sdk/odometry 
+ /dji_sdk/height_above_takeoff /dji_sdk/imu /dji_sdk/attitude /dji_sdk/local_frame_ref /dji_sdk/local_position /dji_sdk/rtk_info_position /dji_sdk/rtk_info_yaw 
+ /dji_sdk/rtk_position /dji_sdk/rtk_velocity /dji_sdk/rtk_yaw /dji_sdk/velocity /imu/data /octomap_point_cloud_centers /mavros/local_position/pose /tf /goal/marker_text /goal 
+ /visualization_marker /dynamic/obj /dynamic/pose_0 /planning_vis/trajectory  /dynamic/pose_1 /dynamic/pose_2 /dynamic/pose_3 /dynamic/pose_4 /dynamic/pose_5 /dynamic/pose_6 
+ /dynamic/pose_7 /dynamic/pose_8 /dynamic/pose_9 /filter/traj /start_goal /planning/traj /planning/path /planning/state /hybridastar/path /astar/visited /basic_controls/update 
+ -o /home/ubuntu/sdcard/planner0_ --split --size=4000" respawn="true" /> -->
+
+
 </launch>
