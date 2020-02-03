@@ -200,11 +200,31 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   starting_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
   Eigen::Vector3d end_pose = traj[0].evaluateDeBoor(t_cmd_end);
   Eigen::Vector3d normalized_vector = (end_pose-starting_pose).normalized();
-  target_yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);
+  target_yaw_angle = std::atan2(normalized_vector[1], normalized_vector[0]);\
+  double sign = (target_yaw_angle>0) ? 1.0 : -1.0;
   if(std::abs(target_yaw_angle) > M_PI){
-    double sign = (target_yaw_angle>0) ? 1.0 : -1.0;
     target_yaw_angle = (2*M_PI - std::abs(target_yaw_angle))*sign*-1.0;
+    ROS_INFO_STREAM("in======target_yaw_angle======="<< target_yaw_angle );
   }
+
+  // double sign_1 = ((current_yaw-target_yaw_angle)>0) ? 1.0 : -1.0;
+  // if(std::abs(current_yaw-target_yaw_angle)> M_PI){
+  //   target_yaw_angle = (2*M_PI - std::abs(current_yaw-target_yaw_angle))*sign_1*-1.0;
+  //   ROS_INFO_STREAM("in second======target_yaw_angle======="<< target_yaw_angle);
+  // }
+  // sign = (target_yaw_angle>0) ? 1.0 : -1.0;
+  if(std::abs(target_yaw_angle - current_yaw)> M_PI){
+    target_yaw_angle = (2*M_PI - std::abs(target_yaw_angle))*-1.0;
+  }
+  
+  if(std::abs(target_yaw_angle - current_yaw)>= 2*M_PI){
+    target_yaw_angle = current_yaw;
+  }
+
+
+
+  ROS_INFO_STREAM("out======target_yaw_angle======="<< target_yaw_angle );
+  ROS_INFO_STREAM("out======current_yaw======="<< current_yaw );
   yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
   ROS_INFO_STREAM("bsplineCallback: "<< stop_pose_is_set );
   receive_traj = true;

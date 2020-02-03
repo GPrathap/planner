@@ -53,12 +53,8 @@
     <param name="manager/time_sample" value="0.5" type="double"/>
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="manager/dynamic" value="$(arg dynamic)" type="int"/>
-    <param name="manager/margin" value="0.5" type="double"/>
+    <param name="manager/margin" value="0.8" type="double"/>
   <!-- path searching -->
-    <param name="astar/lambda_heu" value="10.0" type="double"/>
-    <param name="astar/resolution_astar" value="0.1" type="double"/>
-    <param name="astar/time_resolution" value="0.8" type="double"/>
-    <param name="astar/allocate_num" value="100000" type="int"/>
   <!-- path searching -->
     <param name="search/max_tau" value="0.8" type="double"/>
     <param name="search/init_max_tau" value="0.8" type="double"/>
@@ -78,7 +74,7 @@
     <param name="search/lqr_min_dis" value="0.4" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
     <param name="search/lqr_num_of_iteration" value="20" type="int"/>
-    <param name="search/rrt_avoidance_dist" value="0.5" type="double"/>
+    <param name="search/rrt_avoidance_dist" value="0.8" type="double"/>
     <param name="search/rrt_star_steer_min" value="3.0" type="double"/>
     <param name="search/rrt_star_steer_max" value="4" type="double"/>
     <param name="search/lqr_obs_radius" value="0.4" type="double"/>
@@ -105,7 +101,7 @@
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen" respawn="true">
       <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
-      <param name="traj/yaw_angle_smoothing_window_size" value="200" type="int"/>
+      <param name="traj/yaw_angle_smoothing_window_size" value="300" type="int"/>
       <param name="traj/traj_duration_for_stopping" value="150" type="double"/>
   </node>
 
@@ -123,7 +119,7 @@
  /dji_sdk/rtk_position /dji_sdk/rtk_velocity /dji_sdk/rtk_yaw /dji_sdk/velocity /imu/data /octomap_point_cloud_centers /mavros/local_position/pose /tf /goal/marker_text /goal 
  /visualization_marker /dynamic/obj /dynamic/pose_0 /planning_vis/trajectory  /dynamic/pose_1 /dynamic/pose_2 /dynamic/pose_3 /dynamic/pose_4 /dynamic/pose_5 /dynamic/pose_6 
  /dynamic/pose_7 /dynamic/pose_8 /dynamic/pose_9 /filter/traj /start_goal /planning/traj /planning/path /planning/state /hybridastar/path /astar/visited /basic_controls/update 
- -o /home/ubuntu/sdcard/planner0_ --split --size=4000" respawn="true" /> -->
+ -o /home/ubuntu/sdcard/planner0_ split size=4000" respawn="true" /> -->
 
 
 </launch>
