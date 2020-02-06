@@ -38,7 +38,7 @@
     <!-- planning fsm -->
     <param name="fsm/flight_type" value="1" type="int"/>
     <param name="fsm/thresh_replan" value="4.0" type="double"/>
-    <param name="fsm/thresh_no_replan" value="3.0" type="double"/>
+    <param name="fsm/thresh_no_replan" value="4.0" type="double"/>
     <param name="fsm/wp_num" value="3" type="int"/>
     <param name="fsm/wp0_x" value="8.0" type="double"/>
     <param name="fsm/wp0_y" value="8.0" type="double"/>

@@ -55,6 +55,9 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   std::vector<Eigen::Vector2d> Q;
   Eigen::Vector2d dim_in;
   dim_in << rrt_star_steer_min, rrt_star_steer_max;
+  if((end_pt - start_pt).norm()<rrt_star_steer_min){
+     dim_in << rrt_star_steer_min/2.0, rrt_star_steer_min;
+  }
   Q.push_back(dim_in);
 
   start_vel_ = start_v;

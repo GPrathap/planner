@@ -171,6 +171,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   // t2 = ros::Time::now();
   // t_sample = (t2 - t1).toSec();
 
+
   t1 = ros::Time::now();
 
   // Eigen::MatrixXd control_pts;
@@ -181,8 +182,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
   t2 = ros::Time::now();
   t_axb = (t2 - t1).toSec();
-
-  
 
   /* ---------- time adjustment ---------- */
 

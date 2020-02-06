@@ -11,12 +11,9 @@ double NonUniformBspline::limit_ratio_;
 NonUniformBspline::NonUniformBspline(Eigen::MatrixXd points, int order, double interval_, bool zero)
 {
   this->p_ = order;
-
   control_points_ = points;
   this->n_ = points.rows() - 1;
-
   this->m_ = this->n_ + this->p_ + 1;
-
   // calculate knots vector
   this->interval_ = interval_;
   this->u_ = Eigen::VectorXd::Zero(this->m_ + 1);
