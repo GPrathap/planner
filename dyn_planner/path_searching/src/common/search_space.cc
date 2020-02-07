@@ -18,7 +18,6 @@ namespace hagen {
         uni_dis_vector.push_back(distribution_z);
         number_of_rand_points = num_of_rand_points;
         number_of_max_attempts = number_of_tries_at_time;
-        random_call = new Random_call(std::chrono::system_clock::now().time_since_epoch().count(), num_of_rand_points);
         obstacle_counter = 0;
         avoidance_width = _avoidance_width;
     }
@@ -420,31 +419,41 @@ namespace hagen {
         // auto z_on = uni_dis_vector[2](generator_on_x);
         // random_pose << x_on, y_on, z_on ;
        
-                if(use_whole_search_sapce){
-                std::default_random_engine generator_on_x;
-                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                auto x_on = uni_dis_vector[0](generator_on_x);
-                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                auto y_on = uni_dis_vector[1](generator_on_x);
-                generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                auto z_on = uni_dis_vector[2](generator_on_x);
-                random_pose << x_on, y_on, z_on ;
-               
-                }
-                else{
+                
+                if(!use_whole_search_sapce){
+                    int max_tries = 10;
+                    int coun = 0;
                     while(true){
                         int index = *(random_call);
-                        // std::cout<< "index: " << index << std::endl;
-                        if((index < (*random_points_tank).rows()) && (index>0)){
-                            // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).rows() << std::endl;
+                        std::cout<< "index: " << index << std::endl;
+                        if((index < number_of_points_in_random_tank) && (index>0)){
+                            // std::cout<< "========================1114"<< index << "===" << number_of_points_in_random_tank << std::endl;
                             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
                             if(is_random_tank_is_ready){
                                 random_pose = (*random_points_tank).row(index);
                                 // std::cout<< "========================1115" << std::endl;
+                                return random_pose;
                             }
+                            break;
+                            coun+=1;
+                        }
+                        if(coun>max_tries){
+                            use_whole_search_sapce = true;
                             break;
                         }
                     }
+                }
+                if(use_whole_search_sapce)
+                {
+                    std::default_random_engine generator_on_x;
+                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                    auto x_on = uni_dis_vector[0](generator_on_x);
+                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                    auto y_on = uni_dis_vector[1](generator_on_x);
+                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+                    auto z_on = uni_dis_vector[2](generator_on_x);
+                    random_pose << x_on, y_on, z_on ;
+                   std::cout<< "========================use_whole_search_sapce"<< std::endl;
                 }
         // }
         return random_pose;
@@ -542,7 +551,7 @@ namespace hagen {
             return linspaced;
         }
 
-        double*  SearchSpace::ellipsoid_grid ( int n, int ng ){
+        double*  SearchSpace::ellipsoid_grid ( int n, int ng){
             double h;
             int ii;
             int i;
@@ -780,7 +789,7 @@ namespace hagen {
     }
 
     void SearchSpace::generate_points( int n, Eigen::Vector3d radios, Eigen::Vector3d center_pose
-            , Eigen::Matrix3d rotation_matrix)
+            , Eigen::Matrix3d rotation_matrix, double mix_hight, double max_hight)
     {
         Eigen::Vector3d c(0,0,0);
         int ng = ellipsoid_grid_count(n, radios, c);
@@ -796,15 +805,21 @@ namespace hagen {
         }
 
         int count = 0;
+        int real_points = 0;
         for ( i = 0; i < ng - 2; i++ )
         {
             Eigen::Vector3d point;
             point<< a[0+i*3], a[1+i*3], a[2+i*3];
             Eigen::Vector3d ff = point.transpose()*rotation_matrix;
             ff = ff + center_pose;
-            (*random_points_tank).row(i) = ff;
+            if(ff[2]>mix_hight && ff[2]< max_hight){
+                (*random_points_tank).row(real_points) = ff;
+                real_points +=1;
+            }
             count +=1;
         }
+        number_of_points_in_random_tank = real_points;
+        random_call = new Random_call(std::chrono::system_clock::now().time_since_epoch().count(), number_of_points_in_random_tank);
         is_random_tank_is_ready = true;
         return;
     }

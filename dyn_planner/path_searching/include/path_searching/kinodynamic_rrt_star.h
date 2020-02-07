@@ -185,6 +185,8 @@ private:
   double lqr_min_dis = 1.0;
   double lqr_min_dt = 0.1;
   double lqr_feasibility_max_vel = 0.25;
+  double space_min_z = 1.0;
+  int order_of_search_space = 4;
   /* map */
   double resolution_, inv_resolution_, time_resolution_, inv_time_resolution_;
   Eigen::Vector3d origin_, map_size_3d_;

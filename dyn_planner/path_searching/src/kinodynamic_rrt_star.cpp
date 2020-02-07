@@ -103,11 +103,11 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
                 // std::cout<< "======1" << start_pt_.state.head(3) << std::endl;
                 center = (end_pt_.state.head(3) - start_pt_.state.head(3));
                 // Eigen::Vector3d new_center_point(4);
-                // std::cout<< "======2" << std::endl;
+                std::cout<< "======2"<< space_min_z << std::endl;
                 // covmat = Eigen::MatrixXd::Zero(3,3);
                 radious[0] = (std::abs(center[0]) < 4.0) ? 4.0 : std::abs(center[0]);
                 radious[1] = (std::abs(center[1]) < 4.0) ? 4.0 : std::abs(center[1]);
-                radious[2] = (std::abs(center[2]) < 1.0) ? 1.0: std::abs(center[2]);
+                radious[2] = (std::abs(center[2]) < space_min_z) ? space_min_z: std::abs(center[2]);
                 // std::cout<< "======3" << std::endl;
                 center = (end_pt + start_pt)/2.0;
                 Eigen::Vector3d a(0,0,1);
@@ -116,7 +116,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
                 common_utils.get_roration_matrix(a, b, rotation_matrix);
                 // // int max_tries = 3;
                 // // int try_index = 0;
-                X.generate_points(4, radious, center, rotation_matrix);
+                X.generate_points(order_of_search_space, radious, center, rotation_matrix, curr_range[0][2], curr_range[1][2]);
                 // X.generate_search_sapce(covmat, rotation_matrix, center, number_of_random_points_in_search_space);
       }
       kamaz::hagen::RRTStar3D* rrtstart3d;
@@ -261,6 +261,9 @@ void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
   nh.param("search/lqr_min_dt", lqr_min_dt, -1.0);
   nh.param("search/lqr_num_of_iteration", lqr_num_of_iteration, -1);
   nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1.0);
+  nh.param("search/rrt_order_of_search_space", order_of_search_space, -1);
+  
+  nh.param("search/rrt_search_space_min_z", space_min_z, -1.0);
   nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1.0);
   nh.param("search/lqr_obs_radius", obstacle_radios, -1.0);
   nh.param("search/lqr_consider_obs", consider_obs, false);
