@@ -531,7 +531,7 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
   pcl::fromROSMsg(*msg, latest_cloud_);
 
   // if ((int)latest_cloud_.points.size() == 0) return;
-  std::cout<< "==========================================||||| get clound"<< std::endl;
+//  std::cout<< "==========================================||||| get clound"<< std::endl;
   new_map_ = true;
 }
 
