@@ -202,8 +202,8 @@ namespace hagen{
 				}		
 			}
 			std::cout<< "==1" << sates_sequeance.size() << std::endl;
-			cnpy::npy_save("/home/geesara/Desktop/ler/0_state_vector.npy", &sates_sequeance[0],{(unsigned int)1, (unsigned int)count, (unsigned int)X_DIM},"w");
-			cnpy::npy_save("/home/geesara/Desktop/ler/0_control_vector.npy", &control_sequeance[0],{(unsigned int)1, (unsigned int)count, (unsigned int)U_DIM},"w");
+			// cnpy::npy_save("/home/geesara/Desktop/ler/0_state_vector.npy", &sates_sequeance[0],{(unsigned int)1, (unsigned int)count, (unsigned int)X_DIM},"w");
+			// cnpy::npy_save("/home/geesara/Desktop/ler/0_control_vector.npy", &control_sequeance[0],{(unsigned int)1, (unsigned int)count, (unsigned int)U_DIM},"w");
 	}
 
 double ExtendedLQR::extendedLQRItr(const size_t& ell, const Matrix<X_DIM>& startState

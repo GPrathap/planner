@@ -54,7 +54,7 @@ namespace hagen {
                 quad_status.push_back(val[2]);
             }
        }
-       cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
+    //    cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
     void TrajectoryPlanning::save_trajectory(std::vector<Eigen::VectorXd> trajectory_of_drone
@@ -66,7 +66,7 @@ namespace hagen {
             quad_status.push_back(sector[1]);
             quad_status.push_back(sector[2]);
        }
-       cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
+    //    cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
 

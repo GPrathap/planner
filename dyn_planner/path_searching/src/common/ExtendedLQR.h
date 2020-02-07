@@ -57,7 +57,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "matrix.h"
-#include <cnpy.h>
+// #include <cnpy.h>
 #include <stdio.h> 
 #include <Eigen/Dense>
 namespace loto {

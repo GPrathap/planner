@@ -15,7 +15,7 @@
 #include <Eigen/Dense>
 #include <chrono> 
 #include <vector>
-#include <cnpy.h>
+// #include <cnpy.h>
 #include <random>
 #include <algorithm>
 #include <list>

@@ -223,7 +223,7 @@ namespace hagen {
             quad_status.push_back(sector.state[1]);
             quad_status.push_back(sector.state[2]);
        }
-       cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
+    //    cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
     void RRTStar3D::rrt_init(int rewrite_count, RRTPlannerOptions planner_options
@@ -268,7 +268,7 @@ namespace hagen {
             count += 1;
         }
 
-        cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_obstacle(std::vector<SearchSpace::Rect> obstacles, std::string file_name){
@@ -283,7 +283,7 @@ namespace hagen {
                 obstacles_pose.push_back(rect.max[2]);
                 count += 1;
         }
-        cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_poses(PathNode start, PathNode end, std::string file_name){
@@ -294,7 +294,7 @@ namespace hagen {
        obstacles_pose[3] = end.state[0];
        obstacles_pose[4] = end.state[1];
        obstacles_pose[5] = end.state[2];
-       cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
+    //    cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
     }
 
     void RRTStar3D::save_path(std::vector<PathNode> path, std::string file_name){
@@ -305,7 +305,7 @@ namespace hagen {
            projected_path.push_back(way_point.state[1]);
            projected_path.push_back(way_point.state[2]);
        }
-       cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
+    //    cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
     }
 
     void RRTStar3D::save_long_path(std::vector<PathNode> path, std::string file_name){

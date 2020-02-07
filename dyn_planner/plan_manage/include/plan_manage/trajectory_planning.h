@@ -12,7 +12,7 @@
 #include <cerrno>
 #include <cfenv>
 #include <cstring>
-#include <cnpy.h>
+// #include <cnpy.h>
 #include <stack> 
 #include <Eigen/Dense>
 #include <unsupported/Eigen/NonLinearOptimization>

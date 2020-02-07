@@ -16,7 +16,7 @@
 #include <Eigen/Dense>
 #include <chrono> 
 #include <vector>
-#include <cnpy.h>
+// #include <cnpy.h>
 #include <random>
 #include <boost/function_output_iterator.hpp>
 #include <boost/geometry.hpp>

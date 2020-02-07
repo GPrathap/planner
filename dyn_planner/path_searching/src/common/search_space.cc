@@ -270,7 +270,7 @@ namespace hagen {
                 sample_pose.push_back(random_objects[i].max[2]);
         }
         std::string file_name = "/dataset/" + std::to_string(index)+ "_search_space.npy";
-        cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)random_objects.size(), (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)random_objects.size(), (unsigned int)6},"w");
     }
 
     void SearchSpace::save_samples(int index){
@@ -775,7 +775,7 @@ namespace hagen {
             edges.push_back(ff[2]);
             count +=1;
         }
-        cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)3},"w");
+        // cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)3},"w");
     return;
     }
 
