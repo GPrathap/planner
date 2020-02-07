@@ -3,7 +3,7 @@
   <arg name="max_acc" value="0.3" />
   <arg name="dynamic" value="0" />
   <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
-  <!-- <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" /> -->
+  <node pkg="tf" name="world_base_link_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
     <!-- <include file="$(find dji_sdk)/launch/sdk.launch"></include> -->
 
     <!-- <include file="$(find drone_bringup)/launch/fixed_joints.launch"/> -->
@@ -27,7 +27,7 @@
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
-    <param name="sdf_map/map_size_z" value="4.0" type="double"/>
+    <param name="sdf_map/map_size_z" value="1.6" type="double"/>
 
     <param name="sdf_map/resolution_sdf" value="0.2" type="double"/>
     <param name="sdf_map/ceil_height" value="2.5" type="double"/>
