@@ -38,7 +38,7 @@
 
     <param name="sdf_map/map_size_x" value="40.0" type="double"/>
     <param name="sdf_map/map_size_y" value="40.0" type="double"/>
-    <param name="sdf_map/map_size_z" value="1.6" type="double"/>
+    <param name="sdf_map/map_size_z" value="7" type="double"/>
 
     <param name="sdf_map/resolution_sdf" value="0.2" type="double"/>
     <param name="sdf_map/ceil_height" value="2.5" type="double"/>

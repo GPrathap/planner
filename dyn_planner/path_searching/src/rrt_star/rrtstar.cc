@@ -100,6 +100,7 @@ namespace hagen {
             return path;
         }
         int trap_avoid = 0;
+        int counter_rrt = 0;
         while(true){
             for(auto const q : Q){
                 for(int i=0; i<q[1]; i++){
@@ -108,7 +109,7 @@ namespace hagen {
                         BOOST_LOG_TRIVIAL(warning) << FYEL("Since drone is moved into manuval mode, stop finding trajectory");
                         return path;   
                    }
-                   std::cout<< "---------------------------2" << std::endl;
+                //    std::cout<< "---------------------------2" << std::endl;
                    auto new_and_next = new_and_near(0, q);
                    // std::cout<< "rstar loop...." << new_and_next.size() << std::endl;
                    if(new_and_next.size()==0){
@@ -126,20 +127,22 @@ namespace hagen {
                 //        continue;
                 //    }
                 //    std::cout<< "rstar loop...." << std::endl;
-                   std::cout<< "---------------------------4" << std::endl;
+                //    std::cout<< "---------------------------4" << std::endl;
                    auto l_near = get_nearby_vertices(0, x_init, x_new);
                 //    std::cout<< "---------------------------5" << std::endl;
                    connect_shortest_valid(0, x_new, l_near);
                    if (isEdge(x_new, 0)){
                        rewrite(0, x_new, l_near);
                    }
-                   std::cout<< "============end of rewire==========" << std::endl;
+                //    std::cout<< "============end of rewire==========" << std::endl;
                    auto solution = check_solution(path);
                    if(solution){
                        return path;
                    }
                 }
             }
+            counter_rrt++;
+            std::cout<< "============counter_rrt=========" << counter_rrt<<  std::endl;
         }
     }    
 } 

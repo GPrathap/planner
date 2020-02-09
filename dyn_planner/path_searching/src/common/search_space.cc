@@ -425,7 +425,7 @@ namespace hagen {
                     int coun = 0;
                     while(true){
                         int index = *(random_call);
-                        std::cout<< "index: " << index << std::endl;
+                        // std::cout<< "index: " << index << std::endl;
                         if((index < number_of_points_in_random_tank) && (index>0)){
                             // std::cout<< "========================1114"<< index << "===" << number_of_points_in_random_tank << std::endl;
                             // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;

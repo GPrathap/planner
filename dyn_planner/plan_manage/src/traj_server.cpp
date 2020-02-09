@@ -223,10 +223,10 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
 
 
 
-  ROS_INFO_STREAM("out======target_yaw_angle======="<< target_yaw_angle );
-  ROS_INFO_STREAM("out======current_yaw======="<< current_yaw );
+  // ROS_INFO_STREAM("out======target_yaw_angle======="<< target_yaw_angle );
+  // ROS_INFO_STREAM("out======current_yaw======="<< current_yaw );
   yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
-  ROS_INFO_STREAM("bsplineCallback: "<< stop_pose_is_set );
+  // ROS_INFO_STREAM("bsplineCallback: "<< stop_pose_is_set );
   receive_traj = true;
   stop_moving = false;
   stop_pose_is_set = false;
