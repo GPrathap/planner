@@ -101,6 +101,7 @@ namespace hagen {
         }
         int trap_avoid = 0;
         int counter_rrt = 0;
+        BOOST_LOG_TRIVIAL(error) << FRED("Path search in progress ...");
         while(true){
             for(auto const q : Q){
                 for(int i=0; i<q[1]; i++){
@@ -142,7 +143,7 @@ namespace hagen {
                 }
             }
             counter_rrt++;
-            std::cout<< "============counter_rrt=========" << counter_rrt<<  std::endl;
+            // std::cout<< "============counter_rrt=========" << counter_rrt<<  std::endl;
         }
     }    
 } 

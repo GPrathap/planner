@@ -193,7 +193,7 @@ namespace hagen {
                 // std::cout << x << std::endl;
                 PathNode next_pose;
                 next_pose.state.head(3) << x[0], x[1], x[2];
-                if(ba_length*1.2 < (next_pose.state.head(3)-x_start.head(3)).norm()){
+                if(ba_length*1.0 < (next_pose.state.head(3)-x_start.head(3)).norm()){
                     // For stopping the overshoot
                     PathNode next_pose;
                     next_pose.state.head(3) = x_goal;

@@ -598,8 +598,8 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
           }
         }
       }
-      box_t b(point_t(pt_inf.x, pt_inf.y, pt_inf.z), point_t(pt_inf.x+resolution_sdf_
-                            , pt_inf.y+resolution_sdf_, pt_inf.z+resolution_sdf_));
+      box_t b(point_t(pt.x, pt.y, pt.z), point_t(pt.x+resolution_sdf_
+                            , pt.y+resolution_sdf_, pt.z+resolution_sdf_));
       obs_tree.insert(value_t(b, obs_counter));
       obs_counter++;
     }

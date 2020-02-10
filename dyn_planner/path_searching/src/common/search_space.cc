@@ -453,7 +453,7 @@ namespace hagen {
                     generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
                     auto z_on = uni_dis_vector[2](generator_on_x);
                     random_pose << x_on, y_on, z_on ;
-                   std::cout<< "========================use_whole_search_sapce"<< std::endl;
+                //    std::cout<< "========================use_whole_search_sapce"<< std::endl;
                 }
         // }
         return random_pose;
