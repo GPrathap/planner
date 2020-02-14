@@ -34,6 +34,8 @@
 #include <algorithm> 
 
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
 #include <tf/tf.h>
 #include <geometry_msgs/PoseStamped.h>
 
@@ -176,7 +178,7 @@ private:
   int check_num_;
   double tie_breaker_ = 1.0 + 1.0 / 10000;
   int number_of_paths = 4;
-  int r = 1;
+  double r = 0.1;
   int max_samples = 1000;
   int rewrite_count = 32;
   double proc = 0.1;
@@ -230,7 +232,9 @@ public:
   std::vector<std::vector<Eigen::Vector3d>> getRRTTrajS(double delta_t);
   Eigen::MatrixXd getSamplesRRT(double& ts, int& K);
   std::vector<PathNodePtr> getVisitedNodes();
+  bool get_obs_space(visualization_msgs::MarkerArray& marker_array);
   bool get_search_space(visualization_msgs::Marker& marker);
+  void create_map(std::vector<std::array<double, 6>> obs_map);
   void create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
             , Eigen::Quaternion<double> q);
   Eigen::MatrixXd getSamplesRRTAlternative(double& ts, int& K, bool& is_exist);
@@ -253,6 +257,8 @@ public:
   int index_of_loweres_cost = -1;
   int index_of_alternative_cost = -1;
   visualization_msgs::Marker search_space_marker;
+  visualization_msgs::MarkerArray obs_map_poses;
+
   typedef shared_ptr<KinodynamicRRTstar> Ptr;
   bool is_using_whole_space = false;
   double rrt_star_steer_min = 4;

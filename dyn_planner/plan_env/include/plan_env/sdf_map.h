@@ -19,6 +19,8 @@
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/timer.hpp>
 #include <boost/foreach.hpp>
+#include <bspline_opt/non_uniform_bspline.h>
+
 using namespace std;
 
 namespace dyn_planner
@@ -46,6 +48,7 @@ namespace dyn_planner
       Eigen::Vector3i min_vec_, max_vec_;      // the min and max updated range, unit is 1
 
       RTree obs_tree;
+      RTree obs_tree_previous;
 
       void posToIndex(Eigen::Vector3d pos, Eigen::Vector3i& id);
       void indexToPos(Eigen::Vector3i id, Eigen::Vector3d& pos);
@@ -76,6 +79,8 @@ namespace dyn_planner
       void odomCallback(const nav_msgs::OdometryConstPtr& msg);
       void updateCallback(const ros::TimerEvent& e);
 
+      std::vector<std::array<double, 6>> _objects_map;
+
       /* --------------------------------- */
 
     public:
@@ -86,6 +91,7 @@ namespace dyn_planner
 
       std::vector<Eigen::Vector3d> getMapCurrentRange();
       bool isInMap(Eigen::Vector3d pos);
+      std::vector<std::array<double, 6>> getObsMap();
       /* get state */
       bool odomValid() { return have_odom_; }
       bool mapValid() { return map_valid_; }
@@ -93,30 +99,12 @@ namespace dyn_planner
       void getRegion(Eigen::Vector3d& ori, Eigen::Vector3d& size) { ori = origin_, size = map_size_; }
       double getResolution() { return resolution_sdf_; }
       double getIgnoreRadius() { return radius_ignore_; }
-      void getInterpolationData(const Eigen::Vector3d& pos, vector<Eigen::Vector3d>& pos_vec,
-                                Eigen::Vector3d& diff);
       std::vector<Eigen::Vector3d> nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours);
       double get_free_distance(Eigen::Vector3d x);
-      // occupancy management
       void resetBuffer(Eigen::Vector3d min, Eigen::Vector3d max);
-      void setOccupancy(Eigen::Vector3d pos, int occ = 1);
-      int getOccupancy(Eigen::Vector3d pos);
-      int getOccupancy(Eigen::Vector3i id);
-      void getOccupancyMarker(visualization_msgs::Marker& m, int id, Eigen::Vector4d color);
-
-      // distance field management
-      double getDistance(Eigen::Vector3d pos);
-      double getDistance(Eigen::Vector3i id);
-      double getDistWithGradTrilinear(Eigen::Vector3d pos, Eigen::Vector3d& grad);
-      double getDistTrilinear(Eigen::Vector3d pos);
       void setUpdateRange(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos);
-      void updateESDF3d(bool neg = false);
-      void getESDFMarker(vector<visualization_msgs::Marker>& markers, int id, Eigen::Vector3d color);
-      double getMaxDistance();
-
-      void publishESDF();
-
+      bool collision_free(Eigen::Vector3d start, Eigen::Vector3d end);
       typedef shared_ptr<SDFMap> Ptr;
     };
 

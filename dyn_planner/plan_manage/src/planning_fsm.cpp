@@ -338,11 +338,7 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
   /* ---------- check goal safety ---------- */
   if (have_goal_)
   {
-    double dist =
-        planner_manager_->dynamic_ ?
-            edt_env_->evaluateCoarseEDT(end_pt_, planner_manager_->time_start_ + planner_manager_->traj_duration_) :
-            edt_env_->evaluateCoarseEDT(end_pt_, -1.0);
-
+    double dist = edt_env_->get_free_distance(end_pt_);
     if (dist <= planner_manager_->margin_)
     {
       /* try to find a max distance goal around */
@@ -360,10 +356,7 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
             new_y = end_pt_(1) + r * sin(theta / 57.3);
             new_z = end_pt_(2) + dz;
             Eigen::Vector3d new_pt(new_x, new_y, new_z);
-            dist = planner_manager_->dynamic_ ?
-                       edt_env_->evaluateCoarseEDT(new_pt,
-                                                   planner_manager_->time_start_ + planner_manager_->traj_duration_) :
-                       edt_env_->evaluateCoarseEDT(new_pt, -1.0);
+            dist = edt_env_->get_free_distance(new_pt);
             if (dist > max_dist)
             {
               /* reset end_pt_ */
@@ -405,7 +398,7 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
 bool PlanningFSM::planSearchOpt()
 {
 
-  int path_index = std::floor(change_path_index/2);
+  int path_index = change_path_index;
   bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_
             , increase_cleareance, path_index);
 
@@ -451,6 +444,10 @@ bool PlanningFSM::planSearchOpt()
     // visualization_->drawPath(kino_path, 0.1, Eigen::Vector4d(1, 0, 0, 1));
     
     vector<vector<Eigen::Vector3d>> rrt_paths = path_finder_->getRRTTrajS(0.02);
+    visualization_msgs::MarkerArray marker_array;
+    path_finder_->get_obs_space(marker_array);
+    std::cout<< "Size of map of obstacles " << marker_array.markers.size() << std::endl;
+    visualization_->drawObsMap(marker_array, 0.1, Eigen::Vector4d(0, 0.4 ,0.6, 1), 67);
     int ids = 8;
     srand(time(NULL));
     for(auto rrt_path : rrt_paths){

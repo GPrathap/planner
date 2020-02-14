@@ -28,7 +28,7 @@ private:
   /* data */
   ros::NodeHandle node;
   ros::Publisher traj_pub;
-  ros::Publisher search_space_publisher;
+  ros::Publisher search_space_publisher, pub_rviz_markers_;
 
   void displaySphereList(vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color, int id);
 
@@ -51,6 +51,8 @@ public:
 
   void publish_marker(visualization_msgs::Marker, int id_
         , std::string name_space);
+  
+  void drawObsMap(visualization_msgs::MarkerArray marker_array, double resolution, Eigen::Vector4d color, int id);
 
   typedef std::shared_ptr<PlanningVisualization> Ptr;
 };

@@ -87,21 +87,8 @@ class CommonUtils {
   
   void get_roration_matrix(Eigen::Vector3d a, Eigen::Vector3d b, Eigen::Matrix3d& r);
   double get_cost_of_path(std::vector<Eigen::Vector3d> path1);
-//   visualization_msgs::Marker create_marker_point(Eigen::Vector3d _point_on_path
-//         , Eigen::MatrixXd covmat, int id_, std::string name_space);
-//   visualization_msgs::Marker create_marker_point(Eigen::Vector3d _point_on_path
-//         , Eigen::MatrixXd covmat, Eigen::Quaternion<double> q, int id_
-//         , std::string name_space);
-//   visualization_msgs::Marker create_marker_point(Eigen::Vector3d _point_on_path
-//         , ColorRGBA color_of_qupter, int id_, std::string name_space);
-  
-//   geometry_msgs::PoseStamped constructPoseStamped(Eigen::Vector3d path_position);
-//   void printStampedTf(tf::StampedTransform sTf);
-//   void printTf(tf::Transform tf);
-//   void PrintMsgStats(const sensor_msgs::PointCloud2ConstPtr& msg);
-//   tf::Transform get_tf_from_stamped_tf(tf::StampedTransform sTf);
-//   dji_sdk::Gimbal get_gimbal_msg(int mode, double roll
-                                                //  , double pitch, double yaw);
+  std::vector<Eigen::Vector3d> next_poses(Eigen::VectorXd start_position, Eigen::VectorXd end_position
+      , double distance);
 
   void get_point_on_the_trajectory(Eigen::Vector3d way_point
       , Eigen::Vector3d start_point,  Eigen::Vector3d& path_position);

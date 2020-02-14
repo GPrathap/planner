@@ -114,6 +114,42 @@ namespace hagen{
         // std::cout << "points: " << container << std::endl;
     }
 
+    std::vector<Eigen::Vector3d> CommonUtils::next_poses(Eigen::VectorXd start_position, Eigen::VectorXd end_position
+      , double distance)
+    {
+        std::vector<Eigen::Vector3d> poses;
+        Eigen::VectorXd next_pose(3);
+        auto position_vector = end_position - start_position;
+        auto x = position_vector[0];
+        auto y = position_vector[1];
+        auto z = position_vector[2];
+        double diff = position_vector.norm();
+        if( diff <= 0.0){
+          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
+        }
+        if(diff < distance){
+            poses.push_back(end_position);
+            return poses;
+        }
+        auto theta = std::atan2(y, x);
+        auto phi = std::atan2(std::sqrt(x*x + y*y), z);
+        // std::cout<< "theta: "<< theta << " phi: " << phi << std::endl;
+        while(true){
+            auto target_z = distance*std::cos(phi) + start_position[2];
+            auto target_x = distance*std::sin(phi)*std::cos(theta) + start_position[0];
+            auto target_y = distance*std::sin(phi)*std::sin(theta) + start_position[1];
+            next_pose<<target_x, target_y, target_z;
+            poses.push_back(next_pose);
+            distance += distance;
+            if((next_pose.head(3)-end_position.head(3)).norm() <= distance){
+                break;
+            }
+            // std::cout<< "Next pose:: inside:: not"<< next_pose << std::endl;
+            // return next_pose;
+        }
+        return poses;
+    }
+
 
 
     // dji_sdk::Gimbal CommonUtils::get_gimbal_msg(int mode, double roll, double pitch

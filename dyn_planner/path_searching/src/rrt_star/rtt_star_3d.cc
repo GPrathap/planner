@@ -30,13 +30,13 @@ namespace hagen {
         // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
 
         // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-        // stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
-        // save_edges(rrtstar.trees, stotage_location + "edges.npy");
-        // save_obstacle(planner_opts.search_space.random_objects, stotage_location + "obstacles.npy");
-        // save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
+        stotage_location = "/home/geesara/tmp/data/" + std::to_string(index) + "_";
+        save_edges(rrtstar.trees, stotage_location + "edges.npy");
+        save_obstacle(planner_opts.search_space.edt_env_->get_obs_map(), stotage_location + "obstacles.npy");
+        save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
         // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
         // save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        // save_path(path, stotage_location + "rrt_star_path.npy");
+        save_path(path, stotage_location + "rrt_star_path.npy");
         // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
         // std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
         // return smoothed_path;
@@ -112,7 +112,7 @@ namespace hagen {
     void RRTStar3D::add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
                                                             , std::vector<PathNode>& smoothed_path){
         auto opts = planner_opts.kino_options;
-        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, opts.dt*opts.max_fes_vel);
+        std::vector<Eigen::Vector3d> poses = common_utils.next_poses(x_start, x_goal, opts.dt*opts.max_fes_vel);
         for(auto po : poses){
             PathNode next_pose_node;
             next_pose_node.state.head(3) << po[0], po[1], po[2];
@@ -124,7 +124,7 @@ namespace hagen {
                                                             , std::vector<PathNode>& smoothed_path){
         auto opts = planner_opts.kino_options;
         auto search_space = planner_opts.search_space;
-        std::vector<Eigen::Vector3d> poses = next_poses(x_start, x_goal, 0.2);
+        std::vector<Eigen::Vector3d> poses = common_utils.next_poses(x_start, x_goal, 0.2);
         loto::hagen::ExtendedLQR extendedLQR;
         if(opts.consider_obs){
             for(auto pose : poses){
@@ -223,7 +223,7 @@ namespace hagen {
             quad_status.push_back(sector.state[1]);
             quad_status.push_back(sector.state[2]);
        }
-    //    cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
+       cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
     void RRTStar3D::rrt_init(int rewrite_count, RRTPlannerOptions planner_options
@@ -268,7 +268,7 @@ namespace hagen {
             count += 1;
         }
 
-        // cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_obstacle(std::vector<SearchSpace::Rect> obstacles, std::string file_name){
@@ -283,7 +283,22 @@ namespace hagen {
                 obstacles_pose.push_back(rect.max[2]);
                 count += 1;
         }
-        // cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+    }
+
+    void RRTStar3D::save_obstacle(std::vector<std::array<double, 6>> obstacles, std::string file_name){
+        std::vector<double> obstacles_pose; 
+        int count = 0;
+        for(auto const& rect : obstacles){
+                obstacles_pose.push_back(rect[0]);
+                obstacles_pose.push_back(rect[1]);
+                obstacles_pose.push_back(rect[2]);
+                obstacles_pose.push_back(rect[3]);
+                obstacles_pose.push_back(rect[4]);
+                obstacles_pose.push_back(rect[5]);
+                count += 1;
+        }
+        cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_poses(PathNode start, PathNode end, std::string file_name){
@@ -294,7 +309,7 @@ namespace hagen {
        obstacles_pose[3] = end.state[0];
        obstacles_pose[4] = end.state[1];
        obstacles_pose[5] = end.state[2];
-    //    cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
+       cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
     }
 
     void RRTStar3D::save_path(std::vector<PathNode> path, std::string file_name){
@@ -305,13 +320,13 @@ namespace hagen {
            projected_path.push_back(way_point.state[1]);
            projected_path.push_back(way_point.state[2]);
        }
-    //    cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
+       cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
     }
 
     void RRTStar3D::save_long_path(std::vector<PathNode> path, std::string file_name){
     //    std::vector<double> projected_path;
     //    int waypoints = 0;
-    //  BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save_path trajectory size: smoothed path") << path.size();
+    //    BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save_path trajectory size: smoothed path") << path.size();
     //    for(auto const& way_point : path){
     //             projected_path.push_back(point(0));
     //             projected_path.push_back(point(1));
@@ -375,40 +390,6 @@ namespace hagen {
         return next_pose;
     }
 
-    std::vector<Eigen::Vector3d> RRTStar3D::next_poses(Eigen::VectorXd start_position, Eigen::VectorXd end_position
-      , double distance)
-    {
-        std::vector<Eigen::Vector3d> poses;
-        Eigen::VectorXd next_pose(3);
-        auto position_vector = end_position - start_position;
-        auto x = position_vector[0];
-        auto y = position_vector[1];
-        auto z = position_vector[2];
-        double diff = position_vector.norm();
-        if( diff <= 0.0){
-          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
-        }
-        if(diff < distance){
-            poses.push_back(end_position);
-            return poses;
-        }
-        auto theta = std::atan2(y, x);
-        auto phi = std::atan2(std::sqrt(x*x + y*y), z);
-        // std::cout<< "theta: "<< theta << " phi: " << phi << std::endl;
-        while(true){
-            auto target_z = distance*std::cos(phi) + start_position[2];
-            auto target_x = distance*std::sin(phi)*std::cos(theta) + start_position[0];
-            auto target_y = distance*std::sin(phi)*std::sin(theta) + start_position[1];
-            next_pose<<target_x, target_y, target_z;
-            poses.push_back(next_pose);
-            distance += distance;
-            if((next_pose.head(3)-end_position.head(3)).norm() <= distance){
-                break;
-            }
-            // std::cout<< "Next pose:: inside:: not"<< next_pose << std::endl;
-            // return next_pose;
-        }
-        return poses;
-    }
+    
 }
 }

@@ -12,13 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   visualization_msgs
-  plan_env
 )
 
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES bspline_opt
- CATKIN_DEPENDS plan_env
 #  DEPENDS system_lib
 )
 

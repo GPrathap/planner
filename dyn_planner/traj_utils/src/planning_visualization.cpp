@@ -7,9 +7,9 @@ namespace dyn_planner
 PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh)
 {
   node = nh;
-
   traj_pub = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 10);
   search_space_publisher = node.advertise<visualization_msgs::Marker>("/planning_vis/search_space", 10);
+  pub_rviz_markers_ = node.advertise<visualization_msgs::MarkerArray>("/planning_vis/obs_map", 10);
 }
 
 void PlanningVisualization::displaySphereList(vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color,
@@ -73,6 +73,14 @@ void PlanningVisualization::publish_marker(visualization_msgs::Marker marker, in
         marker.id = id_;
         search_space_publisher.publish(marker);
         return;
+}
+
+void PlanningVisualization::drawObsMap(visualization_msgs::MarkerArray marker_array,double resolution, Eigen::Vector4d color, int id){
+  // marker.header.frame_id = "world";
+  // marker.header.stamp = ros::Time();
+  // marker.ns = name_space;
+  // marker.id = id_;
+  pub_rviz_markers_.publish(marker_array);
 }
 
 void PlanningVisualization::drawGoal(Eigen::Vector3d goal, double resolution, Eigen::Vector4d color, int id)

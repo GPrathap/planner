@@ -82,20 +82,6 @@ namespace hagen {
 
     std::vector<Eigen::Vector3d> SearchSpace::nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours){
-        // // std::vector<value_t> returned_values;
-        // std::vector<Eigen::Vector3d> neighbour_points;
-        // for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
-        //         it != obs_tree.qend() ; ++it )
-        // {
-        //     Eigen::Vector3d pose(3);
-        //     auto cube = (*it).first;
-        //     double min_x = bg::get<bg::min_corner, 0>(cube);
-        //     double min_y = bg::get<bg::min_corner, 1>(cube);
-        //     double min_z = bg::get<bg::min_corner, 2>(cube);
-        //     pose << min_x, min_y, min_z;
-        //     neighbour_points.push_back(pose);
-        // }
-        
         return edt_env_->nearest_obstacles_to_current_pose(x, max_neighbours);
     }
 
@@ -272,34 +258,6 @@ namespace hagen {
         // cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)random_objects.size(), (unsigned int)6},"w");
     }
 
-    void SearchSpace::save_samples(int index){
-        // std::vector<double> sample_pose;
-        // for(int i=0; i< (*random_points_tank).rows(); i++){
-        //     for(int j=0; j< (*random_points_tank).cols(); j++){
-        //         sample_pose.push_back((*random_points_tank)(i,j));
-        //     }
-        // }
-        // std::string file_name = "/dataset/" + std::to_string(index)+ "_random_samples.npy";
-        // cnpy::npy_save(file_name, &sample_pose[0],{(unsigned int)1, (unsigned int)(*random_points_tank).rows(), (unsigned int)(*random_points_tank).cols()},"w");
-    }
-
-    // bool SearchSpace::obstacle_free(Rect search_rect){
-    //     box_t search_box(
-    //     point_t(search_rect.min[0], search_rect.min[1], search_rect.min[2]),
-    //     point_t(search_rect.max[0], search_rect.max[1], search_rect.max[2]));
-    //     size_t sum = 0;
-    //     // boost::timer t;
-    //     // res.clear();
-    //     sum += obs_tree.query(bgi::intersects(search_box)
-    //     , boost::make_function_output_iterator(geometry_rtree_callback));
-    //     // double s = t.elapsed();
-    //     // std::cout << search_rect.min[0] << " " << search_rect.min[1] << " " << search_rect.min[2] << std::endl;
-    //     // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
-
-    //     // std::cout << "sum up..." << sum << std::endl;
-    //     return sum > 0 ? false : true;
-    // }
-
     void SearchSpace::generate_samples_from_ellipsoid(Eigen::MatrixXd covmat, Eigen::Matrix3d rotation_mat, Eigen::Vector3d cent){
         // std::cout<< "======11" << std::endl;
 
@@ -364,30 +322,9 @@ namespace hagen {
     }
 
 
-    // bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect){
-    //     box_t search_box(
-    //     point_t(search_rect[0], search_rect[1], search_rect[2]),
-    //     point_t(search_rect[0]+avoidance_width, search_rect[1]+avoidance_width, search_rect[2]+avoidance_width));
-    //     size_t sum = 0;
-    //     // boost::timer t;
-    //     // res.clear();
-    //     sum += obs_tree.query(bgi::intersects(search_box)
-    //     , boost::make_function_output_iterator(geometry_rtree_callback));
-    //     // double s = t.elapsed();
-    //     // std::cout <<" SearchSpace::obstacle_free: sum: " << sum << std::endl;
-    //     // std::cout << search_rect.transpose() << std::endl;
-    //     // // std::cout << search_rect.max[0] << " " << search_rect.max[1] << " " << search_rect.max[2] << std::endl;
-
-    //     // std::cout << "sum up..." << sum << std::endl;
-  
-    //     return sum > 0 ? false : true;
-    // }
-
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
     //    std::cout<< "=========1" << std::endl;
-    //    double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time);
-        double dis = edt_env_->get_free_distance(search_rect);
-    //    std::cout<< "=============>> "<< dis << "  " << avoidance_width << std::endl;
+       double dis = edt_env_->get_free_distance(search_rect);
        if((avoidance_width < dis)){
            return true;
        }
@@ -395,67 +332,47 @@ namespace hagen {
     }
 
     double SearchSpace::get_free_space(Eigen::Vector3d search_rect, double optimal_time){
-    //  double dis = edt_env_->evaluateCoarseEDT(search_rect, optimal_time);
-        double dis = edt_env_->get_free_distance(search_rect);
+       double dis = edt_env_->get_free_distance(search_rect);
        return dis;
     }
 
-
-    // Eigen::Vector3d SearchSpace::get_sample_with_the_space(Eigen::Vector3d sample_){
-    //      while(true){
-             
-    //          edt_env_->is_inside_map(sample_)
-    //      }
-    // }
-
     Eigen::Vector3d SearchSpace::sample(){
         Eigen::Vector3d random_pose(3);
-        // std::default_random_engine generator_on_x;
-        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        // auto x_on = uni_dis_vector[0](generator_on_x);
-        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        // auto y_on = uni_dis_vector[1](generator_on_x);
-        // generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-        // auto z_on = uni_dis_vector[2](generator_on_x);
-        // random_pose << x_on, y_on, z_on ;
-       
-                
-                if(!use_whole_search_sapce){
-                    int max_tries = 10;
-                    int coun = 0;
-                    while(true){
-                        int index = *(random_call);
-                        // std::cout<< "index: " << index << std::endl;
-                        if((index < number_of_points_in_random_tank) && (index>0)){
-                            // std::cout<< "========================1114"<< index << "===" << number_of_points_in_random_tank << std::endl;
-                            // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
-                            if(is_random_tank_is_ready){
-                                random_pose = (*random_points_tank).row(index);
-                                // std::cout<< "========================1115" << std::endl;
-                                return random_pose;
-                            }
-                            break;
-                            coun+=1;
-                        }
-                        if(coun>max_tries){
-                            use_whole_search_sapce = true;
-                            break;
-                        }
+        if(!use_whole_search_sapce){
+            int max_tries = 10;
+            int coun = 0;
+            while(true){
+                int index = *(random_call);
+                // std::cout<< "index: " << index << std::endl;
+                if((index < number_of_points_in_random_tank) && (index>0)){
+                    // std::cout<< "========================1114"<< index << "===" << number_of_points_in_random_tank << std::endl;
+                    // std::cout<< "========================1114"<< index << "===" << (*random_points_tank).cols() << std::endl;
+                    if(is_random_tank_is_ready){
+                        random_pose = (*random_points_tank).row(index);
+                        // std::cout<< "========================1115" << std::endl;
+                        return random_pose;
                     }
+                    break;
+                    coun+=1;
                 }
-                if(use_whole_search_sapce)
-                {
-                    std::default_random_engine generator_on_x;
-                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                    auto x_on = uni_dis_vector[0](generator_on_x);
-                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                    auto y_on = uni_dis_vector[1](generator_on_x);
-                    generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
-                    auto z_on = uni_dis_vector[2](generator_on_x);
-                    random_pose << x_on, y_on, z_on ;
-                //    std::cout<< "========================use_whole_search_sapce"<< std::endl;
+                if(coun>max_tries){
+                    use_whole_search_sapce = true;
+                    break;
                 }
-        // }
+            }
+        }
+        if(use_whole_search_sapce)
+        {
+            std::default_random_engine generator_on_x;
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto x_on = uni_dis_vector[0](generator_on_x);
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto y_on = uni_dis_vector[1](generator_on_x);
+            generator_on_x.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            auto z_on = uni_dis_vector[2](generator_on_x);
+            random_pose << x_on, y_on, z_on ;
+        //    std::cout<< "========================use_whole_search_sapce"<< std::endl;
+        }
         return random_pose;
     }
 
@@ -479,24 +396,16 @@ namespace hagen {
         }
     }
 
-    bool SearchSpace::collision_free(Eigen::Vector3d start, Eigen::Vector3d end, int r){
-        auto dist = (start - end).norm();
-        double resolution = std::ceil(dist/r);
-        std::vector<double> res_on_x = linspace(start[0], end[0], resolution);
-        std::vector<double> res_on_y = linspace(start[1], end[1], resolution);
-        std::vector<double> res_on_z = linspace(start[2], end[2], resolution);
-        // std::cout<< "===================:collision_free" << std::endl;
-        // std::cout<<  res_on_x.size() << " " << res_on_y.size() <<" "<< res_on_z.size() << std::endl;
-        int len = std::min({res_on_x.size(), res_on_y.size(), res_on_z.size()}
-        , [](const int s1, const int s2) -> bool{
-                return s1 < s2;
-        });
-        std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
-        for(int i=0; i<len; i++){
-            Eigen::Vector3d search_rect(3);
-            search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
+    bool SearchSpace::collision_free(Eigen::Vector3d start, Eigen::Vector3d end, double r){
+        // std::cout<< "SearchSpace::collision_free:: resolution: " << r << std::endl;
+        auto poses = common_utils.next_poses(start, end, r);
+        // std::cout<< "SearchSpace::collision_free:: len: " << poses.size() << std::endl;
+        if(!obstacle_free(start, -1)){
+            return false;
+        }
+        for(auto pose : poses){
             // std::cout<<" collision_free  " << search_rect.transpose() << std::endl;
-            if(!obstacle_free(search_rect, -1.0)){
+            if(!obstacle_free(pose, -1)){
                 return false;
             }
         }
@@ -504,54 +413,45 @@ namespace hagen {
     }
 
 
-    bool SearchSpace::collision_free(Eigen::Vector3d start, Eigen::Vector3d end, int r, double optimal_time){
-        auto dist = (start - end).norm();
-        double resolution = std::ceil(dist/r);
-        std::vector<double> res_on_x = linspace(start[0], end[0], resolution);
-        std::vector<double> res_on_y = linspace(start[1], end[1], resolution);
-        std::vector<double> res_on_z = linspace(start[2], end[2], resolution);
-        // std::cout<< "+===================:collision_free" << std::endl;
-        // std::cout<<  res_on_x.size() << " " << res_on_y.size() <<" "<< res_on_z.size() << std::endl;
-        int len = std::min({res_on_x.size(), res_on_y.size(), res_on_z.size()}
-        , [](const int s1, const int s2) -> bool{
-                return s1 < s2;
-        });
-        // std::cout<< "SearchSpace::collision_free:: len: " << len << std::endl;
-        for(int i=0; i<len; i++){
-            Eigen::Vector3d search_rect(3);
-            search_rect<< res_on_x[i], res_on_y[i], res_on_z[i];
-            // std::cout<<" collision_free  " << search_rect.transpose() << std::endl;
-            if(!obstacle_free(search_rect, optimal_time)){
+    bool SearchSpace::collision_free(Eigen::Vector3d start, Eigen::Vector3d end, double r, double optimal_time){
+        // std::cout<< "SearchSpace::collision_free:: resolution: " << r << std::endl;
+        auto poses = common_utils.next_poses(start, end, r);
+        // std::cout<< "SearchSpace::collision_free:: len: " << poses.size() << std::endl;
+        if(!obstacle_free(start, optimal_time)){
+            return false;
+        }
+        for(auto pose : poses){
+            if(!obstacle_free(pose, optimal_time)){
                 return false;
             }
         }
         return true;
     }
 
-        std::vector<double> SearchSpace::linspace(double start_in, double end_in, double step_size)
+    std::vector<double> SearchSpace::linspace(double start_in, double end_in, double step_size)
+    {
+        std::vector<double> linspaced;
+        double start = start_in;
+        double end = end_in;
+        double num = step_size;
+        if (num == 0) {
+                return linspaced; 
+        }
+        if (num == 1)
         {
-            std::vector<double> linspaced;
-            double start = start_in;
-            double end = end_in;
-            double num = step_size;
-            if (num == 0) {
-                 return linspaced; 
-            }
-            if (num == 1)
-            {
-                linspaced.push_back(start);
-                return linspaced;
-            }
-            double delta = (end - start) / (num - 1);
-            for(int i=0; i < num-1; ++i)
-            {
-                linspaced.push_back(start + delta * i);
-            }
-            linspaced.push_back(end);
+            linspaced.push_back(start);
             return linspaced;
         }
+        double delta = (end - start) / (num - 1);
+        for(int i=0; i < num-1; ++i)
+        {
+            linspaced.push_back(start + delta * i);
+        }
+        linspaced.push_back(end);
+        return linspaced;
+    }
 
-        double*  SearchSpace::ellipsoid_grid ( int n, int ng){
+    double*  SearchSpace::ellipsoid_grid ( int n, int ng){
             double h;
             int ii;
             int i;

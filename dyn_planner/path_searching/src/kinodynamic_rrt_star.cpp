@@ -86,18 +86,20 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   int number_of_random_points_in_search_space = 200;
   Eigen::VectorXd x_dimentions(6);
   x_dimentions << curr_range[0][0], curr_range[1][0], curr_range[0][1],curr_range[1][1], curr_range[0][2], curr_range[1][2];
-  std::cout<< "Dimention of map "<< x_dimentions << std::endl;
+  std::cout<< "Dimention of map "<< x_dimentions.transpose() << ", avoidance distance"<< rrt_avoidance_dist_mod << std::endl;
   Eigen::MatrixXd covmat;
   Eigen::Vector3d center;
   Eigen::Matrix3d rotation_matrix;
   Eigen::Vector3d radious;
   Eigen::Quaternion<double> q;
   is_using_whole_space = false;
+  int secs = (int)ros::Time::now().toSec();
   for (int i = 0; i < times; i++) {
       kamaz::hagen::SearchSpace X;
       X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist_mod, 10);
       X.use_whole_search_sapce = is_using_whole_space;
       X.setEnvironment(this->edt_env_);
+      // create_map(this->edt_env_->get_obs_map());
       if(!X.use_whole_search_sapce){
                 // std::cout<< "======1" << end_pt_.state.head(3) << std::endl;
                 // std::cout<< "======1" << start_pt_.state.head(3) << std::endl;
@@ -122,13 +124,13 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
       kamaz::hagen::RRTStar3D* rrtstart3d;
       rrt_planner_options.search_space = X;
       rrtstart3d = new kamaz::hagen::RRTStar3D();
-      rrtstart3d->rrt_init(rewrite_count, rrt_planner_options, common_utils, save_data_index);
+      rrtstart3d->rrt_init(rewrite_count, rrt_planner_options, common_utils, secs+i);
       push_job(rrtstart3d);
   }
 
   if(!is_using_whole_space){
     q = rotation_matrix;
-    create_marker(center, radious, q);
+    // create_marker(center, radious, q);
   }
 
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
@@ -165,7 +167,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   for (auto i: path_cost_indices) {
       std::cout << paths_costs[i] << std::endl;
   }
-
+  std::cout<<  "path index .." << path_index << std::endl;
   if(path_cost_indices.size() > 0){
     if(path_index >= path_cost_indices.size()){
       path_index = path_cost_indices.size()-1;
@@ -178,17 +180,11 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   //   }
   // }
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
-  // std::cout<< "index_of_alternative_cost " << index_of_alternative_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
     std::vector<kamaz::hagen::PathNode> smoothed_path;
     rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_loweres_cost], smoothed_path);
     smoothed_paths[index_of_loweres_cost] = smoothed_path;
-    // if(index_of_alternative_cost >= 0){
-    //   std::vector<kamaz::hagen::PathNode> smoothed_alternative_path;
-    //   rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_alternative_cost], smoothed_alternative_path);
-    //   smoothed_paths[index_of_alternative_cost] = smoothed_alternative_path;
-    // }
     return REACH_HORIZON;
   }else{
     std::cout<< "No path found..." << std::endl;
@@ -224,6 +220,44 @@ bool KinodynamicRRTstar::get_search_space(visualization_msgs::Marker& marker){
         search_space_marker.color.b = 0.8;
         search_space_marker.lifetime = ros::Duration();
         return;
+}
+
+void KinodynamicRRTstar::create_map(std::vector<std::array<double, 6>> obs_map){
+    obs_map_poses.markers.clear();
+    int i =0;
+    for(auto obs: obs_map){
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "/map";
+        marker.header.stamp = ros::Time::now();
+        marker.ns = "basic_shapes";
+        marker.id = i;
+        marker.type = visualization_msgs::Marker::CUBE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.pose.position.x = obs[0];
+        marker.pose.position.y = obs[1];
+        marker.pose.position.z = obs[2];
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.z = 0.0;
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = std::abs(obs[3]-obs[0]);
+        marker.scale.y = std::abs(obs[3]-obs[0]);
+        marker.scale.z = std::abs(obs[3]-obs[0]);
+        marker.color.r = 0.0f;
+        marker.color.g = 1.0f;
+        marker.color.b = 0.0f;
+        marker.color.a = 1.0;
+        marker.lifetime = ros::Duration();
+        obs_map_poses.markers.push_back(marker);
+        i++;
+    }
+    std::cout<< "obs_map_poses......size"<< obs_map_poses.markers.size() << std::endl;
+    return;
+}
+
+bool KinodynamicRRTstar::get_obs_space(visualization_msgs::MarkerArray& marker_array){
+    marker_array = obs_map_poses;
+    return true;
 }
 
 double  KinodynamicRRTstar::get_distance(std::vector<kamaz::hagen::PathNode> trajectory_){

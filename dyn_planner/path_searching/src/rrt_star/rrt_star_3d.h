@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <cfenv>
 #include <cstring>
-// #include <cnpy.h>
+#include <cnpy.h>
 #include<complex>
 #include<ctime>
 #include<cstdlib>
@@ -63,7 +63,7 @@ namespace hagen {
 
                void add_waypoints_on_straight_line(Eigen::VectorXd x_start, Eigen::VectorXd x_goal
                                                             , std::vector<PathNode>& smoothed_path);
-
+               void save_obstacle(std::vector<std::array<double, 6>> obstacles, std::string file_name);
             private:
                std::vector<Eigen::Vector2d> lengths_of_edges;
                int _max_samples;

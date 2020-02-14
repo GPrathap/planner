@@ -30,12 +30,6 @@ public:
 
   void init();
   void setMap(SDFMap::Ptr map);
-
-  void evaluateEDTWithGrad(const Eigen::Vector3d& pos, const double& time, double& dist,
-                           Eigen::Vector3d& grad);
-
-  double evaluateCoarseEDT(const Eigen::Vector3d& pos, const double& time);
-
   bool odomValid() { return sdf_map_->odomValid(); }
   bool mapValid() { return sdf_map_->mapValid(); }
   nav_msgs::Odometry getOdom() { return sdf_map_->getOdom(); }
@@ -45,6 +39,7 @@ public:
                 , int max_neighbours);
   double get_free_distance(Eigen::Vector3d x);
   bool is_inside_map(Eigen::Vector3d x);
+  std::vector<std::array<double, 6>> get_obs_map();
   typedef shared_ptr<EDTEnvironment> Ptr;
 };
 

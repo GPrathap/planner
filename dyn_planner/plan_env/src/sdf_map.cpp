@@ -15,15 +15,6 @@ SDFMap::SDFMap(Eigen::Vector3d ori, double resolution, Eigen::Vector3d size)
   max_range_ = origin_ + map_size_;
   min_vec_ = Eigen::Vector3i::Zero();
   max_vec_ = grid_size_ - Eigen::Vector3i::Ones();
-
-  // initialize size of buffer
-  occupancy_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  distance_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  tmp_buffer1_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  tmp_buffer2_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-
-  fill(distance_buffer_.begin(), distance_buffer_.end(), 10000);
-  fill(occupancy_buffer_.begin(), occupancy_buffer_.end(), 0.0);
 }
 
 void SDFMap::resetBuffer(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
@@ -40,15 +31,6 @@ void SDFMap::resetBuffer(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
 
   posToIndex(min_pos, min_id);
   posToIndex(max_pos - Eigen::Vector3d(resolution_sdf_ / 2, resolution_sdf_ / 2, resolution_sdf_ / 2), max_id);
-
-  /* reset occ and dist buffer */
-  for (int x = min_id(0); x <= max_id(0); ++x)
-    for (int y = min_id(1); y <= max_id(1); ++y)
-      for (int z = min_id(2); z <= max_id(2); ++z)
-      {
-        occupancy_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = 0.0;
-        distance_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = 10000;
-      }
 }
 
 bool SDFMap::isInMap(Eigen::Vector3d pos)
@@ -80,200 +62,11 @@ void SDFMap::indexToPos(Eigen::Vector3i id, Eigen::Vector3d& pos)
     pos(i) = (id(i) + 0.5) * resolution_sdf_ + origin_(i);
 }
 
-void SDFMap::setOccupancy(Eigen::Vector3d pos, int occ)
-{
-  if (occ != 1 && occ != 0)
-  {
-    cout << "occ value error!" << endl;
-    return;
-  }
-
-  if (!isInMap(pos))
-    return;
-
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  // (x, y, z) -> x*ny*nz + y*nz + z
-  // cout << "..."
-  //      << id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)
-  //      << endl;
-  // cout << "..." << occupancy_buffer_.size() << endl;
-  occupancy_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)] = occ;
-}
-
-int SDFMap::getOccupancy(Eigen::Vector3d pos)
-{
-  if (!isInMap(pos))
-    return -1;
-
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  // (x, y, z) -> x*ny*nz + y*nz + z
-  return occupancy_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
-}
-
 std::vector<Eigen::Vector3d> SDFMap::getMapCurrentRange(){
   std::vector<Eigen::Vector3d> current_ranges;
   current_ranges.push_back(min_range_);
   current_ranges.push_back(max_range_);
   return current_ranges;
-}
-
-int SDFMap::getOccupancy(Eigen::Vector3i id)
-{
-  if (id(0) < 0 || id(0) >= grid_size_(0) || id(1) < 0 || id(1) >= grid_size_(1) || id(2) < 0 || id(2) >= grid_size_(2))
-    return -1;
-
-  // (x, y, z) -> x*ny*nz + y*nz + z
-  return occupancy_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
-}
-
-void SDFMap::getOccupancyMarker(visualization_msgs::Marker& m, int id, Eigen::Vector4d color)
-{
-  m.header.frame_id = "world";
-  m.id = id;
-  m.type = visualization_msgs::Marker::CUBE_LIST;
-  m.action = visualization_msgs::Marker::MODIFY;
-  m.scale.x = resolution_sdf_ * 0.9;
-  m.scale.y = resolution_sdf_ * 0.9;
-  m.scale.z = resolution_sdf_ * 0.9;
-  m.color.a = color(3);
-  m.color.r = color(0);
-  m.color.g = color(1);
-  m.color.b = color(2);
-
-  // iterate the map
-  for (int x = 0; x < grid_size_(0); ++x)
-    for (int y = 0; y < grid_size_(1); ++y)
-      for (int z = 0; z < grid_size_(2); ++z)
-      {
-        if (1 != occupancy_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z])
-          continue;
-
-        Eigen::Vector3d pos;
-        indexToPos(Eigen::Vector3i(x, y, z), pos);
-
-        geometry_msgs::Point p;
-        p.x = pos(0);
-        p.y = pos(1);
-        p.z = pos(2);
-        m.points.push_back(p);
-      }
-}
-
-double SDFMap::getDistance(Eigen::Vector3d pos)
-{
-  if (!isInMap(pos))
-    return -1;
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-  // (x, y, z) -> x*ny*nz + y*nz + z
-  return distance_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
-}
-
-double SDFMap::getDistance(Eigen::Vector3i id)
-{
-  id(0) = max(min(id(0), grid_size_(0) - 1), 0);
-  id(1) = max(min(id(1), grid_size_(1) - 1), 0);
-  id(2) = max(min(id(2), grid_size_(2) - 1), 0);
-
-  // (x, y, z) -> x*ny*nz + y*nz + z
-  return distance_buffer_[id(0) * grid_size_(1) * grid_size_(2) + id(1) * grid_size_(2) + id(2)];
-}
-
-double SDFMap::getDistWithGradTrilinear(Eigen::Vector3d pos, Eigen::Vector3d& grad)
-{
-  if (!isInMap(pos))
-    return -1;
-
-  /* use trilinear interpolation */
-  Eigen::Vector3d pos_m = pos - 0.5 * resolution_sdf_ * Eigen::Vector3d::Ones();
-
-  Eigen::Vector3i idx;
-  posToIndex(pos_m, idx);
-
-  Eigen::Vector3d idx_pos, diff;
-  indexToPos(idx, idx_pos);
-
-  diff = (pos - idx_pos) * resolution_inv_;
-
-  double values[2][2][2];
-  for (int x = 0; x < 2; x++)
-  {
-    for (int y = 0; y < 2; y++)
-    {
-      for (int z = 0; z < 2; z++)
-      {
-        Eigen::Vector3i current_idx = idx + Eigen::Vector3i(x, y, z);
-        values[x][y][z] = getDistance(current_idx);
-      }
-    }
-  }
-
-  double v00 = (1 - diff[0]) * values[0][0][0] + diff[0] * values[1][0][0];
-  double v01 = (1 - diff[0]) * values[0][0][1] + diff[0] * values[1][0][1];
-  double v10 = (1 - diff[0]) * values[0][1][0] + diff[0] * values[1][1][0];
-  double v11 = (1 - diff[0]) * values[0][1][1] + diff[0] * values[1][1][1];
-
-  double v0 = (1 - diff[1]) * v00 + diff[1] * v10;
-  double v1 = (1 - diff[1]) * v01 + diff[1] * v11;
-
-  double dist = (1 - diff[2]) * v0 + diff[2] * v1;
-
-  grad[2] = (v1 - v0) * resolution_inv_;
-  grad[1] = ((1 - diff[2]) * (v10 - v00) + diff[2] * (v11 - v01)) * resolution_inv_;
-  grad[0] = (1 - diff[2]) * (1 - diff[1]) * (values[1][0][0] - values[0][0][0]);
-  grad[0] += (1 - diff[2]) * diff[1] * (values[1][1][0] - values[0][1][0]);
-  grad[0] += diff[2] * (1 - diff[1]) * (values[1][0][1] - values[0][0][1]);
-  grad[0] += diff[2] * diff[1] * (values[1][1][1] - values[0][1][1]);
-
-  grad[0] *= resolution_inv_;
-
-  return dist;
-}
-
-double SDFMap::getDistTrilinear(Eigen::Vector3d pos)
-{
-  if (!isInMap(pos))
-    return -1;
-
-  /* use trilinear interpolation */
-  Eigen::Vector3d pos_m = pos - 0.5 * resolution_sdf_ * Eigen::Vector3d::Ones();
-
-  Eigen::Vector3i idx;
-  posToIndex(pos_m, idx);
-
-  Eigen::Vector3d idx_pos, diff;
-  indexToPos(idx, idx_pos);
-
-  diff = (pos - idx_pos) * resolution_inv_;
-
-  double values[2][2][2];
-  for (int x = 0; x < 2; x++)
-  {
-    for (int y = 0; y < 2; y++)
-    {
-      for (int z = 0; z < 2; z++)
-      {
-        Eigen::Vector3i current_idx = idx + Eigen::Vector3i(x, y, z);
-        values[x][y][z] = getDistance(current_idx);
-      }
-    }
-  }
-
-  double v00 = (1 - diff[0]) * values[0][0][0] + diff[0] * values[1][0][0];
-  double v01 = (1 - diff[0]) * values[0][0][1] + diff[0] * values[1][0][1];
-  double v10 = (1 - diff[0]) * values[0][1][0] + diff[0] * values[1][1][0];
-  double v11 = (1 - diff[0]) * values[0][1][1] + diff[0] * values[1][1][1];
-
-  double v0 = (1 - diff[1]) * v00 + diff[1] * v10;
-  double v1 = (1 - diff[1]) * v01 + diff[1] * v11;
-
-  double dist = (1 - diff[2]) * v0 + diff[2] * v1;
-
-  return dist;
 }
 
 void SDFMap::setUpdateRange(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
@@ -291,232 +84,6 @@ void SDFMap::setUpdateRange(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
 
   posToIndex(min_pos, min_vec_);
   posToIndex(max_pos - Eigen::Vector3d(resolution_sdf_ / 2, resolution_sdf_ / 2, resolution_sdf_ / 2), max_vec_);
-}
-
-template <typename F_get_val, typename F_set_val>
-void SDFMap::fillESDF(F_get_val f_get_val, F_set_val f_set_val, int start, int end, int dim)
-{
-  int v[grid_size_(dim)];
-  double z[grid_size_(dim) + 1];
-
-  int k = start;
-  v[start] = start;
-  z[start] = -std::numeric_limits<double>::max();
-  z[start + 1] = std::numeric_limits<double>::max();
-
-  for (int q = start + 1; q <= end; q++)
-  {
-    k++;
-    double s;
-
-    do
-    {
-      k--;
-      s = ((f_get_val(q) + q * q) - (f_get_val(v[k]) + v[k] * v[k])) / (2 * q - 2 * v[k]);
-
-    } while (s <= z[k]);
-
-    k++;
-
-    v[k] = q;
-    z[k] = s;
-    z[k + 1] = std::numeric_limits<double>::max();
-  }
-
-  k = start;
-
-  for (int q = start; q <= end; q++)
-  {
-    while (z[k + 1] < q)
-      k++;
-    double val = (q - v[k]) * (q - v[k]) + f_get_val(v[k]);
-    f_set_val(q, val);
-  }
-}
-
-void SDFMap::updateESDF3d(bool neg)
-{
-  for (int x = min_vec_[0]; x <= max_vec_[0]; x++)
-  {
-    for (int y = min_vec_[1]; y <= max_vec_[1]; y++)
-    {
-      fillESDF(
-          [&](int z) {
-            return occupancy_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] == 1 ?
-                       0 :
-                       std::numeric_limits<double>::max();
-          },
-          [&](int z, double val) { tmp_buffer1_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = val; },
-          min_vec_[2], max_vec_[2], 2);
-    }
-  }
-
-  for (int x = min_vec_[0]; x <= max_vec_[0]; x++)
-  {
-    for (int z = min_vec_[2]; z <= max_vec_[2]; z++)
-    {
-      fillESDF(
-          [&](int y) {
-            // cout << "get xyz:" << x << ", " << y << ", " << z << endl;
-            return tmp_buffer1_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z];
-          },
-          [&](int y, double val) {
-            // cout << "set xyz:" << x << ", " << y << ", " << z << endl;
-            // cout << "index:" << x * grid_size_(1) * grid_size_(2) + y *
-            // grid_size_(2) + z << endl; cout << "buffer length:" <<
-            // tmp_buffer2_.size() << endl;
-            tmp_buffer2_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = val;
-          },
-          min_vec_[1], max_vec_[1], 1);
-    }
-  }
-
-  for (int y = min_vec_[1]; y <= max_vec_[1]; y++)
-  {
-    for (int z = min_vec_[2]; z <= max_vec_[2]; z++)
-    {
-      fillESDF([&](int x) { return tmp_buffer2_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z]; },
-               [&](int x, double val) {
-                 distance_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] =
-                     resolution_sdf_ * std::sqrt(val);
-               },
-               min_vec_[0], max_vec_[0], 0);
-    }
-  }
-
-  if (!neg)
-  {
-    min_vec_ = Eigen::Vector3i::Zero();
-    max_vec_ = grid_size_ - Eigen::Vector3i::Ones();
-    return;
-  }
-
-  /* ============================== negative distance field ============================== */
-  tmp_buffer1_.clear();
-  tmp_buffer2_.clear();
-
-  ros::Time t1, t2;
-
-  for (int x = min_vec_[0]; x <= max_vec_[0]; x++)
-  {
-    for (int y = min_vec_[1]; y <= max_vec_[1]; y++)
-    {
-      fillESDF(
-          [&](int z) {
-            return occupancy_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] == 0 ?
-                       0 :
-                       std::numeric_limits<double>::max();
-          },
-          [&](int z, double val) { tmp_buffer1_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = val; },
-          min_vec_[2], max_vec_[2], 2);
-    }
-  }
-
-  for (int x = min_vec_[0]; x <= max_vec_[0]; x++)
-  {
-    for (int z = min_vec_[2]; z <= max_vec_[2]; z++)
-    {
-      fillESDF(
-          [&](int y) { return tmp_buffer1_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z]; },
-          [&](int y, double val) { tmp_buffer2_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] = val; },
-          min_vec_[1], max_vec_[1], 1);
-    }
-  }
-
-  for (int y = min_vec_[1]; y <= max_vec_[1]; y++)
-  {
-    for (int z = min_vec_[2]; z <= max_vec_[2]; z++)
-    {
-      fillESDF([&](int x) { return tmp_buffer2_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z]; },
-               [&](int x, double val) {
-                 distance_buffer_neg_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z] =
-                     resolution_sdf_ * std::sqrt(val);
-               },
-               min_vec_[0], max_vec_[0], 0);
-    }
-  }
-
-  /* ========== combine pos and neg DT ========== */
-  for (int x = min_vec_(0); x <= max_vec_(0); ++x)
-    for (int y = min_vec_(1); y <= max_vec_(1); ++y)
-      for (int z = min_vec_(2); z <= max_vec_(2); ++z)
-      {
-        int idx = x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z;
-
-        if (distance_buffer_neg_[idx] > 0.0)
-          distance_buffer_[idx] = distance_buffer_[idx] - distance_buffer_neg_[idx] + resolution_sdf_;
-      }
-
-  min_vec_ = Eigen::Vector3i::Zero();
-  max_vec_ = grid_size_ - Eigen::Vector3i::Ones();
-}
-
-void SDFMap::getESDFMarker(vector<visualization_msgs::Marker>& markers, int id, Eigen::Vector3d color)
-{
-  double max_dist = getMaxDistance();
-
-  // get marker in several distance level
-  const int level = ceil(max_dist * resolution_inv_);
-
-  for (int i = 0; i < level; ++i)
-  {
-    visualization_msgs::Marker m;
-    m.header.frame_id = "world";
-    m.id = i + level * id;
-    m.type = visualization_msgs::Marker::CUBE_LIST;
-    m.action = visualization_msgs::Marker::ADD;
-    m.scale.x = resolution_sdf_ * 0.9;
-    m.scale.y = resolution_sdf_ * 0.9;
-    m.scale.z = resolution_sdf_ * 0.9;
-    m.color.r = color(0);
-    m.color.g = color(1);
-    m.color.b = color(2);
-
-    // transparency and distance conversion
-    double min_a = 0.05, max_a = 0.25;
-    double da = (max_a - min_a) / (level - 1);
-    m.color.a = max_a - da * i;
-    // cout << "alpha:" << m.color.a << endl;
-
-    // distance level
-    double delta_d = max_dist / level;
-    double min_d = i * delta_d - 1e-3;
-    double max_d = (i + 1) * delta_d - 1e-3;
-
-    // iterate the map
-    for (int x = 0; x < grid_size_(0); ++x)
-      for (int y = 0; y < grid_size_(1); ++y)
-        for (int z = 0; z < grid_size_(2) - 15; ++z)
-        {
-          double dist = distance_buffer_[x * grid_size_(1) * grid_size_(2) + y * grid_size_(2) + z];
-          bool in_range = dist < max_d && dist >= min_d;
-          if (!in_range)
-            continue;
-
-          Eigen::Vector3d pos;
-          indexToPos(Eigen::Vector3i(x, y, z), pos);
-
-          geometry_msgs::Point p;
-          p.x = pos(0);
-          p.y = pos(1);
-          p.z = pos(2);
-          m.points.push_back(p);
-        }
-    markers.push_back(m);
-  }
-}
-
-double SDFMap::getMaxDistance()
-{
-  // get the max distance
-  double max_dist = -1;
-  for (int i = 0; i < int(distance_buffer_.size()); ++i)
-  {
-    if (distance_buffer_[i] > max_dist)
-      max_dist = distance_buffer_[i];
-  }
-  // cout << "Max distance is:" << max_dist << endl;
-  return max_dist;
 }
 
 void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
@@ -547,12 +114,16 @@ void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& msg)
   have_odom_ = true;
 }
 
+std::vector<std::array<double, 6>> SDFMap::getObsMap(){
+  return _objects_map;
+}
+
 void SDFMap::updateCallback(const ros::TimerEvent& e)
 {
   if (!new_map_)
   {
     // cout << "no new map." << endl;
-    obs_tree.clear();
+    // obs_tree.clear();
     return;
   }
   map_valid_ = true;
@@ -574,7 +145,8 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   Eigen::Vector3d p3d, p3d_inf;
   const int ifn = ceil(inflate_ * resolution_inv_);
   int obs_counter = 0;
-  obs_tree.clear();
+  obs_tree_previous.clear();
+  _objects_map.clear();
   for (size_t i = 0; i < latest_cloud_.points.size(); ++i)
   {
     pt = latest_cloud_.points[i];
@@ -591,7 +163,6 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
             p3d_inf(0) = pt_inf.x = pt.x + x * resolution_sdf_;
             p3d_inf(1) = pt_inf.y = pt.y + y * resolution_sdf_;
             p3d_inf(2) = pt_inf.z = pt.z + 0.5 * z * resolution_sdf_;
-            this->setOccupancy(p3d_inf);
 
             if (pt_inf.z < 2.0)
               cloud_inflate_vis_.push_back(pt_inf);
@@ -600,13 +171,18 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
       }
       box_t b(point_t(pt.x, pt.y, pt.z), point_t(pt.x+resolution_sdf_
                             , pt.y+resolution_sdf_, pt.z+resolution_sdf_));
-      obs_tree.insert(value_t(b, obs_counter));
+      obs_tree_previous.insert(value_t(b, obs_counter));
+      std::array<double, 6> cube = {pt.x, pt.y, pt.z, pt.x+resolution_sdf_
+                                  , pt.y+resolution_sdf_, pt.z+resolution_sdf_};
+     
+      _objects_map.push_back(cube);
       obs_counter++;
     }
     if(dist_to_obs<= 0.5){
-      std::cout<< p3d.transpose() << "==========------" << "-----" << p3d << "-----"  << std::endl;
+      // std::cout<< p3d.transpose() << "==========------" << "-----" << p3d << "-----"  << std::endl;
     }
   }
+  obs_tree = obs_tree_previous;
   cloud_inflate_vis_.width = cloud_inflate_vis_.points.size();
   cloud_inflate_vis_.height = 1;
   cloud_inflate_vis_.is_dense = true;
@@ -617,23 +193,7 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   pcl::toROSMsg(cloud_inflate_vis_, map_inflate_vis);
 
   inflate_cloud_pub_.publish(map_inflate_vis);
-
-  /* ---------- add ceil ---------- */
-  if (ceil_height_ > 0.0)
-  {
-    for (double cx = center(0) - update_range_; cx <= center(0) + update_range_; cx += resolution_sdf_)
-      for (double cy = center(1) - update_range_; cy <= center(1) + update_range_; cy += resolution_sdf_)
-      {
-        this->setOccupancy(Eigen::Vector3d(cx, cy, ceil_height_));
-        // box_t b(point_t(cx, cy, ceil_height_), point_t(cx+resolution_sdf_
-        //                     , cy+resolution_sdf_, ceil_height_+resolution_sdf_));
-        // obs_tree.insert(value_t(b, obs_counter));
-        // obs_counter++;
-      }
-  }
-  /* ---------- update ESDF ---------- */
   this->setUpdateRange(center - disp, center + disp);
-  this->updateESDF3d(true);
 }
 
 std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Vector3d x
@@ -652,6 +212,15 @@ std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Ve
             neighbour_points.push_back(pose);
         }
         return neighbour_points;
+}
+
+bool SDFMap::collision_free(Eigen::Vector3d start, Eigen::Vector3d end){
+  // Eigen::MatrixXd control_pts_rrt;
+  // NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
+  // /* ---------- time adjustment ---------- */
+  // // NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
+  // NonUniformBspline pos = NonUniformBspline(control_pts_rrt, 3, ts_rrt);
+  return false;
 }
 
 double SDFMap::get_free_distance(Eigen::Vector3d x){
@@ -712,52 +281,5 @@ void SDFMap::init(ros::NodeHandle& nh)
   max_range_ = origin_ + map_size_;
   min_vec_ = Eigen::Vector3i::Zero();
   max_vec_ = grid_size_ - Eigen::Vector3i::Ones();
-
-  // initialize size of buffer
-  occupancy_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  no_cloud_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  distance_buffer_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  distance_buffer_neg_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  tmp_buffer1_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-  tmp_buffer2_.resize(grid_size_(0) * grid_size_(1) * grid_size_(2));
-
-  fill(distance_buffer_.begin(), distance_buffer_.end(), 10000);
-  fill(distance_buffer_neg_.begin(), distance_buffer_neg_.end(), 10000);
-  fill(occupancy_buffer_.begin(), occupancy_buffer_.end(), 0.0);
-  fill(no_cloud_buffer_.begin(), no_cloud_buffer_.end(), 10000);
-
 }
-
-void SDFMap::getInterpolationData(const Eigen::Vector3d& pos, vector<Eigen::Vector3d>& pos_vec, Eigen::Vector3d& diff)
-{
-  if (!isInMap(pos))
-  {
-    // cout << "pos invalid for interpolation." << endl;
-  }
-
-  /* interpolation position */
-  Eigen::Vector3d pos_m = pos - 0.5 * resolution_sdf_ * Eigen::Vector3d::Ones();
-
-  Eigen::Vector3i idx;
-  posToIndex(pos_m, idx);
-
-  Eigen::Vector3d idx_pos;
-  indexToPos(idx, idx_pos);
-
-  diff = (pos - idx_pos) * resolution_inv_;
-
-  pos_vec.clear();
-
-  for (int x = 0; x < 2; x++)
-    for (int y = 0; y < 2; y++)
-      for (int z = 0; z < 2; z++)
-      {
-        Eigen::Vector3i current_idx = idx + Eigen::Vector3i(x, y, z);
-        Eigen::Vector3d current_pos;
-        indexToPos(current_idx, current_pos);
-        pos_vec.push_back(current_pos);
-      }
-}
-
-// SDFMap::
 }  // namespace dyn_planner

@@ -159,6 +159,15 @@ namespace hagen {
         // x_rand.control_input = drone_dynamics.uNominal;
         auto x_nearest = get_nearest(tree, x_rand);
         auto x_new = steer(x_nearest, x_rand, q[0]);
+         // auto g1 = trees[0].V.obstacle_free(steer_point.state.head(3), -1);
+        PathNode g1 = get_vertex(x_new.state.head(3));
+        auto g2 = X.obstacle_free(x_new.state.head(3), -1);
+        // std::cout<<"RRTBase::steer: current " <<  cur_node.state.transpose() << std::endl;
+        // std::cout<<"RRTBase::steer: xHit " <<  xHit.size() << std::endl;
+        // std::cout<<"RRTBase::steer: steered " <<  steered_point.transpose() << std::endl;
+        if((g1.is_valid == true) || (g2 == false)){
+            x_new.is_valid = false;
+        }
         // std::cout<<"RRTBase::new_and_near: x_rand: " << x_rand.state.head(3).transpose() << std::endl;
         // std::cout<<"RRTBase::new_and_near: x_nearest: " << x_nearest.state.head(3).transpose() << std::endl;
         // std::cout<<"RRTBase::new_and_near: x_new " << x_new.state.head(3).transpose() << std::endl;
@@ -189,23 +198,6 @@ namespace hagen {
     // }
 
    PathNode RRTBase::steer(PathNode cur_node, PathNode goal, double distance){
-        // Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);
-        // double ba_length = ab.norm();
-        // Eigen::Vector3d unit_vector = ab/ba_length;
-        // Eigen::Vector3d scaled_vector = unit_vector*distance;
-        // Eigen::Vector3d steered_point = cur_node.state.head(3) + scaled_vector.head(3);
-        // std::vector<Eigen::MatrixXd> L;
-        // std::vector<Eigen::MatrixXd> l;
-        // std::vector<Eigen::MatrixXd> xHit;
-
-        // Eigen::Vector3d velocity = opt.kino_options.max_vel*unit_vector;
-        // cur_node.state.block<3,1>(3,0) = velocity;
-        // cur_node.state.block<6,1>(6,0) = Eigen::MatrixXd::Zero(6,1);
-        // cur_node.state(12) = log(drone_dynamics.dt);
-        // drone_dynamics.extendedLQR(cur_node.state, drone_dynamics.uNominal, L, l, xHit, steered_point);
-
-        // std::vector<Eigen::MatrixXd> xHit;
-        // apply_dynamics(cur_node, goal, distance, xHit);
         Eigen::Vector3d ab = goal.state.head(3) - cur_node.state.head(3);
         double ba_length = ab.norm();
         Eigen::Vector3d unit_vector = ab/ba_length;
@@ -223,18 +215,6 @@ namespace hagen {
                 steer_point.state(j) = X.dim_lengths[i+1];
             }
             j++;
-        }
-        // steer_point.state_seq = xHit;
-        // steer_point.input_seq = xHit;
-        // bool is_set = set_seq(cur_node, xHit);
-        // std::cout<< "state sequence is set for " << cur_node.state.head(3).transpose() << " " << cur_node.state_seq.size() << std::endl;
-        auto g1 = trees[0].V.obstacle_free(steer_point.state.head(3), -1);
-        auto g2 = X.obstacle_free(steer_point.state.head(3), -1);
-        // std::cout<<"RRTBase::steer: current " <<  cur_node.state.transpose() << std::endl;
-        // std::cout<<"RRTBase::steer: xHit " <<  xHit.size() << std::endl;
-        // std::cout<<"RRTBase::steer: steered " <<  steered_point.transpose() << std::endl;
-        if((!g1) && (!g2)){
-            steer_point.is_valid = false;
         }
         return steer_point;
     }
@@ -265,11 +245,12 @@ namespace hagen {
             return false;
         }
 
-        auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3), -1);
+        // auto g1 = trees[tree].V.obstacle_free(x_b.state.head(3), -1);
+        PathNode g1 = get_vertex(x_b.state.head(3));
         auto g2 = X.collision_free(x_a.state.head(3), x_b.state.head(3), r, -1);
         // std::cout<< "RRTBase::connect_to_point: "<< g1 << " " << g2 << std::endl;
 
-        if((g1 == 1) && (g2 == 1)){
+        if((g1.is_valid == false) && (g2 == 1)){
             add_vertex(tree, x_b);
             add_edge(tree, x_b, x_a);
             return true;
@@ -283,19 +264,27 @@ namespace hagen {
         // std::cout<< "RRTBase::can_connect_to_goal:x_nearest: "<< x_nearest.transpose() << std::endl;
         // std::cout<< "RRTBase::can_connect_to_goal:x_goal: "<< x_goal.transpose() << std::endl;
 
-        auto f1 = isEdge(x_goal, tree);
-        auto f2 = isEdge(x_nearest, tree);
+        // auto f1 = isEdge(x_goal, tree);
+        // auto f3 = isEdge(x_nearest, tree);
+        // std::cout<< "RRTBase::can_connect_to_goal: before "<< f3 <<  std::endl;
+        // PathNode edge_of_goal = getEdge(x_goal, tree);
+        // bool f2 = false;
+        // if((edge_of_goal.state.head(3) - x_nearest.state.head(3)).norm()<0.05){
+        //     f2 = true;
+        //     std::cout<< "RRTBase::can_connect_to_goal: after "<< f2 <<  std::endl;
+        // }
 
-        // std::cout<< "RRTBase::can_connect_to_goal: "<< f1 << " "<< f2 << " " << std::endl;
-        // std::vector<Eigen::MatrixXd> xHit;
-        // double distance = (x_goal.state.head(3) - x_nearest.state.head(3)).norm();
+        // // std::cout<< "RRTBase::can_connect_to_goal: "<< f1 << " "<< f2 << " " << std::endl;
+        // // std::vector<Eigen::MatrixXd> xHit;
+        // // double distance = (x_goal.state.head(3) - x_nearest.state.head(3)).norm();
 
-        if( f1 && f2){
-            // apply_dynamics(x_nearest, x_goal, distance, xHit);
-            // set_seq(x_nearest, xHit);
-            return true;
-        }
-        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, -1.0)){
+        // if( f1 && f2){
+        //     // apply_dynamics(x_nearest, x_goal, distance, xHit);
+        //     // set_seq(x_nearest, xHit);
+        //     return true;
+        // }
+        // std::cout<< "start checkoing to connect" << x_nearest.state.head(3) << " toto " << x_goal.state.head(3) <<std::endl;
+        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, 5)){
             //  std::cout<< "RRTBase::can_connect_to_goal: collision_free true"<< std::endl;
             return true;
         }

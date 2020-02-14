@@ -248,18 +248,20 @@ void stopCallback(std_msgs::Empty msg){
   if(!stop_pose_is_set){
       if(receive_traj){
         if (t_cur >= traj_duration) {
-          stop_pose = traj[0].evaluateDeBoor(t_cmd_end);
+          // stop_pose = traj[0].evaluateDeBoor(t_cmd_end);
           // stop_velocity = traj[1].evaluateDeBoor(t_cmd_end);
            stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
         }else{
-          stop_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
+          // stop_pose = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
           // stop_velocity = traj[1].evaluateDeBoor(t_cmd_start + t_cur);
           stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
         }
       }else{
-          stop_pose = Eigen::Vector3d(odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z);
           stop_velocity = Eigen::Vector3d(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z);
       }
+      stop_pose = Eigen::Vector3d(odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z);
+      
+      ROS_INFO_STREAM("stop pose...."<< stop_pose);
       velocity_regulator_on_x = linspace(stop_velocity[0], 0.0, traj_duration_for_stopping);
       velocity_regulator_on_y = linspace(stop_velocity[1], 0.0, traj_duration_for_stopping);
       velocity_regulator_on_z = linspace(stop_velocity[2], 0.0, traj_duration_for_stopping);

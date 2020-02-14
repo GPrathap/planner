@@ -135,9 +135,10 @@ namespace hagen {
                    if (isEdge(x_new, 0)){
                        rewrite(0, x_new, l_near);
                    }
-                //    std::cout<< "============end of rewire==========" << std::endl;
+                   
                    auto solution = check_solution(path);
                    if(solution){
+                    //    std::cout<< "============end of rewire=========="<< path.size() << std::endl;
                        return path;
                    }
                 }
