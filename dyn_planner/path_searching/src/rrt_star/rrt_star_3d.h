@@ -47,6 +47,7 @@ namespace hagen {
                void save_obstacle(std::vector<SearchSpace::Rect> obstacles, std::string file_name);
                void save_poses(PathNode start, PathNode end, std::string file_name);
                void save_path(std::vector<PathNode> path, std::string file_name);
+               void save_path(SearchSpace search_space, std::string file_name);
                void save_long_path(std::vector<PathNode> path, std::string file_name);
                void save_trajectory(std::vector<PathNode> trajectory_of_drone);
                double get_distance(std::vector<PathNode> trajectory_);

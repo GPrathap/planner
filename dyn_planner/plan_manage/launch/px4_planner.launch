@@ -97,7 +97,7 @@
     <param name="search/rrt_order_of_search_space" value="4" type="int"/>
     
     <param name="search/lqr_obs_radius" value="0.4" type="double"/>
-    <param name="search/lqr_consider_obs" value="true" type="bool"/>
+    <param name="search/lqr_consider_obs" value="false" type="bool"/>
     <param name="search/lqr_number_of_closest_obs" value="10" type="int"/>
     <!-- trajectory optimization -->
     <param name="optimization/lamda1" value="10.0" type="double"/>

@@ -245,6 +245,7 @@ void stopCallback(std_msgs::Empty msg){
   stop_moving = true;
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - time_traj_start).toSec();
+  // ROS_INFO_STREAM("stop pose...."<< stop_pose_is_set);
   if(!stop_pose_is_set){
       if(receive_traj){
         if (t_cur >= traj_duration) {
@@ -297,23 +298,23 @@ void cmdCallback(const ros::TimerEvent& e) {
    
     // ROS_INFO_STREAM("Stop pose: "<< stop_pose.transpose());
     // ROS_INFO_STREAM("Stop velocity: "<< stop_velocity.transpose());
-    Eigen::Vector3d projected_pose;
-    if(!velocity_regulator_on_x.empty()){
-      Eigen::Vector3d next_velocity(velocity_regulator_on_x.front(), velocity_regulator_on_y.front(), velocity_regulator_on_z.front());
-      velocity_regulator_on_x.pop_front();
-      velocity_regulator_on_y.pop_front();
-      velocity_regulator_on_z.pop_front();
-      ros::Time time_now = ros::Time::now();
-      double t_cur = (time_now - time_stop_start).toSec();
-      projected_pose = stop_pose + t_cur*(next_velocity - stop_velocity);
-      stop_pose = projected_pose;
-      stop_velocity = next_velocity;
-      pos = projected_pose;
-      vel = next_velocity;
-    }else{
+    // Eigen::Vector3d projected_pose;
+    // if(!velocity_regulator_on_x.empty()){
+    //   Eigen::Vector3d next_velocity(velocity_regulator_on_x.front(), velocity_regulator_on_y.front(), velocity_regulator_on_z.front());
+    //   velocity_regulator_on_x.pop_front();
+    //   velocity_regulator_on_y.pop_front();
+    //   velocity_regulator_on_z.pop_front();
+    //   ros::Time time_now = ros::Time::now();
+    //   double t_cur = (time_now - time_stop_start).toSec();
+    //   projected_pose = stop_pose + t_cur*(next_velocity - stop_velocity);
+    //   stop_pose = projected_pose;
+    //   stop_velocity = next_velocity;
+    //   pos = projected_pose;
+    //   vel = next_velocity;
+    // }else{
       pos = stop_pose;
       vel.setZero();
-    }
+    // }
     acc.setZero();
   }else if (t_cur < traj_duration && t_cur >= 0.0) {
     pos = traj[0].evaluateDeBoor(t_cmd_start + t_cur);

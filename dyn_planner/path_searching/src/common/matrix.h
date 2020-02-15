@@ -301,7 +301,6 @@ public:
 	inline SymmetricMatrix<_numRows> subSymmetricMatrix(size_t diag) const {
 		assert(diag + _numRows <= _size);
 		SymmetricMatrix<_numRows> L;
-		size_t index = 0;
 		for (size_t i = 0; i < _numRows; ++i) {
 			for(size_t j = 0; j <= i; ++j) {
 				L(i,j) = (*this)(diag + i, diag + j);

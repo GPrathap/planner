@@ -55,54 +55,36 @@ namespace hagen{
 
         int ndims = container.cols();
         int npts = container.rows();
-        std::cout<< "====11" << std::endl;
         Eigen::EigenSolver<Eigen::MatrixXd> eigensolver;
-        std::cout<< "====11" << std::endl;
         eigensolver.compute(covmat);
-        std::cout<< "====11" << std::endl;
         Eigen::Vector3d eigen_values = eigensolver.eigenvalues().real();
-        std::cout<< "====11" << std::endl;
         Eigen::MatrixXd eigen_vectors = eigensolver.eigenvectors().real();
-        std::cout<< "====11" << std::endl;
         std::vector<std::tuple<double, Eigen::Vector3d>> eigen_vectors_and_values; 
-        std::cout<< "====11" << std::endl;
         for(int i=0; i<eigen_values.size(); i++){
             std::tuple<double, Eigen::Vector3d> vec_and_val(eigen_values[i], eigen_vectors.row(i));
             eigen_vectors_and_values.push_back(vec_and_val);
         }
-        std::cout<< "====22" << std::endl;
         std::sort(eigen_vectors_and_values.begin(), eigen_vectors_and_values.end(), 
             [&](const std::tuple<double, Eigen::Vector3d>& a, const std::tuple<double, Eigen::Vector3d>& b) -> bool{ 
                 return std::get<0>(a) <= std::get<0>(b); 
         });
-        std::cout<< "====22" << std::endl;
         int index = 0;
         for(auto const vect : eigen_vectors_and_values){
             eigen_values(index) = std::get<0>(vect);
             eigen_vectors.row(index) = std::get<1>(vect);
             index++;
         }
-        std::cout<< "====33" << std::endl;
-
         Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
-
         std::random_device rd{};
         std::mt19937 gen{rd()};  
         std::uniform_real_distribution<double> dis(0, 1);
         std::normal_distribution<double> normal_dis{0.0f, 1.0f};
-        std::cout<< "====44" << std::endl;
         Eigen::MatrixXd pt = Eigen::MatrixXd::Zero(npts, ndims).unaryExpr([&](double dummy){return (double)normal_dis(gen);});
-        std::cout<< "====22" << std::endl;
         Eigen::VectorXd rs = Eigen::VectorXf::Zero(npts).unaryExpr([&](double dummy){return dis(gen);});
-        std::cout<< "====22" << std::endl;
         Eigen::VectorXd fac = pt.array().pow(2).rowwise().sum();
-        std::cout<< "====22" << std::endl;
         Eigen::VectorXd fac_sqrt = fac.array().sqrt();
-        std::cout<< "====22" << std::endl;
         Eigen::VectorXd rs_pow = rs.array().pow(1.0/ndims);
-        std::cout<< "====22" << std::endl;
         fac = rs_pow.array()/fac_sqrt.array();
-        std::cout<< "====22" << std::endl;
         Eigen::VectorXd d = eigen_values_as_matrix.diagonal().array().sqrt();
         // std::cout << "============================================>>>>>>" << npts << std::endl;
         for(auto i(0); i<npts; i++){

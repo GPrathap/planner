@@ -22,13 +22,10 @@ void SDFMap::resetBuffer(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
   min_pos(0) = max(min_pos(0), min_range_(0));
   min_pos(1) = max(min_pos(1), min_range_(1));
   min_pos(2) = max(min_pos(2), min_range_(2));
-
   max_pos(0) = min(max_pos(0), max_range_(0));
   max_pos(1) = min(max_pos(1), max_range_(1));
   max_pos(2) = min(max_pos(2), max_range_(2));
-
   Eigen::Vector3i min_id, max_id;
-
   posToIndex(min_pos, min_id);
   posToIndex(max_pos - Eigen::Vector3d(resolution_sdf_ / 2, resolution_sdf_ / 2, resolution_sdf_ / 2), max_id);
 }
@@ -37,16 +34,12 @@ bool SDFMap::isInMap(Eigen::Vector3d pos)
 {
   if (pos(0) < min_range_(0) + 1e-4 || pos(1) < min_range_(1) + 1e-4 || pos(2) < min_range_(2) + 1e-4)
   {
-    // cout << "less than min range!" << endl;
     return false;
   }
-
   if (pos(0) > max_range_(0) - 1e-4 || pos(1) > max_range_(1) - 1e-4 || pos(2) > max_range_(2) - 1e-4)
   {
-    // cout << "larger than max range!" << endl;
     return false;
   }
-
   return true;
 }
 
@@ -71,17 +64,12 @@ std::vector<Eigen::Vector3d> SDFMap::getMapCurrentRange(){
 
 void SDFMap::setUpdateRange(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos)
 {
-  /* chou gou shi! */
-  // if (!isInMap(min_pos)) min_pos = min_range_;
-  // if (!isInMap(max_pos)) max_pos = max_range_;
   min_pos(0) = max(min_pos(0), min_range_(0));
   min_pos(1) = max(min_pos(1), min_range_(1));
   min_pos(2) = max(min_pos(2), min_range_(2));
-
   max_pos(0) = min(max_pos(0), max_range_(0));
   max_pos(1) = min(max_pos(1), max_range_(1));
   max_pos(2) = min(max_pos(2), max_range_(2));
-
   posToIndex(min_pos, min_vec_);
   posToIndex(max_pos - Eigen::Vector3d(resolution_sdf_ / 2, resolution_sdf_ / 2, resolution_sdf_ / 2), max_vec_);
 }
@@ -94,22 +82,15 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     cout << "SDFMap: no odom_" << endl;
     return;
   }
-
   pcl::fromROSMsg(*msg, latest_cloud_);
-
-  // if ((int)latest_cloud_.points.size() == 0) return;
-//  std::cout<< "==========================================||||| get clound"<< std::endl;
   new_map_ = true;
 }
 
 void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& msg)
 {
-  
   if (msg->child_frame_id == "X" || msg->child_frame_id == "O")
     return;
-  
   odom_ = *msg;
-  
   odom_.header.frame_id = "world";
   have_odom_ = true;
 }
@@ -120,26 +101,30 @@ std::vector<std::array<double, 6>> SDFMap::getObsMap(){
 
 void SDFMap::updateCallback(const ros::TimerEvent& e)
 {
+  int static no_maps = 0;
   if (!new_map_)
   {
     // cout << "no new map." << endl;
     // obs_tree.clear();
+    // no_maps++;
+    // if(no_maps>5){
+    //   obs_tree.clear();
+    //   no_maps = 0;
+    // }
+    
     return;
   }
   map_valid_ = true;
   new_map_ = false;
-
+  no_maps = 0;
   if (latest_cloud_.points.size() == 0)
     return;
-
   Eigen::Vector3d center(odom_.pose.pose.position.x, odom_.pose.pose.position.y, odom_.pose.pose.position.z);
   if (isnan(center(0)) || isnan(center(1)) || isnan(center(2)))
     return;
-
   /* ---------- inflate cloud and insert to SDFMap ---------- */
   Eigen::Vector3d disp(update_range_, update_range_, update_range_ / 2.0);
   this->resetBuffer(center - disp, center + disp);
-
   cloud_inflate_vis_.clear();
   pcl::PointXYZ pt, pt_inf;
   Eigen::Vector3d p3d, p3d_inf;
@@ -174,7 +159,6 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
       obs_tree_previous.insert(value_t(b, obs_counter));
       std::array<double, 6> cube = {pt.x, pt.y, pt.z, pt.x+resolution_sdf_
                                   , pt.y+resolution_sdf_, pt.z+resolution_sdf_};
-     
       _objects_map.push_back(cube);
       obs_counter++;
     }
@@ -191,36 +175,26 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   cloud_inflate_vis_.header.stamp = latest_cloud_.header.stamp;
   sensor_msgs::PointCloud2 map_inflate_vis;
   pcl::toROSMsg(cloud_inflate_vis_, map_inflate_vis);
-
   inflate_cloud_pub_.publish(map_inflate_vis);
   this->setUpdateRange(center - disp, center + disp);
 }
 
 std::vector<Eigen::Vector3d> SDFMap::nearest_obstacles_to_current_pose(Eigen::Vector3d x
                 , int max_neighbours){
-        // std::vector<value_t> returned_values;
-        std::vector<Eigen::Vector3d> neighbour_points;
-        for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
-                it != obs_tree.qend() ; ++it )
-        {
-            Eigen::Vector3d pose(3);
-            auto cube = (*it).first;
-            double min_x = bg::get<bg::min_corner, 0>(cube);
-            double min_y = bg::get<bg::min_corner, 1>(cube);
-            double min_z = bg::get<bg::min_corner, 2>(cube);
-            pose << min_x, min_y, min_z;
-            neighbour_points.push_back(pose);
-        }
-        return neighbour_points;
-}
-
-bool SDFMap::collision_free(Eigen::Vector3d start, Eigen::Vector3d end){
-  // Eigen::MatrixXd control_pts_rrt;
-  // NonUniformBspline::getControlPointEqu3(samples_rrt, ts_rrt, control_pts_rrt);
-  // /* ---------- time adjustment ---------- */
-  // // NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
-  // NonUniformBspline pos = NonUniformBspline(control_pts_rrt, 3, ts_rrt);
-  return false;
+    // std::vector<value_t> returned_values;
+    std::vector<Eigen::Vector3d> neighbour_points;
+    for ( RTree::const_query_iterator it = obs_tree.qbegin(bgi::nearest(point_t(x[0], x[1], x[2]), max_neighbours)) ;
+            it != obs_tree.qend() ; ++it )
+    {
+        Eigen::Vector3d pose(3);
+        auto cube = (*it).first;
+        double min_x = bg::get<bg::min_corner, 0>(cube);
+        double min_y = bg::get<bg::min_corner, 1>(cube);
+        double min_z = bg::get<bg::min_corner, 2>(cube);
+        pose << min_x, min_y, min_z;
+        neighbour_points.push_back(pose);
+    }
+    return neighbour_points;
 }
 
 double SDFMap::get_free_distance(Eigen::Vector3d x){
@@ -263,9 +237,7 @@ void SDFMap::init(ros::NodeHandle& nh)
   /* ---------- sub and pub ---------- */
   odom_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 10, &SDFMap::odomCallback, this);
   cloud_sub_ = node_.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_surround", 1, &SDFMap::cloudCallback, this);
-
   update_timer_ = node_.createTimer(ros::Duration(0.1), &SDFMap::updateCallback, this);
-
   inflate_cloud_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/inflate_cloud", 1);
 
   /* ---------- setting ---------- */

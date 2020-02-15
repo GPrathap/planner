@@ -371,8 +371,6 @@ namespace hagen{
 		// Continuous-time dynamics \dot{x} = f(x,u)
 		inline Matrix<X_DIM> f(const Matrix<X_DIM>& x, const Matrix<U_DIM>& u) {
 			Matrix<X_DIM> xDot;
-
-			Matrix<3> p = x.subMatrix<3,1>(0,0);
 			Matrix<3> v = x.subMatrix<3,1>(3,0);
 			Matrix<3> r = x.subMatrix<3,1>(6,0);
 			Matrix<3> w = x.subMatrix<3,1>(9,0);

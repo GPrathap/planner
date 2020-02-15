@@ -341,8 +341,6 @@ void PlanningFSM::safetyCallback(const ros::TimerEvent& e)
     double dist = edt_env_->get_free_distance(end_pt_);
     if (dist <= planner_manager_->margin_)
     {
-      /* try to find a max distance goal around */
-      bool new_goal = false;
       const double dr = 0.5, dtheta = 30, dz = 0.3;
       double new_x, new_y, new_z, max_dist = -1.0;
       Eigen::Vector3d goal;

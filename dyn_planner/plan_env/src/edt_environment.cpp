@@ -2,7 +2,6 @@
 
 namespace dyn_planner
 {
-/* ============================== edt_environment ============================== */
 void EDTEnvironment::init()
 {
 }
@@ -33,5 +32,4 @@ double EDTEnvironment::get_free_distance(Eigen::Vector3d x){
   return this->sdf_map_->get_free_distance(x);
 }
 
-// EDTEnvironment::
-}  // namespace dyn_planner
+} 

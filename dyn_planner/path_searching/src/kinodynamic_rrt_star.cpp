@@ -8,10 +8,7 @@ namespace dyn_planner
 {
 KinodynamicRRTstar::~KinodynamicRRTstar()
 {
-  for (int i = 0; i < allocate_num_; i++)
-  {
-    delete path_node_pool_[i];
-  }
+  
 }
 
 void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
@@ -19,7 +16,6 @@ void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
               , worker));
   boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
   pending_data.push_back(fut);
-  // std::cout<< "Thread has been sumitted..." << std::endl;
   io_service.post(boost::bind(&task_t::operator(), task));
 }
 
@@ -99,7 +95,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
       X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist_mod, 10);
       X.use_whole_search_sapce = is_using_whole_space;
       X.setEnvironment(this->edt_env_);
-      // create_map(this->edt_env_->get_obs_map());
+      create_map(this->edt_env_->get_obs_map());
       if(!X.use_whole_search_sapce){
                 // std::cout<< "======1" << end_pt_.state.head(3) << std::endl;
                 // std::cout<< "======1" << start_pt_.state.head(3) << std::endl;
@@ -119,7 +115,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
                 // // int max_tries = 3;
                 // // int try_index = 0;
                 X.generate_points(order_of_search_space, radious, center, rotation_matrix, curr_range[0][2], curr_range[1][2]);
-                // X.generate_search_sapce(covmat, rotation_matrix, center, number_of_random_points_in_search_space);
       }
       kamaz::hagen::RRTStar3D* rrtstart3d;
       rrt_planner_options.search_space = X;
@@ -132,7 +127,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
     q = rotation_matrix;
     // create_marker(center, radious, q);
   }
-
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
   kamaz::hagen::RRTStar3D rrtstart3d_procesor;
   kamaz::hagen::SearchSpace X;
@@ -141,11 +135,8 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   X.setEnvironment(this->edt_env_);
   rrt_planner_options.search_space = X;
   rrtstart3d_procesor.rrt_init(rewrite_count, rrt_planner_options, common_utils, save_data_index);
-
-  bool is_path_found = false;
   smoothed_paths.clear();
   paths_costs.clear();
-  double lowerst_cost_complete = 1000000;
   double lowerst_cost_horizon = 1000000;
   index_of_loweres_cost = -1;
   index_of_alternative_cost = -1;
@@ -161,7 +152,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
           paths_costs.push_back(cost);
     }   
   }
-
   std::cout<< "Path costs: " << std::endl;
   path_cost_indices = sort_indexes(paths_costs);
   for (auto i: path_cost_indices) {
@@ -174,11 +164,6 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
     }
     index_of_loweres_cost = (int)path_cost_indices[path_index];
   }
-  // if(path_cost_indices.size() > 1){
-  //   if(std::abs(paths_costs[path_cost_indices[0]] - paths_costs[path_cost_indices[1]])>0.5){
-  //     index_of_alternative_cost = (int)path_cost_indices[1];
-  //   }
-  // }
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
   pending_data.clear();
   if(smoothed_paths.size() > 0 && index_of_loweres_cost>-1){
@@ -202,24 +187,24 @@ bool KinodynamicRRTstar::get_search_space(visualization_msgs::Marker& marker){
 
  void KinodynamicRRTstar::create_marker(Eigen::Vector3d center, Eigen::Vector3d radiuos
                 , Eigen::Quaternion<double> q){
-        search_space_marker.type = visualization_msgs::Marker::SPHERE;
-        search_space_marker.action = visualization_msgs::Marker::ADD;
-        search_space_marker.pose.position.x = center[0];
-        search_space_marker.pose.position.y = center[1];
-        search_space_marker.pose.position.z = center[2];
-        search_space_marker.pose.orientation.x = q.x();
-        search_space_marker.pose.orientation.y = q.y();
-        search_space_marker.pose.orientation.z = q.z();
-        search_space_marker.pose.orientation.w = q.w();
-        search_space_marker.scale.x = radiuos[0];
-        search_space_marker.scale.y = radiuos[1];
-        search_space_marker.scale.z = radiuos[2];
-        search_space_marker.color.a = 0.5;
-        search_space_marker.color.r = 0.0;
-        search_space_marker.color.g = 0.0;
-        search_space_marker.color.b = 0.8;
-        search_space_marker.lifetime = ros::Duration();
-        return;
+    search_space_marker.type = visualization_msgs::Marker::SPHERE;
+    search_space_marker.action = visualization_msgs::Marker::ADD;
+    search_space_marker.pose.position.x = center[0];
+    search_space_marker.pose.position.y = center[1];
+    search_space_marker.pose.position.z = center[2];
+    search_space_marker.pose.orientation.x = q.x();
+    search_space_marker.pose.orientation.y = q.y();
+    search_space_marker.pose.orientation.z = q.z();
+    search_space_marker.pose.orientation.w = q.w();
+    search_space_marker.scale.x = radiuos[0];
+    search_space_marker.scale.y = radiuos[1];
+    search_space_marker.scale.z = radiuos[2];
+    search_space_marker.color.a = 0.5;
+    search_space_marker.color.r = 0.0;
+    search_space_marker.color.g = 0.0;
+    search_space_marker.color.b = 0.8;
+    search_space_marker.lifetime = ros::Duration();
+    return;
 }
 
 void KinodynamicRRTstar::create_map(std::vector<std::array<double, 6>> obs_map){
@@ -262,16 +247,16 @@ bool KinodynamicRRTstar::get_obs_space(visualization_msgs::MarkerArray& marker_a
 
 double  KinodynamicRRTstar::get_distance(std::vector<kamaz::hagen::PathNode> trajectory_){
 			double distance = 0.0f;
-        if(trajectory_.size() < 1){
-            return distance;
-        }
-        Eigen::Vector3d previous = trajectory_[0].state.head(3);
-        for (int i = 1; (unsigned)i < trajectory_.size(); i++){
-            double dis = std::abs((previous.head(3) - trajectory_[i].state.head(3)).norm());
-            previous = trajectory_[i].state.head(3);
-            distance += dis;
-        }
-        return distance;
+      if(trajectory_.size() < 1){
+          return distance;
+      }
+      Eigen::Vector3d previous = trajectory_[0].state.head(3);
+      for (int i = 1; (unsigned)i < trajectory_.size(); i++){
+          double dis = std::abs((previous.head(3) - trajectory_[i].state.head(3)).norm());
+          previous = trajectory_[i].state.head(3);
+          distance += dis;
+      }
+      return distance;
 }
 
 void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
@@ -307,25 +292,12 @@ void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
 
 void KinodynamicRRTstar::init()
 {
-  /* ---------- map params ---------- */
   this->inv_resolution_ = 1.0 / resolution_;
   inv_time_resolution_ = 1.0 / time_resolution_;
   edt_env_->getMapRegion(origin_, map_size_3d_);
-
   cout << "origin_: " << origin_.transpose() << endl;
   cout << "map size: " << map_size_3d_.transpose() << endl;
-
-  /* ---------- pre-allocated node ---------- */
-  path_node_pool_.resize(allocate_num_);
-  for (int i = 0; i < allocate_num_; i++)
-  {
-    path_node_pool_[i] = new PathNode;
-  }
-
   phi_ = Eigen::MatrixXd::Identity(6, 6);
-  use_node_num_ = 0;
-  iter_num_ = 0;
-  
   service_work = boost::make_unique<boost::asio::io_service::work>(io_service);
   std::cout<< "Number of threads that can support this system: " << boost::thread::hardware_concurrency() << std::endl;
   for (int i = 0; i < boost::thread::hardware_concurrency(); ++i)
@@ -334,15 +306,6 @@ void KinodynamicRRTstar::init()
       &io_service));
   }
   std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
-
-  
-  // std::cout<< "Number of threads that can support this system: " << boost::thread::hardware_concurrency() << std::endl;
-  // for (int i = 0; i < boost::thread::hardware_concurrency(); ++i)
-  // {
-  //   threads.create_thread(boost::bind(&boost::asio::io_service::run,
-  //     &io_service));
-  // }
-  // std::cout<< "Thread pool has been initialized..." << boost::thread::hardware_concurrency() << std::endl;
 }
 
 void KinodynamicRRTstar::setEnvironment(const EDTEnvironment::Ptr& env)
@@ -352,22 +315,6 @@ void KinodynamicRRTstar::setEnvironment(const EDTEnvironment::Ptr& env)
 
 void KinodynamicRRTstar::reset()
 {
-  expanded_nodes_.clear();
-  path_nodes_.clear();
-
-  std::priority_queue<PathNodePtr, std::vector<PathNodePtr>, NodeComparator> empty_queue;
-  open_set_.swap(empty_queue);
-
-  for (int i = 0; i < use_node_num_; i++)
-  {
-    PathNodePtr node = path_node_pool_[i];
-    node->parent = NULL;
-    node->node_state = NOT_EXPAND;
-  }
-
-  use_node_num_ = 0;
-  iter_num_ = 0;
-  is_shot_succ_ = false;
 }
 
 std::vector<std::vector<Eigen::Vector3d>> KinodynamicRRTstar::getRRTTrajS(double delta_t){
@@ -477,8 +424,6 @@ Eigen::MatrixXd KinodynamicRRTstar::getSamplesRRTAlternative(double& ts, int& K,
 Eigen::Vector3i KinodynamicRRTstar::posToIndex(Eigen::Vector3d pt)
 {
   Vector3i idx = ((pt - origin_) * inv_resolution_).array().floor().cast<int>();
-  // idx << floor((pt(0) - origin_(0)) * inv_resolution_), floor((pt(1) - origin_(1)) * inv_resolution_),
-  // floor((pt(2) - origin_(2)) * inv_resolution_);
   return idx;
 }
 
@@ -488,4 +433,4 @@ int KinodynamicRRTstar::timeToIndex(double time)
   return idx;
 }
 
-}  // namespace dyn_planner
+} 

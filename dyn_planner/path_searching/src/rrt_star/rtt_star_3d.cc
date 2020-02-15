@@ -36,6 +36,7 @@ namespace hagen {
         save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
         // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
         // save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        save_path(planner_opts.search_space, stotage_location + "rrt_search_space.npy");
         save_path(path, stotage_location + "rrt_star_path.npy");
         // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
         // std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
@@ -43,6 +44,16 @@ namespace hagen {
         return path;
     }
 
+    void RRTStar3D::save_path(SearchSpace search_space, std::string file_name){
+       std::vector<double> projected_path;
+       BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save search space trajectory size: ") << search_space.number_of_points_in_random_tank;
+       for(int i=0; i<search_space.number_of_points_in_random_tank; i++){
+           projected_path.push_back((*search_space.random_points_tank).row(i)[0]);
+           projected_path.push_back((*search_space.random_points_tank).row(i)[1]);
+           projected_path.push_back((*search_space.random_points_tank).row(i)[2]);
+       }
+       cnpy::npy_save(file_name, &projected_path[0], {search_space.number_of_points_in_random_tank, 3}, "w");
+    }
 
     double  RRTStar3D::get_distance(std::vector<PathNode> trajectory_){
 			double distance = 0.0f;
@@ -78,7 +89,7 @@ namespace hagen {
                 apply_dynamics_smoothing(expected_preceding, expected_next, smoothed_path);
                 add_waypoints_on_straight_line(expected_next, next_node, smoothed_path);
             }else{
-                for(int i=3; i <= path.size(); i++){
+                for(int i=3; i <= (int)path.size(); i++){
                     // std::cout<< "previous: " << previous_node.transpose() << std::endl;
                     // std::cout<< "current_node: " << current_node.transpose() << std::endl;
                     // std::cout<< "next_node: " << next_node.transpose() << std::endl;
@@ -88,7 +99,7 @@ namespace hagen {
                     apply_dynamics_smoothing(expected_preceding, expected_next, smoothed_path);
                     previous_node = expected_next;
                     current_node = next_node;
-                    if(i == path.size()){
+                    if(i == (int)path.size()){
                         add_waypoints_on_straight_line(expected_next, path.back().state.head(3), smoothed_path);
                         break;
                     }
@@ -188,7 +199,7 @@ namespace hagen {
             loto::hagen::Matrix<X_DIM> x = extendedLQR.xStart;
             x[X_DIM-1] = log(dt_lqr);
             std::cout << "========================================" << std::endl;
-            for (size_t t = 0; t < opts.ell; ++t) {
+            for (int t = 0; t < opts.ell; ++t) {
                 x = extendedLQR.g(x, L[t]*x + l[t]);
                 // std::cout << x << std::endl;
                 PathNode next_pose;
@@ -388,6 +399,7 @@ namespace hagen {
         next_pose<<target_x, target_y, target_z;
         // std::cout<< "Next pose:: inside:: not"<< next_pose << std::endl;
         return next_pose;
+
     }
 
     

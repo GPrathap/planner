@@ -77,13 +77,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   time_traj_start_ = ros::Time::now();
   time_start_ = -1.0;
-
-  double t_search = 0.0, t_sample = 0.0;
-
-  Eigen::Vector3d init_pos = start_pt;
-  Eigen::Vector3d init_vel = start_vel;
-  Eigen::Vector3d init_acc = start_acc;
-
   ros::Time t1, t2;
   t1 = ros::Time::now();
   /* ---------- search kino path ---------- */
@@ -113,13 +106,10 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   }
 
   t2 = ros::Time::now();
-  t_search = (t2 - t1).toSec();
 
   /* ---------- bspline parameterization ---------- */
   t1 = ros::Time::now();
 
-  int K;
-  double ts = time_sample_ / max_vel_;
   int K_rrt;
   double ts_rrt = 0.1;
   Eigen::MatrixXd vel_acc;
@@ -167,13 +157,10 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- time adjustment ---------- */
   // NonUniformBspline pos = NonUniformBspline(control_pts, 3, ts);
   NonUniformBspline pos = NonUniformBspline(control_pts_rrt, 3, ts_rrt);
-
   double tm, tmp, to, tn;
   pos.getTimeSpan(tm, tmp);
   to = tmp - tm;
-
   bool feasible = pos.checkFeasibility(false);
-
   int iter_num = 0;
   while (!feasible && ros::ok())
   {
@@ -182,7 +169,6 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
     if (iter_num >= 50)
       break;
   }
-
   cout << "[Main]: iter num: " << iter_num << endl;
   pos.getTimeSpan(tm, tmp);
   tn = tmp - tm;
