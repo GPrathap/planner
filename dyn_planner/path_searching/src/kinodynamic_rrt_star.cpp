@@ -95,7 +95,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
       X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist_mod, 10);
       X.use_whole_search_sapce = is_using_whole_space;
       X.setEnvironment(this->edt_env_);
-      create_map(this->edt_env_->get_obs_map());
+      // create_map(this->edt_env_->get_obs_map());
       if(!X.use_whole_search_sapce){
                 // std::cout<< "======1" << end_pt_.state.head(3) << std::endl;
                 // std::cout<< "======1" << start_pt_.state.head(3) << std::endl;
