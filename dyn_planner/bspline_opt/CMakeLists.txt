@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_MATH_DISABLE_FLOAT128")
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -28,5 +29,5 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
 )
 
-add_library( bspline_opt src/non_uniform_bspline.cpp)
+add_library( bspline_opt src/non_uniform_bspline.cpp src/trajectory_planning.cc)
 

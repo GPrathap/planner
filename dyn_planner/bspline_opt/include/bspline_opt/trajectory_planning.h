@@ -34,7 +34,7 @@ namespace kamaz {
 namespace hagen {
         class TrajectoryPlanning {
             public:
-                TrajectoryPlanning(double speed = 2);
+                TrajectoryPlanning(double speed = 0.4);
                 ~TrajectoryPlanning() = default;
 
                 bool generate_ts(Eigen::MatrixXd path);

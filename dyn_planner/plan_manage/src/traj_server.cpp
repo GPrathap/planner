@@ -11,7 +11,6 @@
 #include <deque>
 #include <math.h>
 
-
 using namespace dyn_planner;
 
 template <typename T, typename Total, size_t N>

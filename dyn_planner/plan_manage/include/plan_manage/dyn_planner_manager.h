@@ -3,11 +3,9 @@
 
 #include <ros/ros.h>
 #include <path_searching/kinodynamic_rrt_star.h>
-// #include <bspline_opt/bspline_optimizer.h>
 #include <bspline_opt/non_uniform_bspline.h>
 #include <plan_env/edt_environment.h>
-#include "trajectory_planning.h"
-
+#include <bspline_opt/trajectory_planning.h>
 
 namespace dyn_planner
 {

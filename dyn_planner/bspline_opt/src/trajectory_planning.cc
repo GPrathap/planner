@@ -1,4 +1,4 @@
-#include <plan_manage/trajectory_planning.h>
+#include "bspline_opt/trajectory_planning.h"
 
 namespace kamaz {
 namespace hagen {
@@ -10,6 +10,7 @@ namespace hagen {
 
     bool TrajectoryPlanning::generate_ts(Eigen::MatrixXd path){
         int size_of_the_path = path.cols()-3;
+        std::cout<< "size_of_the_path" <<  size_of_the_path << std::endl;
 
         if(size_of_the_path < 1){
             return false;
