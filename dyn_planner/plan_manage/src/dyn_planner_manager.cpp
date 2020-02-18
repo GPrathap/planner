@@ -84,6 +84,7 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
 
   int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_
                                       , increase_cleareance, path_index);
+  current_state = status;
   if (status == KinodynamicRRTstar::NO_PATH)
   {
     cout << "[planner]: init search fail!" << endl;
@@ -104,6 +105,8 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   {
     cout << "[planner]: init search success." << endl;
   }
+
+  
 
   t2 = ros::Time::now();
 

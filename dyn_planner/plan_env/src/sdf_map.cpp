@@ -132,6 +132,8 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   int obs_counter = 0;
   obs_tree_previous.clear();
   _objects_map.clear();
+  double totat_time_rtree_buffer = 0;
+  auto t1 = std::chrono::high_resolution_clock::now();
   for (size_t i = 0; i < latest_cloud_.points.size(); ++i)
   {
     pt = latest_cloud_.points[i];
@@ -166,6 +168,12 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
       // std::cout<< p3d.transpose() << "==========------" << "-----" << p3d << "-----"  << std::endl;
     }
   }
+  auto t2 = std::chrono::high_resolution_clock::now();
+  totat_time_rtree_buffer = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
+  // std::cout << "time----" << std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count() << std::endl;
+  std::ofstream outfile;
+  outfile.open("/home/geesara/tmp/data/map_building_time_stamps_rtee.txt", std::ios_base::app);
+  outfile << "rtree,"<<  totat_time_rtree_buffer <<"\n";
   obs_tree = obs_tree_previous;
   cloud_inflate_vis_.width = cloud_inflate_vis_.points.size();
   cloud_inflate_vis_.height = 1;

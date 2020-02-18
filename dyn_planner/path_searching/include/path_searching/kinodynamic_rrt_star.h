@@ -167,12 +167,14 @@ public:
     // using std::stable_sort instead of std::sort
     // to avoid unnecessary index re-orderings
     // when v contains elements of equal values 
-    std::stable_sort(idx.begin(), idx.end(),[&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
+    std::stable_sort(idx.begin(), idx.end(),[&v](size_t i1, size_t i2) {return std::get<1>(v[i1]) < std::get<1>(v[i2]);});
     return idx;
   }
 
-  std::vector<double> paths_costs;
+  std::vector<std::tuple<double, bool, int>> paths_costs;
+  std::vector<std::tuple<double, bool, int>> paths_costs_end_found;
   std::vector<size_t> path_cost_indices;
+  std::vector<size_t> path_cost_indices_horizon;
   int index_of_loweres_cost = -1;
   int index_of_alternative_cost = -1;
   visualization_msgs::Marker search_space_marker;

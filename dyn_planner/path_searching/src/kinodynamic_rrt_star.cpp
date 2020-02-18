@@ -137,32 +137,57 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   rrtstart3d_procesor.rrt_init(rewrite_count, rrt_planner_options, common_utils, save_data_index);
   smoothed_paths.clear();
   paths_costs.clear();
+  paths_costs_end_found.clear();
   double lowerst_cost_horizon = 1000000;
   index_of_loweres_cost = -1;
   index_of_alternative_cost = -1;
+  int index_counter = 0;
   for(auto result : pending_data){
     std::vector<kamaz::hagen::PathNode> _path = result.get();
     if(_path.size()>1){
           smoothed_paths.push_back(_path);
           auto cost = get_distance(_path);
           bool is_horizon = _path.back().is_horizon;
+          double dis_to_goal = 0;
           if(is_horizon){
-            cost += lowerst_cost_horizon;
-          }
-          paths_costs.push_back(cost);
+            dis_to_goal = (_path.back().state.head(3) - end_pt_.state.head(3)).norm();
+            cost = dis_to_goal;
+            std::tuple<double, bool, double> cost_index(cost, is_horizon, index_counter);
+            paths_costs.push_back(cost_index);
+          }else{
+            std::tuple<double, bool, double> cost_index(cost, is_horizon, index_counter);
+            paths_costs_end_found.push_back(cost_index);
+          }   
+          index_counter++;  
     }   
   }
-  std::cout<< "Path costs: " << std::endl;
-  path_cost_indices = sort_indexes(paths_costs);
+  int which_desk = -1;
+  int actual_index = 0;
+  std::cout<< "Path costs: to the end" << std::endl;
+  path_cost_indices_horizon = sort_indexes(paths_costs);
+  path_cost_indices  = sort_indexes(paths_costs_end_found);
   for (auto i: path_cost_indices) {
-      std::cout << paths_costs[i] << std::endl;
+      std::cout << std::get<0>(paths_costs_end_found[i]) << std::endl;
+  }
+  std::cout<< "Path costs: to the horizon" << std::endl;
+  for (auto i: path_cost_indices_horizon) {
+      std::cout << std::get<0>(paths_costs[i]) << std::endl;
   }
   std::cout<<  "path index .." << path_index << std::endl;
   if(path_cost_indices.size() > 0){
     if(path_index >= path_cost_indices.size()){
       path_index = path_cost_indices.size()-1;
     }
-    index_of_loweres_cost = (int)path_cost_indices[path_index];
+    actual_index = (int)path_cost_indices[path_index];
+    index_of_loweres_cost = std::get<2>(paths_costs_end_found[actual_index]);
+    which_desk = 0;
+  }else if(path_cost_indices_horizon.size() > 0){
+    // if(path_index >= path_cost_indices.size()){
+    //   path_index = path_cost_indices.size()-1;
+    // }
+    actual_index = 0;
+    which_desk = 1;
+    index_of_loweres_cost = std::get<2>(paths_costs[(int)path_cost_indices_horizon[0]]);
   }
   std::cout<< "index_of_loweres_cost " << index_of_loweres_cost << std::endl;
   pending_data.clear();
@@ -170,7 +195,16 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
     std::vector<kamaz::hagen::PathNode> smoothed_path;
     rrtstart3d_procesor.get_smoothed_waypoints(smoothed_paths[index_of_loweres_cost], smoothed_path);
     smoothed_paths[index_of_loweres_cost] = smoothed_path;
-    return REACH_HORIZON;
+    bool is_horizon = true;
+    if(which_desk == 1){
+      is_horizon = std::get<1>(paths_costs[actual_index]);
+    }else if(which_desk == 0){
+      is_horizon = std::get<1>(paths_costs_end_found[actual_index]);
+    }
+    if(is_horizon){
+      return REACH_HORIZON;
+    }
+    return REACH_END;
   }else{
     std::cout<< "No path found..." << std::endl;
     return NO_PATH;

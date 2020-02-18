@@ -284,14 +284,54 @@ namespace hagen {
         //     return true;
         // }
         // std::cout<< "start checkoing to connect" << x_nearest.state.head(3) << " toto " << x_goal.state.head(3) <<std::endl;
-        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, 5)){
-            //  std::cout<< "RRTBase::can_connect_to_goal: collision_free true"<< std::endl;
-            return true;
-        }
         if((x_init.state.head(3)-x_nearest.state.head(3)).norm() > opt.horizon){
             BOOST_LOG_TRIVIAL(info) << FRED("Horizon is met, not going to plan rest of it");
-            x_goal.is_horizon = true;
-            connect_to_the_goal(0);
+            const double dr = 0.5, dtheta = 30, dz = 0.3;
+            double new_x, new_y, new_z, max_dist = -1.0;
+            Eigen::Vector3d goal;
+            double dist = 0;
+            for (double r = dr; r <= 5 * dr + 1e-3; r += dr)
+            {
+                for (double theta = -90; theta <= 270; theta += dtheta)
+                {
+                    for (double nz = 1 * dz; nz >= -1 * dz; nz -= dz)
+                    {
+                        new_x = x_nearest.state.head(3)[0] + r * cos(theta / 57.3);
+                        new_y = x_nearest.state.head(3)[1] + r * sin(theta / 57.3);
+                        new_z = x_nearest.state.head(3)[2] + dz;
+                        Eigen::Vector3d new_pt(new_x, new_y, new_z);
+                        dist = X.edt_env_->get_free_distance(new_pt);
+                        if (dist > max_dist)
+                        {
+                            /* reset end_pt_ */
+                            goal(0) = new_x;
+                            goal(1) = new_y;
+                            goal(2) = new_z;
+                            max_dist = dist;
+                        }
+                    }
+                }
+            }
+            if (max_dist > X.avoidance_width)
+            {
+                cout << "change goal, replan." << endl;
+                x_goal.state.head(3) = goal;
+                // x_goal.state[0] = x_nearest.state[0]; 
+                // x_goal.state[1] = x_nearest.state[1]; 
+                // x_goal.state[2] = x_nearest.state[2]+1.0; 
+                // x_goal = x_nearest
+                x_goal.is_horizon = true;
+                connect_to_the_goal(0);
+            }else{
+                x_goal.state[0] = x_nearest.state[0]; 
+                x_goal.state[1] = x_nearest.state[1]; 
+                x_goal.state[2] = x_nearest.state[2]+1.0; 
+                x_goal.is_horizon = true;  
+            }
+            return true;
+        }
+        if(X.collision_free(x_nearest.state.head(3), x_goal.state.head(3), r, 5)){
+            //  std::cout<< "RRTBase::can_connect_to_goal: collision_free true"<< std::endl;
             return true;
         }
         return false;

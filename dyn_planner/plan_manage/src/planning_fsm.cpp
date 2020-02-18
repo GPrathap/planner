@@ -233,7 +233,12 @@ void PlanningFSM::execFSMCallback(const ros::TimerEvent& e)
         have_goal_ = false;
         std_msgs::Empty emt;
         stop_moving.publish(emt);
-        changeExecState(WAIT_GOAL, "FSM");
+        if(planner_manager_->current_state == KinodynamicRRTstar::REACH_HORIZON){
+           cout << "--------met horizon, moving into final goal" << endl;
+           changeExecState(REPLAN_TRAJ, "FSM");
+        }else{
+           changeExecState(WAIT_GOAL, "FSM");
+        }
         return;
       }
       else if ((end_pt_ - pos).norm() < thresh_no_replan_)

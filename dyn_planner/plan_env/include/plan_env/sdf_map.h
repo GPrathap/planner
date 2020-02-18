@@ -20,6 +20,8 @@
 #include <boost/timer.hpp>
 #include <boost/foreach.hpp>
 #include <bspline_opt/non_uniform_bspline.h>
+#include <chrono>
+#include <fstream>
 
 using namespace std;
 

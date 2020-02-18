@@ -53,6 +53,7 @@ public:
   NonUniformBspline traj_init_;
   vector<vector<Eigen::Vector3d>> guide_paths_;
   vector<Eigen::Vector3d> guide_pts_;
+  int current_state = 0;
 
   bool generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
                           Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, double increase_cleareance, int path_index);  // front-end && back-end
