@@ -10,6 +10,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <deque>
 #include <math.h>
+#include <tf/tf.h>
 
 using namespace dyn_planner;
 
@@ -71,7 +72,7 @@ std::deque<double> yaw_angle_changes;
 std::deque<double> velocity_regulator_on_x;
 std::deque<double> velocity_regulator_on_y;
 std::deque<double> velocity_regulator_on_z;
-
+double quad_yaw_angle = 0.0;
 Eigen::Vector3d hover_pt;
 
 
@@ -206,6 +207,8 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
     ROS_INFO_STREAM("in======target_yaw_angle======="<< target_yaw_angle );
   }
 
+  // current_yaw = quad_yaw_angle;
+
   // double sign_1 = ((current_yaw-target_yaw_angle)>0) ? 1.0 : -1.0;
   // if(std::abs(current_yaw-target_yaw_angle)> M_PI){
   //   target_yaw_angle = (2*M_PI - std::abs(current_yaw-target_yaw_angle))*sign_1*-1.0;
@@ -279,6 +282,13 @@ void odomCallbck(const nav_msgs::Odometry& msg) {
                                       odom.pose.pose.position.z));
   if (traj_real.size() > 10000)
     traj_real.erase(traj_real.begin(), traj_real.begin() + 1000);
+  
+  tf::Quaternion quat(odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z,
+                        odom.pose.pose.orientation.w);
+  tf::Matrix3x3 m(quat);
+  double_t roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
+  quad_yaw_angle = yaw;
 }
 
 void visCallback(const ros::TimerEvent& e) {

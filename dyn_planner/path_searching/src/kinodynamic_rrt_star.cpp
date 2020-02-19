@@ -130,7 +130,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   boost::wait_for_all((pending_data).begin(), (pending_data).end());
   kamaz::hagen::RRTStar3D rrtstart3d_procesor;
   kamaz::hagen::SearchSpace X;
-  X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist_mod, 200);
+  X.init_search_space(x_dimentions, max_samples, rrt_avoidance_dist_mod, 15);
   X.use_whole_search_sapce = true;
   X.setEnvironment(this->edt_env_);
   rrt_planner_options.search_space = X;
@@ -151,11 +151,16 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
           double dis_to_goal = 0;
           if(is_horizon){
             dis_to_goal = (_path.back().state.head(3) - end_pt_.state.head(3)).norm();
-            cost = dis_to_goal;
-            std::tuple<double, bool, double> cost_index(cost, is_horizon, index_counter);
+            cost = dis_to_goal + (_path.back().state.head(3) - start_pt_.state.head(3)).norm();
+            // Eigen::Vector3d p1 = end_pt_.state.head(3) - start_pt_.state.head(3);
+            // Eigen::Vector3d p2 = _path.back().state.head(3) - start_pt_.state.head(3);
+            // double dot =  p1.dot(p2);
+            // double angle = std::acos(dot/(p1.norm()*p2.norm()))*10.0;
+            // cost = angle;
+            std::tuple<double, bool, int> cost_index(cost, is_horizon, index_counter);
             paths_costs.push_back(cost_index);
           }else{
-            std::tuple<double, bool, double> cost_index(cost, is_horizon, index_counter);
+            std::tuple<double, bool, int> cost_index(cost, is_horizon, index_counter);
             paths_costs_end_found.push_back(cost_index);
           }   
           index_counter++;  

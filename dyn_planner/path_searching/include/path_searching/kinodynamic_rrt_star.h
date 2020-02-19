@@ -101,7 +101,7 @@ private:
   double tie_breaker_ = 1.0 + 1.0 / 10000;
   int number_of_paths = 4;
   double r = 0.1;
-  int max_samples = 300;
+  int max_samples = 400;
   int rewrite_count = 32;
   double proc = 0.1;
   int save_data_index = 0;
