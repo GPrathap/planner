@@ -74,7 +74,7 @@ namespace hagen{
             eigen_vectors.row(index) = std::get<1>(vect);
             index++;
         }
-        Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
+        /*Eigen::MatrixXd eigen_values_as_matrix = eigen_values.asDiagonal();
         std::random_device rd{};
         std::mt19937 gen{rd()};  
         std::uniform_real_distribution<double> dis(0, 1);
@@ -92,7 +92,7 @@ namespace hagen{
             Eigen::MatrixXd  fff = (container.row(i).array()*d.transpose().array());
             Eigen::VectorXd bn = rotation_mat*fff.transpose();
             container.row(i) = bn.array() + cent.head(3).array();
-        }
+        }*/
         // std::cout << "points: " << container << std::endl;
     }
 
