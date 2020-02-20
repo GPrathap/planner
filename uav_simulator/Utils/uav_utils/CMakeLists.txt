@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 
-find_package(Eigen REQUIRED) # try to find manually installed eigen (Usually in /usr/local with provided FindEigen3.cmake)
+find_package(Eigen3 REQUIRED) # try to find manually installed eigen (Usually in /usr/local with provided FindEigen3.cmake)
 
 ###################################
 ## catkin specific configuration ##

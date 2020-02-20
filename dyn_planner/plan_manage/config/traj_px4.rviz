@@ -227,7 +227,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 10
-          Size (m): 0.5
+          Size (m): 0.20000000298023224
           Style: Boxes
           Topic: /sdf_map/inflate_cloud
           Unreliable: false
@@ -448,7 +448,7 @@ Visualization Manager:
           Marker Topic: /goal/marker_text
           Name: Marker
           Namespaces:
-            goal_text: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/InteractiveMarkers
@@ -537,7 +537,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 19.335567474365234
+      Distance: 12.315512657165527
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -552,10 +552,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7247957587242126
+      Pitch: 0.7447973489761353
       Target Frame: map
       Value: XYOrbit (rviz)
-      Yaw: 4.61453104019165
+      Yaw: 5.761370658874512
     Saved: ~
 Window Geometry:
   Displays:
@@ -573,5 +573,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1853
-  X: 44
-  Y: 30
+  X: 42
+  Y: -22
