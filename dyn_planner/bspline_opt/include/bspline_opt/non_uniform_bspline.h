@@ -4,6 +4,7 @@
 #include <Eigen/Eigen>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -45,8 +46,8 @@ public:
   NonUniformBspline getDerivative();
 
   static void getControlPointEqu3(Eigen::MatrixXd samples, double ts, Eigen::MatrixXd& control_pts);
-  static void BsplineParameterize(const double& ts, const vector<Eigen::Vector3d>& point_set,
-                  const vector<Eigen::Vector3d>& start_end_derivative, Eigen::MatrixXd& ctrl_pts);
+  static void BsplineParameterize(const double& ts, const std::vector<Eigen::Vector3d>& point_set,
+                  const std::vector<Eigen::Vector3d>& start_end_derivative, Eigen::MatrixXd& ctrl_pts);
   
   /*check feasibility, reallocate time and recompute first 3 ctrl pts*/
   bool checkFeasibility(bool show = false);
