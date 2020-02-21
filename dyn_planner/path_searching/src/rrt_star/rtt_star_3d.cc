@@ -10,10 +10,10 @@ namespace hagen {
         return rrtstar.rrt_star();
     }
 
-   std::vector<PathNode> RRTStar3D::rrt_planner_and_save(){
-        std::atomic_bool planner_status;
-        planner_status = ATOMIC_VAR_INIT(true);
-        RRTStar rrtstar(planner_opts, _rewrite_count, common_utils, planner_status);
+   std::vector<PathNode> RRTStar3D::rrt_planner_and_save(std::atomic_bool &is_allowed_to_run){
+        // std::atomic_bool planner_status;
+        // planner_status = ATOMIC_VAR_INIT(true);
+        RRTStar rrtstar(planner_opts, _rewrite_count, common_utils, is_allowed_to_run);
         // std::ofstream outfile;
         // std::vector<PathNode> path;
         // std::cout<< "========================" << std::endl;

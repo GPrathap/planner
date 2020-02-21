@@ -118,7 +118,7 @@ private:
   Eigen::Vector3i posToIndex(Eigen::Vector3d pt);
   int timeToIndex(double time);
 
-  void push_job(kamaz::hagen::RRTStar3D* worker);
+  void push_job(kamaz::hagen::RRTStar3D* worker, std::atomic_bool &is_allowed_to_run);
 
   typedef boost::packaged_task<std::vector<kamaz::hagen::PathNode>> task_t;
   typedef boost::shared_ptr<task_t> ptask_t;
@@ -143,7 +143,7 @@ public:
   void init();
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
-             Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, bool init, bool dynamic = false,
+             Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, bool init, std::atomic_bool &is_allowed_to_run, bool dynamic = false,
              double time_start = -1.0, double increase_cleareance = 0.0, int path_index = 0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);
@@ -188,6 +188,7 @@ public:
   double obstacle_radios = 0.4;
   bool consider_obs = true;
   int number_of_closest_obs = 10;
+  double _min_dis_points = 0.1;
 };
 
 }  // namespace dyn_planner

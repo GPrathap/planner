@@ -10,6 +10,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Empty.h>
+#include <atomic>
 
 #include <traj_utils/planning_visualization.h>
 #include <plan_env/sdf_map.h>
@@ -100,6 +101,7 @@ public:
   void init(ros::NodeHandle& nh);
   bool intermidiate_goal_is_set = false;
   int change_path_index = 0;
+  std::atomic_bool planner_status;
 };
 
 }  // namespace dyn_planner

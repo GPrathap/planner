@@ -34,7 +34,7 @@ namespace hagen {
                ~RRTStar3D() = default;
 
                std::vector<PathNode> rrt_planner(std::atomic_bool &is_allowed_to_run);
-               std::vector<PathNode> rrt_planner_and_save();
+               std::vector<PathNode> rrt_planner_and_save(std::atomic_bool &is_allowed_to_run);
 
                void rrt_init(int rewrite_count, RRTPlannerOptions planner_options
                 ,CommonUtils& common_utils, int index);

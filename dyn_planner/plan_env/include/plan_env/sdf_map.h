@@ -108,6 +108,7 @@ namespace dyn_planner
       void setUpdateRange(Eigen::Vector3d min_pos, Eigen::Vector3d max_pos);
       bool collision_free(Eigen::Vector3d start, Eigen::Vector3d end);
       typedef shared_ptr<SDFMap> Ptr;
+      int map_clear_duration = 10;
     };
 
 }  // namespace dyn_planner

@@ -63,7 +63,7 @@ void DynPlannerManager::getSolvingTime(double& ts, double& to, double& ta)
 
 bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc
                                                     , Eigen::Vector3d end_pt, Eigen::Vector3d end_vel
-                                                    , double increase_cleareance, int path_index)
+                                                    , double increase_cleareance, int path_index, std::atomic_bool &is_allowed_to_run)
 {
   std::cout << "[planner]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", " << start_acc.transpose()
@@ -82,14 +82,14 @@ bool DynPlannerManager::generateTrajectory(Eigen::Vector3d start_pt, Eigen::Vect
   /* ---------- search kino path ---------- */
   path_finder_->reset();
 
-  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, dynamic_, time_start_
+  int status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true, is_allowed_to_run,  dynamic_, time_start_
                                       , increase_cleareance, path_index);
   current_state = status;
   if (status == KinodynamicRRTstar::NO_PATH)
   {
     cout << "[planner]: init search fail!" << endl;
     path_finder_->reset();
-    status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false, dynamic_, time_start_
+    status = path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false, is_allowed_to_run, dynamic_, time_start_
                                      , increase_cleareance, path_index);
     if (status == KinodynamicRRTstar::NO_PATH)
     {

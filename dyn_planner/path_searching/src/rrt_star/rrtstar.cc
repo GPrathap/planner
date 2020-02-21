@@ -107,10 +107,10 @@ namespace hagen {
                 for(int i=0; i<q[1]; i++){
                 //    std::cout<< "---------------------------1" << std::endl;
                    if(!till_auto_mode){
-                        BOOST_LOG_TRIVIAL(warning) << FYEL("Since drone is moved into manuval mode, stop finding trajectory");
+                        BOOST_LOG_TRIVIAL(warning) << FRED("Since drone is moved into manuval mode, stop finding trajectory");
                         return path;   
                    }
-                //    std::cout<< "---------------------------2" << std::endl;
+                //    std::cout<< "-------2------3-------2-------2"<< till_auto_mode << std::endl;
                    auto new_and_next = new_and_near(0, q);
                    // std::cout<< "rstar loop...." << new_and_next.size() << std::endl;
                    if(new_and_next.size()==0){

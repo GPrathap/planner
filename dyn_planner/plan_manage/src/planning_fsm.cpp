@@ -59,7 +59,9 @@ void PlanningFSM::init(ros::NodeHandle& nh)
   stat_moving = node_.advertise<std_msgs::Empty>("planning/start_moving", 10);
   stop_moving = node_.advertise<std_msgs::Empty>("planning/stop_moving", 10);
   bspline_pub_ = node_.advertise<plan_manage::Bspline>("planning/bspline", 10);
-  odometry_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 50, &PlanningFSM::odomCallback, this); 
+  odometry_sub_ = node_.subscribe<nav_msgs::Odometry>("/odom_world", 50, &PlanningFSM::odomCallback, this);
+
+  planner_status = ATOMIC_VAR_INIT(true); 
 }
 
 void PlanningFSM::odomCallback(const nav_msgs::OdometryConstPtr& msg){
@@ -70,6 +72,10 @@ void PlanningFSM::odomCallback(const nav_msgs::OdometryConstPtr& msg){
 
 void PlanningFSM::waypointCallback(const nav_msgs::PathConstPtr& msg)
 {
+  planner_status = false;
+  std_msgs::Empty emt;
+  stop_moving.publish(emt);
+
   if (msg->poses[0].pose.position.z < 0.0)
     return;
 
@@ -402,8 +408,9 @@ bool PlanningFSM::planSearchOpt()
 {
 
   int path_index = change_path_index;
+  planner_status = true; 
   bool plan_success = planner_manager_->generateTrajectory(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_
-            , increase_cleareance, path_index);
+            , increase_cleareance, path_index, planner_status);
 
   if (plan_success)
   {

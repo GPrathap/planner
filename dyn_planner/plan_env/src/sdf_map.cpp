@@ -106,12 +106,11 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   {
     // cout << "no new map." << endl;
     // obs_tree.clear();
-    // no_maps++;
-    // if(no_maps>5){
-    //   obs_tree.clear();
-    //   no_maps = 0;
-    // }
-    
+    no_maps++;
+    if(no_maps>map_clear_duration){
+      obs_tree.clear();
+      no_maps = 0;
+    }
     return;
   }
   map_valid_ = true;
@@ -171,9 +170,9 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
   auto t2 = std::chrono::high_resolution_clock::now();
   totat_time_rtree_buffer = std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count();
   // std::cout << "time----" << std::chrono::duration_cast<std::chrono::nanoseconds>(t2-t1).count() << std::endl;
-  std::ofstream outfile;
-  outfile.open("/home/geesara/tmp/data/map_building_time_stamps_rtee.txt", std::ios_base::app);
-  outfile << "rtree,"<<  totat_time_rtree_buffer <<"\n";
+  // std::ofstream outfile;
+  // outfile.open("/home/geesara/tmp/data/map_building_time_stamps_rtee.txt", std::ios_base::app);
+  // outfile << "rtree,"<<  totat_time_rtree_buffer <<"\n";
   obs_tree = obs_tree_previous;
   cloud_inflate_vis_.width = cloud_inflate_vis_.points.size();
   cloud_inflate_vis_.height = 1;
@@ -237,6 +236,7 @@ void SDFMap::init(ros::NodeHandle& nh)
   node_.param("sdf_map/update_range", update_range_, 5.0);
   node_.param("sdf_map/inflate", inflate_, 0.2);
   node_.param("sdf_map/radius_ignore", radius_ignore_, 0.2);
+  node_.param("sdf_map/map_clear_duration", map_clear_duration, 10);
 
   cout << "origin_: " << origin_.transpose() << endl;
   cout << "map size: " << map_size_.transpose() << endl;

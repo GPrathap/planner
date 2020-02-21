@@ -11,16 +11,16 @@ KinodynamicRRTstar::~KinodynamicRRTstar()
   
 }
 
-void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker) {
+void KinodynamicRRTstar::push_job(kamaz::hagen::RRTStar3D* worker, std::atomic_bool &is_allowed_to_run) {
   ptask_t task = boost::make_shared<task_t>(boost::bind(&kamaz::hagen::RRTStar3D::rrt_planner_and_save
-              , worker));
+              , worker, boost::ref(is_allowed_to_run)));
   boost::shared_future<std::vector<kamaz::hagen::PathNode>> fut(task->get_future());
   pending_data.push_back(fut);
   io_service.post(boost::bind(&task_t::operator(), task));
 }
 
 int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
-                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start
+                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, std::atomic_bool &is_allowed_to_run, bool dynamic, double time_start
                              , double increase_cleareance, int path_index)
 {
   
@@ -90,6 +90,9 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
   Eigen::Quaternion<double> q;
   is_using_whole_space = false;
   int secs = (int)ros::Time::now().toSec();
+
+
+  
   for (int i = 0; i < times; i++) {
       kamaz::hagen::SearchSpace X;
       X.init_search_space(x_dimentions, number_of_random_points_in_search_space, rrt_avoidance_dist_mod, 10);
@@ -120,7 +123,7 @@ int KinodynamicRRTstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v
       rrt_planner_options.search_space = X;
       rrtstart3d = new kamaz::hagen::RRTStar3D();
       rrtstart3d->rrt_init(rewrite_count, rrt_planner_options, common_utils, secs+i);
-      push_job(rrtstart3d);
+      push_job(rrtstart3d, is_allowed_to_run);
   }
 
   if(!is_using_whole_space){
@@ -320,6 +323,7 @@ void KinodynamicRRTstar::setParam(ros::NodeHandle& nh)
   nh.param("search/lqr_num_of_iteration", lqr_num_of_iteration, -1);
   nh.param("search/rrt_star_steer_min", rrt_star_steer_min, -1.0);
   nh.param("search/rrt_order_of_search_space", order_of_search_space, -1);
+  nh.param("search/lqr_min_dis_points", _min_dis_points, -1.0);
   
   nh.param("search/rrt_search_space_min_z", space_min_z, -1.0);
   nh.param("search/rrt_star_steer_max", rrt_star_steer_max, -1.0);
@@ -402,14 +406,25 @@ Eigen::MatrixXd KinodynamicRRTstar::getSamplesRRT(double& ts, int& K)
     return samples;
   }
   auto selected_path = smoothed_paths[index_of_loweres_cost];
-  int ki = selected_path.size();
+ 
+  std::vector<kamaz::hagen::PathNode> path_list;
+  Eigen::Vector3d previuos_point = selected_path[0].state.head(3);
+  path_list.push_back(selected_path[0]);
+  for(int i=1; i<selected_path.size(); i++){
+    double dis = (selected_path[i].state.head(3) - previuos_point).norm();
+    if(dis > _min_dis_points){
+      path_list.push_back(selected_path[i]);
+    }
+    previuos_point = selected_path[i].state.head(3);
+  }
+  int ki = path_list.size();
   Eigen::MatrixXd samples(3, ki+3);
   if(ki<2){
     return samples;
   }
   Eigen::VectorXd sx(ki), sy(ki), sz(ki);
   int sample_num = 0;
-  for(auto knok : selected_path){
+  for(auto knok : path_list){
     sx(sample_num) = knok.state[0], sy(sample_num) = knok.state[1], sz(sample_num) = knok.state[2];
     sample_num++;
   }
