@@ -24,8 +24,8 @@
                 <param name="occupancy_max_z" value="1.5" />
                 <param name="pointcloud_min_z" value="0.0" />
                 <param name="pointcloud_max_z" value="1.5" />
-                <remap from="cloud_in" to="/d400/depth/color/points" />
-                <!-- <remap from="cloud_in" to="/r200/depth/points" /> -->
+                <!-- <remap from="cloud_in" to="/d400/depth/color/points" /> -->
+                <remap from="cloud_in" to="/r200/depth/points" />
   </node>
 
   <!-- main node -->
@@ -93,7 +93,7 @@
     <param name="search/lqr_min_dis" value="0.4" type="double"/>
     <param name="search/lqr_min_dt" value="0.15" type="double"/>
     <param name="search/lqr_num_of_iteration" value="5" type="int"/>
-    <param name="search/lqr_min_dis_points" value="0.08" type="double"/>
+    <param name="search/lqr_min_dis_points" value="0.09" type="double"/>
     <param name="search/lqr_obs_radius" value="0.4" type="double"/>
     <param name="search/lqr_consider_obs" value="false" type="bool"/>
     <param name="search/lqr_number_of_closest_obs" value="10" type="int"/>
