@@ -412,11 +412,11 @@ namespace hagen{
 		// Discrete-time inverse dynamics x_t = \bar{g}(x_{t+1}, u_t)
 		inline Matrix<X_DIM> gBar(const Matrix<X_DIM>& x, const Matrix<U_DIM>& u) {
 			double dt = std::exp(x[X_DIM-1]);
-			Matrix<X_DIM> k1 = f(x, u);
-			Matrix<X_DIM> k2 = f(x - 0.5*dt*k1, u);
-			Matrix<X_DIM> k3 = f(x - 0.5*dt*k2, u);
-			Matrix<X_DIM> k4 = f(x - dt*k3, u);
-			return x - (dt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
+						Matrix<X_DIM> k1 = f(x, u);
+						Matrix<X_DIM> k2 = f(x - 0.5*dt*k1, u);
+						Matrix<X_DIM> k3 = f(x - 0.5*dt*k2, u);
+						Matrix<X_DIM> k4 = f(x - dt*k3, u);
+						return x - (dt/6.0)*(k1 + 2.0*k2 + 2.0*k3 + k4);
 		}
 
 	};

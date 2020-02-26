@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <cfenv>
 #include <cstring>
-// #include <cnpy.h>
+#include <cnpy.h>
 #include<complex>
 #include<ctime>
 #include<cstdlib>

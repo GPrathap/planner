@@ -57,10 +57,22 @@
   <build_depend>traj_utils</build_depend>
   <build_depend>message_runtime</build_depend>
   <build_depend>mavros</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+   <build_depend>octomap</build_depend>
+  <build_depend>octomap_msgs</build_depend>
+  <build_depend>octomap_ros</build_depend>
 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>mavros</build_export_depend>
+  <build_export_depend>pcl_conversions</build_export_depend>
+  <build_export_depend>pcl_ros</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>octomap</build_export_depend>
+  <build_export_depend>octomap_msgs</build_export_depend>
+  <build_export_depend>octomap_ros</build_export_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -70,6 +82,12 @@
   <exec_depend>traj_utils</exec_depend>
   <exec_depend>message_runtime</exec_depend>
    <exec_depend>mavros</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>octomap</exec_depend>
+  <exec_depend>octomap_msgs</exec_depend>
+  <exec_depend>octomap_ros</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

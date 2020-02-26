@@ -223,8 +223,6 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
     target_yaw_angle = current_yaw;
   }
 
-
-
   // ROS_INFO_STREAM("out======target_yaw_angle======="<< target_yaw_angle );
   // ROS_INFO_STREAM("out======current_yaw======="<< current_yaw );
   yaw_angle_changes = linspace(current_yaw, target_yaw_angle, yaw_angle_smoothing_window_size);
@@ -304,7 +302,6 @@ void cmdCallback(const ros::TimerEvent& e) {
   double t_cur = (time_now - time_traj_start).toSec();
   
   if (stop_moving) {
-   
     // ROS_INFO_STREAM("Stop pose: "<< stop_pose.transpose());
     // ROS_INFO_STREAM("Stop velocity: "<< stop_velocity.transpose());
     // Eigen::Vector3d projected_pose;

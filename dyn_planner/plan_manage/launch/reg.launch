@@ -9,5 +9,4 @@
       <param name="speed_rotate" value="0.5"/>
   </node>
   <!-- marker -->
-  <node pkg="drone_path_traj_contol" name="interactive_rviz_goal_node" type="interactive_rviz_goal_node" respawn="true"/>
 </launch>

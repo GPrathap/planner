@@ -155,11 +155,12 @@ void SDFMap::updateCallback(const ros::TimerEvent& e)
           }
         }
       }
-      box_t b(point_t(pt.x, pt.y, pt.z), point_t(pt.x+resolution_sdf_
-                            , pt.y+resolution_sdf_, pt.z+resolution_sdf_));
+      double half_resolution = resolution_sdf_/2.0;
+      box_t b(point_t(pt.x-half_resolution, pt.y-half_resolution, pt.z-half_resolution), point_t(pt.x+half_resolution
+                            , pt.y+half_resolution, pt.z+half_resolution));
       obs_tree_previous.insert(value_t(b, obs_counter));
-      std::array<double, 6> cube = {pt.x, pt.y, pt.z, pt.x+resolution_sdf_
-                                  , pt.y+resolution_sdf_, pt.z+resolution_sdf_};
+      std::array<double, 6> cube = {pt.x - half_resolution, pt.y - half_resolution, pt.z - half_resolution, pt.x + half_resolution
+                                  , pt.y + half_resolution, pt.z + half_resolution};
       _objects_map.push_back(cube);
       obs_counter++;
     }

@@ -23,7 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost COMPONENTS program_options log log_setup regex atomic date_time system chrono filesystem thread graph REQUIRED)
 set(Boost_USE_STATIC_LIBS OFF)
 include_directories(${BOOST_INCLUDE_DIRS})
-
+include_directories(/usr/local/lib/)
+link_directories(/usr/local/lib/)
 
 catkin_package(
  INCLUDE_DIRS include
@@ -50,7 +51,7 @@ endforeach()
 
 
 set(TRACKING_ESTIMATION_LIB ${TRACKING_ESTIMATION_LIB} ${Boost_LIBRARIES})
-set(TRACKING_ESTIMATION_LIB  ${TRACKING_ESTIMATION_LIB} try_rrt_star try_common try_utils  z)
+set(TRACKING_ESTIMATION_LIB  ${TRACKING_ESTIMATION_LIB} try_rrt_star try_common try_utils cnpy z)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O2 -Wall")
 add_library( path_searching  src/kinodynamic_rrt_star.cpp )
 

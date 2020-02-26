@@ -19,6 +19,12 @@ find_package(catkin REQUIRED COMPONENTS
   traj_utils
   message_generation
   mavros
+  pcl_conversions
+  pcl_ros
+  sensor_msgs
+  octomap
+  octomap_msgs
+  octomap_ros
 )
 
 # Generate messages in the 'msg' folder
@@ -54,8 +60,11 @@ add_executable(dyn_planner_node
   src/planning_fsm.cpp
   src/dyn_planner_manager.cpp
   )
-  
+
 target_link_libraries(dyn_planner_node ${catkin_LIBRARIES})
+
+add_executable(dyn_planner_validator_node src/dyn_planner_validator_node.cpp)
+target_link_libraries(dyn_planner_validator_node ${catkin_LIBRARIES})
 
 add_executable(traj_server 
 src/traj_server.cpp)
