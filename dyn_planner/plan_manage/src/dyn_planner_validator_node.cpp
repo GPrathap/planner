@@ -51,6 +51,10 @@
 #include <pcl_ros/point_cloud.h>
 #include <octomap/octomap.h>
 #include <plan_manage/backward.hpp>
+
+#include <Eigen/Core>
+#include <unsupported/Eigen/Splines>
+
 namespace backward
 {
   backward::SignalHandling sh;
@@ -92,7 +96,7 @@ int main(int argc, char** argv)
 
   pub_point_cloud = nh.advertise<PointCloud> ("/plan_validate/pointcloud", 1);
   pub_trajectory = node.advertise<visualization_msgs::Marker>("/plan_validate/trajectory", 1);
-  octomap_publisher_ = node.advertise<octomap_msgs::Octomap>("/plan_validate/octomap", 1);
+  octomap_publisher_ = node.advertise<octomap_msgs::Octomap>("/plan_validate/octomap", 1, 100);
 
   // Open an existing file
   fin1.open("/root/catkin_ws/src/planner/Fast-Planner/dyn_planner/plan_manage/data/start_and_end.csv");
@@ -183,12 +187,12 @@ int main(int argc, char** argv)
           visualization_msgs::Marker mk;
           mk.header.frame_id = "world";
           mk.header.stamp = ros::Time::now();
-          mk.type = visualization_msgs::Marker::LINE_LIST;
+          mk.type = visualization_msgs::Marker::SPHERE_LIST;
           mk.action = visualization_msgs::Marker::DELETE;
           mk.id = 3;
           mk.action = visualization_msgs::Marker::ADD;
           mk.pose.orientation.x = 0.0, mk.pose.orientation.y = 0.0, mk.pose.orientation.z = 0.0, mk.pose.orientation.w = 1.0;
-          mk.color.r = 0.4, mk.color.g = 0.5, mk.color.b = 0.7, mk.color.a = 1;
+          mk.color.r = 1.0, mk.color.g = 0.0, mk.color.b = 0.0, mk.color.a = 1;
           mk.scale.x = 0.2, mk.scale.y = 0.2, mk.scale.z = 0.2;
           geometry_msgs::Point pt;
           double distance = 0.0f;
@@ -206,11 +210,28 @@ int main(int argc, char** argv)
                 }
                 distance += dis;
             }
+          
+          
+            int r = samples_rrt.rows(), c = samples_rrt.cols()-3;
+            Eigen::MatrixXd splide = samples_rrt.block(0,0, r, c);
+            Spline3d spline = Eigen::SplineFitting<Spline3d>::Interpolate(splide, 2);
+            float time_ = 0;
+            int _number_of_steps = samples_rrt.cols() + 100;
+            for(int i=0; i<_number_of_steps; i++){
+                time_ += 1.0/(_number_of_steps*1.0);
+                Eigen::VectorXd values = spline(time_);
+                // std::cout<< values << std::endl;
+                pt.x = values[0], pt.y = values[1], pt.z = values[2];
+                mk.points.push_back(pt);
+            }
+
           }
+
           pub_trajectory.publish(mk);
           double dis_ratio = (start_pt - end_pt).norm();
           dis_ratio = distance / dis_ratio ;
           outfile << "rtree,"<<  time_diff << "," <<  distance <<"\n";
+         
       } 
       counter_record++;
       std::cout<< "Is path found" << status << std::endl;
