@@ -25,21 +25,21 @@ namespace hagen {
             std::cout<< "Path can not be found" << std::endl;
             return path;
         }
-        std::vector<PathNode> smoothed_path;
-        get_smoothed_waypoints(path, smoothed_path);
-        // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
+        // std::vector<PathNode> smoothed_path;
+        // get_smoothed_waypoints(path, smoothed_path);
+        // // double time_diff =  double( clock () - begin_time ) /  CLOCKS_PER_SEC;
 
-        std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-        stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
-        save_edges(rrtstar.trees, stotage_location + "edges.npy");
-        save_obstacle(planner_opts.search_space.edt_env_->get_obs_map(), stotage_location + "obstacles.npy");
-        save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
-        std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
-        save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        save_path(planner_opts.search_space, stotage_location + "rrt_search_space.npy");
-        save_path(path, stotage_location + "rrt_star_path.npy");
-        save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
-        std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
+        // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
+        // stotage_location = "/dataset/rrt_old/" + std::to_string(index) + "_";
+        // save_edges(rrtstar.trees, stotage_location + "edges.npy");
+        // save_obstacle(planner_opts.search_space.edt_env_->get_obs_map(), stotage_location + "obstacles.npy");
+        // save_poses(planner_opts.x_init, planner_opts.x_goal, stotage_location + "start_and_end_pose.npy");
+        // std::cout<< "Size of smoothed path..."<< smoothed_path.size() << std::endl;
+        // save_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        // save_path(planner_opts.search_space, stotage_location + "rrt_search_space.npy");
+        // save_path(path, stotage_location + "rrt_star_path.npy");
+        // save_long_path(smoothed_path, stotage_location + "rrt_star_dynamics_path.npy");
+        // std::cout<< "Path has been calculated..." << smoothed_path.size() << std::endl;
         // return smoothed_path;
         return path;
     }
