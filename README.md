@@ -34,11 +34,11 @@ Note:This step is needed when it complies first time,
 
 Run the planner
 
-`roslaunch drone_sim sim.launch 
-roslaunch plan_manage  take_off.launch (this is only needed to activate offboard mode, once you start planning stop this node)
-roslaunch plan_manage  rviz_px4.launch
-roslaunch plan_manage px4_planner.launch
-roslaunch plan_manage  reg.launch `
+`roslaunch drone_sim sim.launch `
+`roslaunch plan_manage  take_off.launch` (this is only needed to activate offboard mode, once you start planning stop this node)
+`roslaunch plan_manage  rviz_px4.launch`
+`roslaunch plan_manage px4_planner.launch`
+`roslaunch plan_manage  reg.launch `
 
 Then, in the GUI you can select the goal point as you like and and have fun:
 
