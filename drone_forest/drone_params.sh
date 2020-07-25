@@ -1,0 +1,26 @@
+#!/bin/bash
+export DRONE_ID=1
+export DRONE_MARKER_ID=1
+export DRONE_IP=192.168.128.201
+
+export TEAM=0
+
+
+export DRONE_SAFE_MAX_ANGLE=85
+export DRONE_SAFE_DISARM_DELAY=0.2
+
+
+export ROSBRIDGE_SERVER_IP=''
+export ROSBRIDGE_SERVER_PORT=9090
+
+export MAVROS_GCS_IP=
+export MAVROS_FCU_URL='/dev/ttySAC0:921600'
+export MAVROS_FCU_PORT=14101
+
+export USE_MESH=False
+
+export DRONE_REG_USE_PLANNER=False
+export DRONE_REG_USE_GEO_MODE=True
+
+export USE_POSE_REG=False
+

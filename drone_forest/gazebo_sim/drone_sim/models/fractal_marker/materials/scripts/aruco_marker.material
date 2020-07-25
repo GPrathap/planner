@@ -1,0 +1,14 @@
+material ArucoVisualMarker0
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture FRACTAL_4L_6.png
+        # scale 0.5 0.5
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+<launch>
+    <!-- laod tf -->
+	<include file="$(find drone_bringup)/launch/fixed_joints.launch"/>
+
+	<!--Run realsense cameras-->
+	<include file="$(find drone_bringup)/launch/rs_d400_and_t265.launch"/>
+
+    <!--pub odometry-->
+	<node pkg="drone_bringup" name="vision_pose_pub_node" type="vision_pose_pub_node.py" respawn="true" output="screen">
+		<param name="offset_x" value="0.0" />
+		<param name="offset_y" value="0." />
+		<param name="offset_z" value="0.0" />
+
+		<param name="roll_offset" value="0." />
+		<param name="pitch_offset" value="0.0" />
+		<param name="yaw_offset" value="0." />
+	</node>
+
+	<!-- Octomap -->
+<!--
+	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="resolution" value="0.2" />
+		<param name="frame_id" type="string" value="map" />
+		<param name="sensor_model/max_range" value="5.0" />		
+		<remap from="cloud_in" to="/d400/depth/color/points" />
+	</node>
+-->
+	<!-- Point filter-->
+<!--
+
+	    <node pkg="point_cloud_converter" type="point2_near" name="point2_near" output="screen" respawn="true">
+		<param name="frame_id" type="string" value="map"/>
+		<param name="rate" type="double" value="2"/>
+		<param name="radius" type="double" value="5.0"/>
+	    </node>
+-->
+
+	<!-- run Safemode server -->
+	<node pkg="drone_bringup" name="drone_safery" type="drone_safe_node.py" respawn="true" output="screen">
+		<param name="max_angle" value="$(env DRONE_SAFE_MAX_ANGLE)"/>
+		<param name="disarm_delay" value="$(env DRONE_SAFE_DISARM_DELAY)"/>
+	</node>
+
+	<!-- run PX4 mavros run -->
+	<include file="$(find mavros_link)/launch/px4_slam.launch">
+		<arg name="tgt_system" default="1"/>
+		<arg name="tgt_component" default="1" />
+		<arg name="gcs_ip" default="$(env MAVROS_GCS_IP)"/>
+		<arg name="fcu_url" default="$(env MAVROS_FCU_URL)" />
+		<arg name="fcu_port" default="$(env MAVROS_FCU_PORT)" />
+	</include>
+
+</launch>

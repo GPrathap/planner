@@ -1,0 +1,21 @@
+plugin_blacklist:
+# common
+- safety_area
+# extras
+- image_pub
+- odometry
+- vibration
+- px4flow
+- global_position
+- tdr_radio
+- time
+- fake_gps
+#- hil_controls
+- ftp
+#- param
+- setpoint_accel
+- vfr_hud
+#- waypoint
+plugin_whitelist: []
+# 'sys_*'
+

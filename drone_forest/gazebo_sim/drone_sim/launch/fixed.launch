@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+	<param name="robot_description" textfile="$(find drone_sim)/include/fixed_joint.urdf" />
+
+	<!-- fixed_joint-->
+
+	<node pkg="robot_state_publisher" name="drone_fixed_joints_pub" type="robot_state_publisher" output="screen" respawn="true">
+		<param name="publish_frequency" value="50.0"/>
+	</node>
+
+
+</launch>

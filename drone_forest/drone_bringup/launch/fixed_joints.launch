@@ -1,0 +1,11 @@
+<launch>
+    <!-- laod prams from environment variables -->
+    <param name="robot_description" textfile="$(find drone_bringup)/configuration_files/fixed_joint.urdf" />
+
+	<node pkg="robot_state_publisher" name="drone_fixed_joints_pub" type="robot_state_publisher" output="screen" respawn="true">
+		<param name="publish_frequency" value="100.0"/>
+	</node>
+
+	<!--node pkg="tf" type="static_transform_publisher" name="t265_link_pub" args="-0.12 0 0.05 0.0 0.0 0.0 t265_link drone_link 110" /-->
+
+</launch>

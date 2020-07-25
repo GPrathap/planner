@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+import potencial_planner.potential_planner
+
+
+if __name__ == '__main__':
+    potential_planner.potential_planner.main()

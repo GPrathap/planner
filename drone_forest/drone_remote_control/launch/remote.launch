@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- remote control-->
+	<node pkg="drone_remote_control" name="remote_control_node" type="remote_control.py" respawn="true"/>
+
+	<!-- run Rosbridge server -->
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+	</include>	
+
+</launch>

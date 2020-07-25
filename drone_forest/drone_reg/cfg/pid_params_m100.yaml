@@ -1,0 +1,8 @@
+hor_kp: 0.3
+max_hor_vel: 5
+hor_kd: 0.4
+angular_d: 0.5
+angular_p: 1.5
+max_ver_vel: 5
+ver_kd: 0.65
+ver_kp: 1.5

@@ -1,0 +1,17 @@
+digraph G {
+"base_link" -> "d400_link"[label="Broadcaster: /drone_fixed_joints_pub\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 2234.900 sec old)\nBuffer length: 0.000 sec\n"];
+"map" -> "base_link"[label="Broadcaster: /mavros\nAverage rate: 30.404 Hz\nMost recent transform: 2234.886 ( 0.014 sec old)\nBuffer length: 2.072 sec\n"];
+"base_link" -> "t265_link"[label="Broadcaster: /drone_fixed_joints_pub\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 2234.900 sec old)\nBuffer length: 0.000 sec\n"];
+"local_origin" -> "local_origin_ned"[label="Broadcaster: /mavros\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 2234.900 sec old)\nBuffer length: 0.000 sec\n"];
+"local_origin_ned" -> "fcu_frd"[label="Broadcaster: /mavros\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 2234.900 sec old)\nBuffer length: 0.000 sec\n"];
+"fcu_frd" -> "fcu"[label="Broadcaster: /mavros\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 2234.900 sec old)\nBuffer length: 0.000 sec\n"];
+"world" -> "map"[label="Broadcaster: /world_map_tf\nAverage rate: 10.458 Hz\nMost recent transform: 2234.936 ( -0.036 sec old)\nBuffer length: 2.008 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 2234.900"[ shape=plaintext ] ;
+ }->"local_origin";
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 2234.900"[ shape=plaintext ] ;
+ }->"world";
+}

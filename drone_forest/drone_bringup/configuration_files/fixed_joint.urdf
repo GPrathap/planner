@@ -1,0 +1,22 @@
+<robot name="drone_fixed_joint">
+  <link name="base_link" />
+  <link name="d400_link" />
+  <link name="t265_link" />
+
+  <joint name="t265_joint_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="t265_link"/>
+    <origin xyz="0.12 0.0 0.025" rpy="0.0 0.0 0.0"/> 
+  </joint>
+
+  <joint name="d400_joint_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="d400_link"/>
+    <origin xyz="0.11 0 -0.05" rpy="0.0 0.0 0.0"/> 
+  </joint>
+<!-- 
+90 ged: 1.5708
+45 deg: 0,785398
+-->
+</robot>
+

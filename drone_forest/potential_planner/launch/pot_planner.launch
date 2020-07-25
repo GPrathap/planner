@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+<!-- pot planner-->
+  <node pkg="potential_planner" name="pot_planner_node" type="potential_planner_cpp_node" respawn="true">
+      <param name="use_geo_mode" value="$(env DRONE_REG_USE_GEO_MODE)"/>
+      <param name="drone_id" value="$(env DRONE_ID)"/>
+      <param name="yaml_path" value="$(find potential_planner)/cfg/params_gps.yaml"/>
+      <param name="use_point2" value="false"/>
+    </node>
+</launch>

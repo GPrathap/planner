@@ -1,0 +1,79 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+    <model name='fpv_cam_new'>
+    <pose>-0.158979 -0.04405 0.045074 0 -0 0</pose>
+      <link name='link'>
+        <inertial>
+          <mass>0.1e-5</mass>
+          <inertia>
+            <ixx>4.15e-6</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>2.407e-6</iyy>
+          <iyz>0</iyz>
+          <izz>2.407e-6</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.01 0.01 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.01 0.01 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+        <sensor name='camera' type='camera'>
+          <camera name='__default__'>
+		       <horizontal_fov>1.5708</horizontal_fov>
+			  <image>
+			    <width>1280</width>
+			    <height>720</height>
+			  </image>
+			  <distortion>
+			    <k1>0</k1>
+			    <k2>0</k2>
+			    <k3>0</k3>
+			    <p1>0</p1>
+			    <p2>0</p2>
+			  </distortion>
+			</camera>
+          <always_on>1</always_on>
+          <update_rate>15</update_rate>
+          <visualize>0</visualize>
+          <plugin name='camera_plugin' filename='libgazebo_ros_camera.so'>
+              <robotNamespace></robotNamespace>
+            <alwaysOn>true</alwaysOn>
+          <updateRate>15</updateRate>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <cameraName>usb_cam</cameraName>
+            <frameName>/robot_camera_link</frameName>
+            <hackBaseline>0</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+          </plugin>
+        </sensor>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+  </model>
+</sdf>

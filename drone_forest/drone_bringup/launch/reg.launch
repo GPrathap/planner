@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <!--rosparam command="load" file="$(env HOME)/params.yaml" /-->
+  <node pkg="interactive_goal" name="interactive_posestamped_node" type="interactive_posestamped_node" respawn="true"/>
+
+<!-- set reg-->
+
+    <node pkg="drone_reg" name="drone_reg_node" type="drone_reg_cpp" respawn="true" output="screen">
+    <param name="use_planner" value="false"/>
+    <param name="use_geo_mode" value="false"/>
+    <param name="yaml_path" value="$(find drone_reg)/cfg/pid_params_f450.yaml"/>
+    <param name="use_alt_sonar" value="false"/>
+    </node>
+
+</launch>

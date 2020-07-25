@@ -1,0 +1,26 @@
+<launch>
+    <!-- laod prams from environment variables -->
+    <arg name="frame_id" default="drone"/>
+    
+	<!-- Octomap -->
+	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="resolution" value="0.2" />
+		<param name="frame_id" type="string" value="map" />
+		<param name="sensor_model/max_range" value="5.0" />		
+		<remap from="cloud_in" to="/r200/depth/points" />
+	</node>
+
+	<!-- Point filter-->
+	    <node pkg="point_cloud_converter" type="point2_near" name="point2_near" output="screen" respawn="true">
+		<param name="frame_id" type="string" value="map"/>
+		<param name="rate" type="double" value="2"/>
+		<param name="radius" type="double" value="5.0"/>
+	    </node>
+
+
+	<!-- run Safemode server -->
+	<node pkg="drone_bringup" name="drone_safery" type="drone_safe_node.py" respawn="true" output="screen">
+		<param name="max_angle" value="$(env DRONE_SAFE_MAX_ANGLE)"/>
+		<param name="disarm_delay" value="$(env DRONE_SAFE_DISARM_DELAY)"/>
+	</node>
+</launch>

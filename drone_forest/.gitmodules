@@ -1,0 +1,6 @@
+[submodule "gazebo_sim/Firmware"]
+	path = gazebo_sim/Firmware
+	url = https://github.com/PX4/Firmware.git
+[submodule "gazebo_sim/sim"]
+	path = gazebo_sim/sim
+	url = https://github.com/PX4/Firmware.git

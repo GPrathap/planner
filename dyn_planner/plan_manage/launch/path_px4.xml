@@ -1,0 +1,17 @@
+<launch>
+  <arg name="map_size_x" value="40.0"/>
+  <arg name="map_size_y" value="40.0"/>
+  <arg name="map_size_z" value=" 5.0"/>
+
+  <arg name="init_x" value="0.0"/>
+  <arg name="init_y" value="0.0"/>
+  <arg name="init_z" value="1.5"/> 
+
+  <!-- map generation -->
+
+  <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen" respawn="true">
+      <remap from="~odom" to="/mavros/local_position/odom"/>        
+      <remap from="~goal" to="/goal"/>
+      <param name="waypoint_type" value="manual-lonely-waypoint"/>    
+  </node>
+</launch>

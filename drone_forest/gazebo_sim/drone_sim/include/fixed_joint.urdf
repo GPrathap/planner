@@ -1,0 +1,23 @@
+<robot name="drone_fixed_joint">
+
+  
+  <link name="base_link" />
+ <!--
+ <link name="robot_camera_link" />
+  <joint name="camera_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="robot_camera_link"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 3.14 1.5708"/>
+  </joint>
+-->
+  <link name="r200" />
+
+  <joint name="r200_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="r200"/>
+    <origin xyz="0.1 0.0 0.1" rpy="1.57 3.14 1.57"/>
+  </joint>
+
+</robot>
+
+

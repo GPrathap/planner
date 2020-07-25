@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+    <node pkg="point_cloud_converter" type="point2_near" name="point2_near" output="screen" respawn="true">
+        <param name="frame_id" type="string" value="map"/>
+        <param name="rate" type="double" value="1"/>
+        <param name="radius" type="double" value="3.0"/>
+    </node>
+</launch>
+

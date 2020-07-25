@@ -1,0 +1,7 @@
+<launch>
+	<node pkg="point_cloud_converter" name="point_cloud_converter" type="point_cloud_converter_node" >
+		<remap from="points_in" to="slam_cloud"/>
+		<remap from="points2_out" to="points2" />
+
+	</node>
+</launch>
