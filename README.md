@@ -19,12 +19,12 @@ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:${path_fmu}/Tools`
 
 1, comment of following lines in  https://github.com/GPrathap/planner/blob/master/drone_path_traj_contol/CMakeLists.txt#L33
 
-`add_executable(drone_path_traj_reg_node src/path_traj_reg.cpp src/path_traj_reg.h)
+`add_executable(drone_path_traj_reg_node src/path_traj_reg.cpp src/path_traj_reg.h)`
 
-target_link_libraries(drone_path_traj_reg_node yaml-cpp ${catkin_LIBRARIES})
+`target_link_libraries(drone_path_traj_reg_node yaml-cpp ${catkin_LIBRARIES})`
 
-add_executable(interactive_rviz_goal_node src/interactive_goal.cpp)
-target_link_libraries(interactive_rviz_goal_node ${catkin_LIBRARIES})`
+`add_executable(interactive_rviz_goal_node src/interactive_goal.cpp)`
+`target_link_libraries(interactive_rviz_goal_node ${catkin_LIBRARIES})`
 
 Note:This step is needed when it complies first time,   
 
