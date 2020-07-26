@@ -15,7 +15,7 @@ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:${path_fmu}/Tools`
 
 
 
-**To complete the code:**
+**To compile the code:**
 
 1, comment of following lines in  https://github.com/GPrathap/planner/blob/master/drone_path_traj_contol/CMakeLists.txt#L33
 
