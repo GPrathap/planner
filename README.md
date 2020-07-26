@@ -7,7 +7,6 @@ Add following lines in the `~/.bashrc` (assuming installed location `/home/jobs/
 export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:${path_fmu}/build/px4_sitl_default/build_gazebo
 export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:${path_fmu}/Tools/sitl_gazebo/models
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${path_fmu}/build/px4_sitl_default
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/geesara/project/casadi/build/casadi
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:${path_fmu}
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:${path_fmu}/Tools`
 
