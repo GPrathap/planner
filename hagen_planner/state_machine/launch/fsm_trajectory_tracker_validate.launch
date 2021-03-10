@@ -1,0 +1,78 @@
+<launch>
+
+  <arg name="max_vel" value="2.5"/>
+  <arg name="min_vel" value="-2.5"/>
+  <arg name="max_avoidance_distance" value="0.5"/>
+  <arg name="min_avoidance_distance" value="0.5"/>
+  <arg name="map_resolution" value="0.2"/>
+  <arg name="maximum_acceptable_error" value="0.9"/>
+
+  <arg name="max_vel_bspline" value="2.5"/>
+  <arg name="max_acce_bspline" value="1.8"/>
+
+  <node pkg="tf" name="world_map_tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 100" />
+
+  <!-- main node -->
+  <node pkg="state_machine" name="fsm_trajectory_tracker_validate" type="fsm_trajectory_tracker_validate" output="screen" respawn="true">
+  <!-- remap -->
+    <remap from="/laser_cloud_surround" to="/octomap_point_cloud_centers"/>
+    <remap from="/odom_world" to="/mavros/local_position/odom"/>
+
+  <!-- sdf map updating -->
+    <param name="sdf_map/origin_x" value="-30.0" type="double"/>
+    <param name="sdf_map/origin_y" value="-30.0" type="double"/>
+    <param name="sdf_map/origin_z" value="0.0" type="double"/>
+    <param name="sdf_map/map_size_x" value="60.0" type="double"/>
+    <param name="sdf_map/map_size_y" value="60.0" type="double"/>
+    <param name="sdf_map/map_size_z" value="10" type="double"/>
+    <param name="sdf_map/resolution_sdf" value="$(arg map_resolution)" type="double"/>
+    <param name="sdf_map/ceil_height" value="2.5" type="double"/>
+    <param name="sdf_map/update_rate" value="2.0" type="double"/>
+    <param name="sdf_map/update_range" value="5.0" type="double"/>
+    <param name="sdf_map/inflate" value="0.0" type="double"/>
+    <param name="sdf_map/radius_ignore" value="0.7" type="double"/>
+    
+    <!-- planning fsm -->
+    <param name="fsm/sampling_rate" value="30" type="int"/>
+    <param name="fsm/avoidance_distance" value="$(arg min_avoidance_distance)" type="double"/>
+    <param name="fsm/data_dir" value="$(find forest_gen)/octomaps/" type="string"/>
+    <param name="fsm/test_poses" value="$(find state_machine)/data/start_and_end.csv" type="string"/>
+    <param name="fsm/evalution_script" value="$(find state_machine)/data/result.txt" type="string"/>
+    
+    <!-- bspline-utils -->
+    <param name="bspline_utils/time_sample" value="0.1" type="double"/>
+    <param name="bspline_utils/max_vel" value="$(arg max_vel)" type="double"/>
+    <param name="bspline_utils/smoothing_factor" value="500" type="int"/>
+    <param name="bspline_utils/smoothing_order" value="3" type="int"/>
+    <param name="bspline/limit_vel" value="$(arg max_vel_bspline)" type="double"/>
+    <param name="bspline/limit_acc" value="$(arg max_acce_bspline)" type="double"/>
+    <param name="bspline/limit_ratio" value="1.1" type="double"/>
+   
+    <!-- trajectory optimization -->
+    <param name="mpc_opt/delta_t" value="0.1" type="double"/>
+    <param name="mpc_opt/delta_t_desired" value="0.1" type="double"/>
+    <param name="mpc_opt/prediction_horizon" value="40" type="int"/>
+    <param name="mpc_opt/v_max" value="$(arg max_vel)" type="double"/>
+    <param name="mpc_opt/v_min" value="$(arg min_vel)" type="double"/>
+    <param name="mpc_opt/omega_max" value="1.8159265359" type="double"/>
+    <param name="mpc_opt/omega_min" value="-1.8159265359" type="double"/>
+    <param name="mpc_opt/robot_diam" value="0.3" type="double"/>
+    <param name="mpc_opt/avoidance_distance" value="$(arg max_avoidance_distance)" type="double"/>
+    <param name="mpc_opt/maximum_acceptable_error" value="$(arg maximum_acceptable_error)" type="double"/>
+    <param name="mpc_opt/simulated_duration" value="500" type="int"/>
+    <param name="mpc_opt/fluctuation_length" value="4" type="int"/>
+    <param name="mpc_opt/max_fluctuatio_allowed" value="3" type="double"/>
+    <param name="mpc_opt/obs_min_allowed_length" value="0.2" type="double"/>
+    <param name="mpc_opt/obs_max_allowed_length" value="10" type="double"/>
+
+
+    <param name="mpc_opt/collocation_degree" value="3" type="int"/>
+    <param name="mpc_opt/use_collocation" value="true" type="bool"/>
+
+    <param name="traj_utils/root_dir" value="$(find state_machine)/data" type="string"/>
+
+    <rosparam command="load" file="$(find state_machine)/params/params_trajectory_tracker.yaml" />
+  </node>
+
+   <!-- <include file="$(find state_machine)/launch/record_bags.launch" /> -->
+</launch>
