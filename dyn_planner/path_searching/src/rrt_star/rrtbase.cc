@@ -138,7 +138,7 @@ namespace hagen {
     PathNode RRTBase::get_nearest(int tree, PathNode x){
          std::vector<Eigen::Vector3d> veties = trees[tree].V.nearest_veties(x.state.head(3), 1);
         if(veties.size()==0){
-            BOOST_LOG_TRIVIAL(warning) << FYEL("There is no any neighbors");
+            // BOOST_LOG_TRIVIAL(warning) << FYEL("There is no any neighbors");
             PathNode temp;
             temp.state.head(3) << -1, -1, -1;
             return temp;
@@ -285,7 +285,7 @@ namespace hagen {
         // }
         // std::cout<< "start checkoing to connect" << x_nearest.state.head(3) << " toto " << x_goal.state.head(3) <<std::endl;
         if((x_init.state.head(3)-x_nearest.state.head(3)).norm() > opt.horizon){
-            BOOST_LOG_TRIVIAL(info) << FRED("Horizon is met, not going to plan rest of it");
+            // BOOST_LOG_TRIVIAL(info) << FRED("Horizon is met, not going to plan rest of it");
             const double dr = 0.5, dtheta = 30, dz = 0.3;
             double new_x, new_y, new_z, max_dist = -1.0;
             Eigen::Vector3d goal;
@@ -347,7 +347,7 @@ namespace hagen {
     std::vector<PathNode> RRTBase::get_path(){
         std::vector<PathNode> path;
         if(can_connect_to_goal(0)){
-            BOOST_LOG_TRIVIAL(info) << FCYN("Can connect to goal");
+            // BOOST_LOG_TRIVIAL(info) << FCYN("Can connect to goal");
             connect_to_the_goal(0);
             return reconstruct_path(0, x_init, x_goal);
         }
@@ -390,10 +390,10 @@ namespace hagen {
             path.push_back(x_init);
             std::reverse(path.begin(), path.end());
         }else{
-            BOOST_LOG_TRIVIAL(fatal) << FRED("Something wrong with map, need to change it");
+            // BOOST_LOG_TRIVIAL(fatal) << FRED("Something wrong with map, need to change it");
         }
 
-        BOOST_LOG_TRIVIAL(info) << FCYN("RRTBase::reconstruct_path: size_of the path: ")<< path.size();
+        // BOOST_LOG_TRIVIAL(info) << FCYN("RRTBase::reconstruct_path: size_of the path: ")<< path.size();
         return path; 
     }
 

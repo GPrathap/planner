@@ -70,7 +70,15 @@
         "splines": "cpp",
         "numericaldiff": "cpp",
         "codecvt": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "any": "cpp",
+        "forward_list": "cpp",
+        "source_location": "cpp",
+        "variant": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "python.autoComplete.extraPaths": [
+        "/home/geesara/catkin_workspace/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
 }

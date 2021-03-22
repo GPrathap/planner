@@ -1,0 +1,31 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/geesara/catkin_workspace/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/dyn_planner/bspline_opt/include/**",
+        "/home/geesara/catkin_workspace/src/rl_try/hector_uav_msgs/include/**",
+        "/home/geesara/catkin_workspace/src/interactive_markers/include/**",
+        "/opt/ros/melodic/share/julius/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/dyn_planner/path_searching/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/dyn_planner/plan_env/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/dyn_planner/plan_manage/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/uav_simulator/Utils/pose_utils/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/uav_simulator/quadrotor_msgs/include/**",
+        "/home/geesara/catkin_workspace/src/realsense-ros/realsense2_camera/include/**",
+        "/home/geesara/catkin_workspace/src/rl_try/realsense_gazebo_plugin/include/**",
+        "/home/geesara/catkin_workspace/src/rl_try/parrot_ardrone/sjtu_drone/include/**",
+        "/home/geesara/catkin_workspace/src/tmp/planner/dyn_planner/traj_utils/include/**",
+        "/home/geesara/catkin_workspace/src/mavros_offboard_control/uav_control/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

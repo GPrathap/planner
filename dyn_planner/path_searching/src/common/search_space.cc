@@ -211,9 +211,11 @@ namespace hagen {
     bool SearchSpace::obstacle_free(Eigen::Vector3d search_rect, double optimal_time){
     //    std::cout<< "=========1" << std::endl;
        double dis = edt_env_->get_free_distance(search_rect);
+    //    std::cout<< "-----444" << std::endl;
        if((avoidance_width < dis)){
            return true;
        }
+    //    std::cout<< "-----222" << std::endl;
        return false;
     }
 
@@ -267,7 +269,7 @@ namespace hagen {
         while(true){
             number_of_attempts++;
             if(number_of_attempts>number_of_max_attempts){
-                BOOST_LOG_TRIVIAL(info) << FRED("Giving whole space for searching...");
+                // BOOST_LOG_TRIVIAL(info) << FRED("Giving whole space for searching...");
                 use_whole_search_sapce = true;
             }
             Eigen::Vector3d x = sample();

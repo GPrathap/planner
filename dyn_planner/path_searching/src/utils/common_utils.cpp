@@ -107,7 +107,7 @@ namespace hagen{
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
+        //   BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if(diff < distance){
             poses.push_back(end_position);

@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   sensor_msgs
-  octomap
   octomap_msgs
   octomap_ros
 )

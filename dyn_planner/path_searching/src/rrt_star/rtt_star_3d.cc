@@ -13,14 +13,16 @@ namespace hagen {
    std::vector<PathNode> RRTStar3D::rrt_planner_and_save(std::atomic_bool &is_allowed_to_run){
         // std::atomic_bool planner_status;
         // planner_status = ATOMIC_VAR_INIT(true);
+         std::cout<< "========================1" << std::endl;
         RRTStar rrtstar(planner_opts, _rewrite_count, common_utils, is_allowed_to_run);
         // std::ofstream outfile;
         // std::vector<PathNode> path;
-        // std::cout<< "========================" << std::endl;
+        std::cout<< "========================2" << std::endl;
         // outfile.open("/dataset/rrt_old/time_stamps.txt", std::ios_base::app);
-        // std::cout<< "========================" << std::endl;
+        std::cout<< "========================3" << std::endl;
         // const clock_t begin_time = clock();
         std::vector<PathNode> path = rrtstar.rrt_star();
+        std::cout<< "========================4" << std::endl;
         if(path.size()<2){
             std::cout<< "Path can not be found" << std::endl;
             return path;
@@ -46,13 +48,13 @@ namespace hagen {
 
     void RRTStar3D::save_path(SearchSpace search_space, std::string file_name){
        std::vector<double> projected_path;
-       BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save search space trajectory size: ") << search_space.number_of_points_in_random_tank;
+    //    BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save search space trajectory size: ") << search_space.number_of_points_in_random_tank;
        for(int i=0; i<search_space.number_of_points_in_random_tank; i++){
            projected_path.push_back((*search_space.random_points_tank).row(i)[0]);
            projected_path.push_back((*search_space.random_points_tank).row(i)[1]);
            projected_path.push_back((*search_space.random_points_tank).row(i)[2]);
        }
-       cnpy::npy_save(file_name, &projected_path[0], {search_space.number_of_points_in_random_tank, 3}, "w");
+    //    cnpy::npy_save(file_name, &projected_path[0], {search_space.number_of_points_in_random_tank, 3}, "w");
     }
 
     double  RRTStar3D::get_distance(std::vector<PathNode> trajectory_){
@@ -192,7 +194,7 @@ namespace hagen {
                             , opts.max_itter);
         }catch(const std::runtime_error& error){
             dynamics_present = false;
-            BOOST_LOG_TRIVIAL(warning) << FYEL("Using same waypoints...");
+            // BOOST_LOG_TRIVIAL(warning) << FYEL("Using same waypoints...");
             
         }
         if(dynamics_present){
@@ -234,7 +236,7 @@ namespace hagen {
             quad_status.push_back(sector.state[1]);
             quad_status.push_back(sector.state[2]);
        }
-       cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
+    //    cnpy::npy_save(file_name, &quad_status[0], {quad_status.size()}, "w");
     }
 
     void RRTStar3D::rrt_init(int rewrite_count, RRTPlannerOptions planner_options
@@ -279,7 +281,7 @@ namespace hagen {
             count += 1;
         }
 
-        cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &edges[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_obstacle(std::vector<SearchSpace::Rect> obstacles, std::string file_name){
@@ -294,7 +296,7 @@ namespace hagen {
                 obstacles_pose.push_back(rect.max[2]);
                 count += 1;
         }
-        cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_obstacle(std::vector<std::array<double, 6>> obstacles, std::string file_name){
@@ -309,7 +311,7 @@ namespace hagen {
                 obstacles_pose.push_back(rect[5]);
                 count += 1;
         }
-        cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
+        // cnpy::npy_save(file_name, &obstacles_pose[0],{(unsigned int)1, (unsigned int)count, (unsigned int)6},"w");
     }
 
     void RRTStar3D::save_poses(PathNode start, PathNode end, std::string file_name){
@@ -320,18 +322,18 @@ namespace hagen {
        obstacles_pose[3] = end.state[0];
        obstacles_pose[4] = end.state[1];
        obstacles_pose[5] = end.state[2];
-       cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
+    //    cnpy::npy_save(file_name, &obstacles_pose[0], {obstacles_pose.size()}, "w");
     }
 
     void RRTStar3D::save_path(std::vector<PathNode> path, std::string file_name){
        std::vector<double> projected_path;
-        BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save_path trajectory size: ") << path.size();
+        // BOOST_LOG_TRIVIAL(info) << FCYN("RRTStar3D::save_path trajectory size: ") << path.size();
        for(auto const& way_point : path){
            projected_path.push_back(way_point.state[0]);
            projected_path.push_back(way_point.state[1]);
            projected_path.push_back(way_point.state[2]);
        }
-       cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
+    //    cnpy::npy_save(file_name, &projected_path[0], {path.size(), 3}, "w");
     }
 
     void RRTStar3D::save_long_path(std::vector<PathNode> path, std::string file_name){
@@ -357,7 +359,7 @@ namespace hagen {
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-            BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
+            // BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if( diff < distance){
             return start_position;
@@ -384,7 +386,7 @@ namespace hagen {
         auto z = position_vector[2];
         double diff = position_vector.norm();
         if( diff <= 0.0){
-          BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
+        //   BOOST_LOG_TRIVIAL(warning) << FYEL("Next pose of the cant be equal or less than zero...") << next_pose;
         }
         if( diff < distance){
          return end_position;

@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   visualization_msgs
   mavros_msgs
+  quadrotor_msgs
 )
 
 
@@ -112,7 +113,7 @@ find_package(yaml-cpp)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES drone_path_traj_contol
-  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs interactive_markers nav_msgs roscpp rospy std_msgs tf visualization_msgs
+  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs interactive_markers nav_msgs roscpp rospy std_msgs tf visualization_msgs quadrotor_msgs
 #  DEPENDS system_lib
 )
 
@@ -156,9 +157,9 @@ add_executable(drone_path_traj_reg_node src/path_traj_reg.cpp src/path_traj_reg.
 target_link_libraries(drone_path_traj_reg_node yaml-cpp ${catkin_LIBRARIES})
 
 # Add the drone take off 
-#add_executable(drone_path_traj_contol_take_off src/mav_ros_take_off.cc)
-#target_compile_features(drone_path_traj_contol_take_off PUBLIC cxx_std_11)
-#target_link_libraries(drone_path_traj_contol_take_off ${catkin_LIBRARIES})
+add_executable(drone_path_traj_contol_take_off src/mav_ros_take_off.cc)
+target_compile_features(drone_path_traj_contol_take_off PUBLIC cxx_std_11)
+target_link_libraries(drone_path_traj_contol_take_off ${catkin_LIBRARIES})
 
 add_executable(interactive_rviz_goal_node src/interactive_goal.cpp)
 target_link_libraries(interactive_rviz_goal_node ${catkin_LIBRARIES})

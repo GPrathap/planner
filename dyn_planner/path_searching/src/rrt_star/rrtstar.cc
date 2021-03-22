@@ -92,22 +92,22 @@ namespace hagen {
         // std::cout<< "-----21" << std::endl;
         std::vector<PathNode> path;
         if(!X.obstacle_free(x_init.state.head(3), -1)){
-            BOOST_LOG_TRIVIAL(error) << FRED("Start position here is an obstacle: ") << x_init.state.head(3).transpose();
+            // BOOST_LOG_TRIVIAL(error) << FRED("Start position here is an obstacle: ") << x_init.state.head(3).transpose();
             return path;
         }
         if(!X.obstacle_free(x_goal.state.head(3), -1)){
-            BOOST_LOG_TRIVIAL(error) << FRED("Goal position here is an obstacle")<< x_goal.state.head(3).transpose();
+            // BOOST_LOG_TRIVIAL(error) << FRED("Goal position here is an obstacle")<< x_goal.state.head(3).transpose();
             return path;
         }
         int trap_avoid = 0;
         int counter_rrt = 0;
-        BOOST_LOG_TRIVIAL(error) << FRED("Path search in progress ...");
+        // BOOST_LOG_TRIVIAL(error) << FRED("Path search in progress ...");
         while(true){
             for(auto const q : Q){
                 for(int i=0; i<q[1]; i++){
                 //    std::cout<< "---------------------------1" << std::endl;
                    if(!till_auto_mode){
-                        BOOST_LOG_TRIVIAL(warning) << FRED("Since drone is moved into manuval mode, stop finding trajectory");
+                        // BOOST_LOG_TRIVIAL(warning) << FRED("Since drone is moved into manuval mode, stop finding trajectory");
                         return path;   
                    }
                 //    std::cout<< "-------2------3-------2-------2"<< till_auto_mode << std::endl;
@@ -127,7 +127,7 @@ namespace hagen {
                 //    if(check_none_vector(x_new)){
                 //        continue;
                 //    }
-                //    std::cout<< "rstar loop...." << std::endl;
+                   std::cout<< "rstar loop...." << std::endl;
                 //    std::cout<< "---------------------------4" << std::endl;
                    auto l_near = get_nearby_vertices(0, x_init, x_new);
                 //    std::cout<< "---------------------------5" << std::endl;
