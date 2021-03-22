@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   visualization_msgs
   mavros_msgs
+  quadrotor_msgs
 )
 
 find_package(yaml-cpp)
@@ -23,7 +24,7 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs interactive_markers nav_msgs roscpp rospy std_msgs tf visualization_msgs
+  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs interactive_markers nav_msgs roscpp rospy std_msgs quadrotor_msgs tf visualization_msgs
 )
 
 include_directories(
